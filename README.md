@@ -12,6 +12,7 @@ Example use with TransitFit is the following:
         # Paths to data, priors, and filter info:
         data = 'data/data_paths.csv'
         priors = 'data/priors.csv'
+        
     Parameters
     ----------
     exoplanet : string, example: 'WASP-43 b'
@@ -30,6 +31,7 @@ Example use with TransitFit is the following:
         
         NASA : File must be renamed and contained within directory 'data/nasa_data.csv'.
         https://exoplanetarchive.ipac.caltech.edu/index.html
+        
     Returns
     -------
     host_T : tuple or None
