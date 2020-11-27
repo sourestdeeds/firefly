@@ -4,25 +4,6 @@ import numpy as np
 from os import path
 from datetime import datetime, timedelta
 
-def download_eu():
-    download_link = 'http://exoplanet.eu/catalog/csv'
-    
-    os.makedirs('data', exist_ok = True)
-    if not os.path.exists('data/eu.csv'):
-        print('eu.csv does not exist, downloading...')
-        df = pd.read_csv(download_link)
-        df.to_csv('data/eu.csv', index = False)
-    five_days_ago = datetime.now() - timedelta(days=5)
-    filetime = datetime.fromtimestamp(path.getctime('data/eu.csv'))
-    if filetime < five_days_ago:
-        print('eu.csv is 5 days old, redownloading...')
-        df = pd.read_csv(download_link)
-        df.to_csv('data/eu.csv', index = False)
-    else:
-        print('eu.csv is recent.')
-        pass
-    return 
-
 
 def target(exoplanet, curves = 1, dtype = 'eu'):
     '''
@@ -75,7 +56,7 @@ def target(exoplanet, curves = 1, dtype = 'eu'):
 
     '''
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # Download Data
+    # Download EU Data
     download_link = 'http://exoplanet.eu/catalog/csv'
     
     os.makedirs('data', exist_ok = True)
@@ -87,11 +68,42 @@ def target(exoplanet, curves = 1, dtype = 'eu'):
     ten_days_ago = datetime.now() - timedelta(days = 10)
     filetime = datetime.fromtimestamp(path.getctime('data/eu.csv'))
     if filetime < ten_days_ago:
-        print('eu.csv is 5 days old, redownloading...')
+        print('eu.csv is 10 days old, redownloading...')
         df = pd.read_csv(download_link)
         df.to_csv('data/eu.csv', index = False)
     else:
         print('eu.csv is recent.')
+        pass
+     # Download NASA Data
+    download_link = 'https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+'+ \
+        'pl_name,ra,dec,pl_orbper,pl_orbpererr1,pl_orbsmax,pl_orbsmaxerr1,' + \
+        'pl_radj,pl_radjerr1,pl_orbeccen,pl_orbeccenerr1,'+ \
+        'st_teff,st_tefferr1,st_rad,st_raderr1,st_mass,st_masserr1,st_logg,'+ \
+        'st_loggerr1,st_met,st_meterr1,pl_tranmid,pl_tranmiderr1,pl_orbincl,'+ \
+        'pl_orbinclerr1,pl_orblper,pl_orblpererr1' + \
+        '+from+ps&format=csv'
+    
+    # Deprecated
+    # download_link = 'https://exoplanetarchive.ipac.caltech.edu/cgi-bin/nstedAPI/'+ \
+    # 'nph-nstedAPI?table=exoplanets&select=pl_name,ra,dec,pl_orbper,pl_orbpererr1,'+ \
+    # 'pl_orbsmax,pl_orbsmaxerr1,pl_radj,pl_radjerr1,pl_orbeccen,pl_orbeccenerr1,'+ \
+    # 'st_teff,st_tefferr1,st_rad,st_raderr1,st_mass,st_masserr1,st_logg,'+ \
+    # 'st_loggerr1,st_metfe,st_metfeerr1,pl_tranmid,pl_tranmiderr1,pl_orbincl,'+ \
+    # 'pl_orbinclerr1,pl_orblper,pl_orblpererr1,st_nplc,pl_ttvflag'
+    
+    #os.makedirs('data', exist_ok = True)
+    if not os.path.exists('data/nasa.csv'):
+        print('nasa.csv does not exist, downloading...')
+        df = pd.read_csv(download_link)
+        df.to_csv('data/nasa.csv', index = False)
+    five_days_ago = datetime.now() - timedelta(days = 10)
+    filetime = datetime.fromtimestamp(path.getctime('data/nasa.csv'))
+    if filetime < five_days_ago:
+        print('nasa.csv is 10 days old, redownloading...')
+        df = pd.read_csv(download_link)
+        df.to_csv('data/nasa.csv', index = False)
+    else:
+        print('nasa.csv is recent.')
         pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Set the Data Paths
@@ -127,13 +139,16 @@ def target(exoplanet, curves = 1, dtype = 'eu'):
                     'st_rad', 'st_raderr1',
                     'st_mass', 'st_masserr1',
                     'st_logg', 'st_loggerr1',
+                    'pl_tranmid', 'pl_tranmiderr1',
+                    'pl_orbincl', 'pl_orbinclerr1',
+                    'pl_orblper', 'pl_orblpererr1',
                     'st_met', 'st_meterr1']
     if dtype == 'eu':
-        csv_file = pd.read_csv('data/eu_data.csv', index_col = '# name',  
+        csv_file = pd.read_csv('data/eu.csv', index_col = '# name',  
                                usecols = col_subset_eu)
     elif dtype == 'nasa':
-        csv_file = pd.read_csv('data/nasa_data.csv', index_col = 'pl_name',  
-                           usecols = col_subset_nasa, skiprows = 95)
+        csv_file = pd.read_csv('data/nasa.csv', index_col = 'pl_name',  
+                           usecols = col_subset_nasa)#, skiprows = 95)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Pick Out Chosen Exoplanet Priors
     df = pd.DataFrame(csv_file)
@@ -173,6 +188,7 @@ def target(exoplanet, curves = 1, dtype = 'eu'):
         host_T = (s.loc['st_teff'], s.loc['st_tefferr1'])
         host_z = (s.loc['st_met'], s.loc['st_meterr1'])
         host_r = (s.loc['st_rad'], s.loc['st_raderr1'])
+        #host_logg = (s.loc['st_logg'], s.loc['st_loggerr1'])
         host_logg = ( logg, err_logg )
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Assign Exoplanet Priors to TransitFit
@@ -188,13 +204,13 @@ def target(exoplanet, curves = 1, dtype = 'eu'):
                 ['w', 'fixed', 90 , '' , '']]
     elif dtype == 'nasa':
         cols = [['P', 'gaussian', s.loc['pl_orbper'], s.loc['pl_orbpererr1'], ''],
-                ['t0', 'gaussian', 2455726.54336, 0.00012, ''],
+                ['t0', 'gaussian', s.loc['pl_tranmid'], s.loc['pl_tranmiderr1'], ''],
                 ['a', 'gaussian', s.loc['pl_orbsmax'], s.loc['pl_orbsmaxerr1'], ''],
-                ['inc', 'gaussian', 82.33, 0.2, ''],
+                ['inc', 'gaussian', s.loc['pl_orbincl'], s.loc['pl_orbinclerr1'], ''],
                 ['rp', 'uniform',  0.8*radius_const*s.loc['pl_radj']/s.loc['st_rad'], 
                  1.2*radius_const*s.loc['pl_radj']/s.loc['st_rad'], 0],
-                # ['ecc', 'fixed', s.loc['pl_orbeccen'], s.loc['pl_orbeccenerr1'], ''],
-                # ['w', 'fixed', 90 , '' , '']
+                ['ecc', 'fixed', s.loc['pl_orbeccen'], s.loc['pl_orbeccenerr1'], ''],
+                ['w', 'fixed', s.loc['pl_orblper'] , s.loc['pl_orblpererr1'] , '']
                ]
     repack = pd.DataFrame(cols, columns = ['Parameter', 'Distribution', 
                                      'Input_A', 'Input_B', 'Filter'])
@@ -218,13 +234,13 @@ def target(exoplanet, curves = 1, dtype = 'eu'):
                     ['host_logg', 'fixed', host_logg[0] , host_logg[1] , '']]
     elif dtype == 'nasa':
         cols = [['P', 'gaussian', s.loc['pl_orbper'], s.loc['pl_orbpererr1'], ''],
-                    #['t0', 'gaussian', s.loc['tzero_tr'], s.loc['tzero_tr_error_max'], ''],
+                    ['t0', 'gaussian', s.loc['pl_tranmid'], s.loc['pl_tranmiderr1'], ''],
                     ['a', 'gaussian', s.loc['pl_orbsmax'], s.loc['pl_orbsmaxerr1'], ''],
-                    #['inc', 'gaussian', s.loc['inclination'], s.loc['inclination_error_max'], ''],
+                    ['inc', 'gaussian', s.loc['pl_orbincl'], s.loc['pl_orbinclerr1'], ''],
                     ['rp', 'uniform',  0.8*radius_const*s.loc['pl_radj']/s.loc['st_rad'], 
                      1.2*radius_const*s.loc['pl_radj']/s.loc['st_rad'], 0],
-                    #['ecc', 'fixed', s.loc['eccentricity'], s.loc['eccentricity_error_max'], ''],
-                    ['w', 'fixed', 90 , '' , ''],
+                    ['ecc', 'fixed', s.loc['pl_orbeccen'], s.loc['pl_orbeccenerr1'], ''],
+                    ['w', 'fixed', s.loc['pl_orblper'] , s.loc['pl_orblpererr1'] , ''],
                     ['host_T', 'fixed', host_T[0] , host_T[1] , ''],
                     ['host_z', 'fixed', host_z[0] , host_z[1] , ''],
                     ['host_r', 'fixed', host_r[0] , host_r[1] , ''],
@@ -238,6 +254,7 @@ def target(exoplanet, curves = 1, dtype = 'eu'):
 
 # Host Info
 #exoplanet, curves = 'LHS 3844 b', 27
+#exoplanet, curves = 'LTT 9779 b', 27
 exoplanet, curves = 'WASP-43 b', 27
 host_T, host_z, host_r, host_logg  = target(exoplanet, curves, 'nasa')
 
