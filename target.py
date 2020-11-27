@@ -74,13 +74,14 @@ def target(exoplanet, curves = 1, dtype = 'eu'):
     else:
         print('eu.csv is recent.')
         pass
-     # Download NASA Data
-    download_link = 'https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+'+ \
-        'pl_name,ra,dec,pl_orbper,pl_orbpererr1,pl_orbsmax,pl_orbsmaxerr1,' + \
-        'pl_radj,pl_radjerr1,pl_orbeccen,pl_orbeccenerr1,'+ \
-        'st_teff,st_tefferr1,st_rad,st_raderr1,st_mass,st_masserr1,st_logg,'+ \
-        'st_loggerr1,st_met,st_meterr1,pl_tranmid,pl_tranmiderr1,pl_orbincl,'+ \
-        'pl_orbinclerr1,pl_orblper,pl_orblpererr1' + \
+    # Download NASA Data
+    download_link =                                                          \
+        'https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+'  +\
+        'pl_name,ra,dec,pl_orbper,pl_orbpererr1,pl_orbsmax,pl_orbsmaxerr1,' +\
+        'pl_radj,pl_radjerr1,pl_orbeccen,pl_orbeccenerr1,'                  +\
+        'st_teff,st_tefferr1,st_rad,st_raderr1,st_mass,st_masserr1,st_logg,'+\
+        'st_loggerr1,st_met,st_meterr1,pl_tranmid,pl_tranmiderr1,'          +\
+        'pl_orbincl,pl_orbinclerr1,pl_orblper,pl_orblpererr1'               +\
         '+from+ps&format=csv'
     
     # Deprecated
@@ -91,7 +92,6 @@ def target(exoplanet, curves = 1, dtype = 'eu'):
     # 'st_loggerr1,st_metfe,st_metfeerr1,pl_tranmid,pl_tranmiderr1,pl_orbincl,'+ \
     # 'pl_orbinclerr1,pl_orblper,pl_orblpererr1,st_nplc,pl_ttvflag'
     
-    #os.makedirs('data', exist_ok = True)
     if not os.path.exists('data/nasa.csv'):
         print('nasa.csv does not exist, downloading...')
         df = pd.read_csv(download_link)
@@ -148,7 +148,7 @@ def target(exoplanet, curves = 1, dtype = 'eu'):
                                usecols = col_subset_eu)
     elif dtype == 'nasa':
         csv_file = pd.read_csv('data/nasa.csv', index_col = 'pl_name',  
-                           usecols = col_subset_nasa)#, skiprows = 95)
+                           usecols = col_subset_nasa)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Pick Out Chosen Exoplanet Priors
     df = pd.DataFrame(csv_file)
@@ -166,12 +166,14 @@ def target(exoplanet, curves = 1, dtype = 'eu'):
         r = r_sun*s.loc['star_radius']
         err_r = r_sun*s.loc['star_radius_error_max']
         g = m * G * r ** -2 * 100
-        err_g = G/(r ** 2) * np.sqrt(err_m ** 2 + (4 * m**2 * err_r ** 2)/r**2) * 100
+        err_g = G/(r ** 2) * np.sqrt(err_m ** 2 + 
+                                     (4 * m**2 * err_r ** 2)/r**2) * 100
         logg = np.log10(g)
         err_logg = err_g / (g * np.log(10))
         
         host_T = (s.loc['star_teff'], s.loc['star_teff_error_max'])
-        host_z = (s.loc['star_metallicity'], s.loc['star_metallicity_error_max'])
+        host_z = (s.loc['star_metallicity'], 
+                      s.loc['star_metallicity_error_max'])
         host_r = (s.loc['star_radius'], s.loc['star_radius_error_max'])
         host_logg = ( logg, err_logg )
     elif dtype == 'nasa':
@@ -181,7 +183,8 @@ def target(exoplanet, curves = 1, dtype = 'eu'):
         r = r_sun*s.loc['st_rad']
         err_r = r_sun*s.loc['st_raderr1']
         g = m * G * r ** -2 * 100
-        err_g = G/(r ** 2) * np.sqrt(err_m ** 2 + (4 * m**2 * err_r ** 2)/r**2) * 100
+        err_g = G/(r ** 2) * np.sqrt(err_m ** 2 + 
+                                     (4 * m**2 * err_r ** 2)/r**2) * 100
         logg = np.log10(g)
         err_logg = err_g / (g * np.log(10))
         
@@ -194,23 +197,36 @@ def target(exoplanet, curves = 1, dtype = 'eu'):
     # Assign Exoplanet Priors to TransitFit
     radius_const = 0.1027626851
     if dtype == 'eu':
-        cols = [['P', 'gaussian', s.loc['orbital_period'], s.loc['orbital_period_error_max'], ''],
-                ['t0', 'gaussian', s.loc['tzero_tr'], s.loc['tzero_tr_error_max'], ''],
-                ['a', 'gaussian', s.loc['semi_major_axis'], s.loc['semi_major_axis_error_max'], ''],
-                ['inc', 'gaussian', s.loc['inclination'], s.loc['inclination_error_max'], ''],
-                ['rp', 'uniform',  0.8*radius_const*s.loc['radius']/s.loc['star_radius'], 
-                 1.2*radius_const*s.loc['radius']/s.loc['star_radius'], 0],
-                #['ecc', 'fixed', s.loc['eccentricity'], s.loc['eccentricity_error_max'], ''],
+        cols = [['P', 'gaussian', s.loc['orbital_period'], 
+                     s.loc['orbital_period_error_max'], ''],
+                ['t0', 'gaussian', s.loc['tzero_tr'], 
+                     s.loc['tzero_tr_error_max'], ''],
+                ['a', 'gaussian', s.loc['semi_major_axis'], 
+                     s.loc['semi_major_axis_error_max'], ''],
+                ['inc', 'gaussian', s.loc['inclination'], 
+                     s.loc['inclination_error_max'], ''],
+                ['rp', 'uniform',  
+                     0.8*radius_const*s.loc['radius']/s.loc['star_radius'], 
+                     1.2*radius_const*s.loc['radius']/s.loc['star_radius'], 0],
+                ['ecc', 'fixed', s.loc['eccentricity'], 
+                     s.loc['eccentricity_error_max'], ''],
                 ['w', 'fixed', 90 , '' , '']]
     elif dtype == 'nasa':
-        cols = [['P', 'gaussian', s.loc['pl_orbper'], s.loc['pl_orbpererr1'], ''],
-                ['t0', 'gaussian', s.loc['pl_tranmid'], s.loc['pl_tranmiderr1'], ''],
-                ['a', 'gaussian', s.loc['pl_orbsmax'], s.loc['pl_orbsmaxerr1'], ''],
-                ['inc', 'gaussian', s.loc['pl_orbincl'], s.loc['pl_orbinclerr1'], ''],
-                ['rp', 'uniform',  0.8*radius_const*s.loc['pl_radj']/s.loc['st_rad'], 
-                 1.2*radius_const*s.loc['pl_radj']/s.loc['st_rad'], 0],
-                ['ecc', 'fixed', s.loc['pl_orbeccen'], s.loc['pl_orbeccenerr1'], ''],
-                ['w', 'fixed', s.loc['pl_orblper'] , s.loc['pl_orblpererr1'] , '']
+        cols = [['P', 'gaussian', s.loc['pl_orbper'], 
+                     s.loc['pl_orbpererr1'], ''],
+                ['t0', 'gaussian', s.loc['pl_tranmid'], 
+                     s.loc['pl_tranmiderr1'], ''],
+                ['a', 'gaussian', s.loc['pl_orbsmax'], 
+                     s.loc['pl_orbsmaxerr1'], ''],
+                ['inc', 'gaussian', s.loc['pl_orbincl'], 
+                     s.loc['pl_orbinclerr1'], ''],
+                ['rp', 'uniform',  
+                     0.8*radius_const*s.loc['pl_radj']/s.loc['st_rad'], 
+                     1.2*radius_const*s.loc['pl_radj']/s.loc['st_rad'], 0],
+                ['ecc', 'fixed', s.loc['pl_orbeccen'], 
+                     s.loc['pl_orbeccenerr1'], ''],
+                ['w', 'fixed', s.loc['pl_orblper'], 
+                     s.loc['pl_orblpererr1'] , '']
                ]
     repack = pd.DataFrame(cols, columns = ['Parameter', 'Distribution', 
                                      'Input_A', 'Input_B', 'Filter'])
@@ -220,27 +236,40 @@ def target(exoplanet, curves = 1, dtype = 'eu'):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # For printing variables only
     if dtype == 'eu':
-        cols = [['P', 'gaussian', s.loc['orbital_period'], s.loc['orbital_period_error_max'], ''],
-                    ['t0', 'gaussian', s.loc['tzero_tr'], s.loc['tzero_tr_error_max'], ''],
-                    ['a', 'gaussian', s.loc['semi_major_axis'], s.loc['semi_major_axis_error_max'], ''],
-                    ['inc', 'gaussian', s.loc['inclination'], s.loc['inclination_error_max'], ''],
-                    ['rp', 'uniform',  0.8*radius_const*s.loc['radius']/s.loc['star_radius'], 
+        cols = [['P', 'gaussian', s.loc['orbital_period'], 
+                 s.loc['orbital_period_error_max'], ''],
+                ['t0', 'gaussian', s.loc['tzero_tr'], 
+                     s.loc['tzero_tr_error_max'], ''],
+                ['a', 'gaussian', s.loc['semi_major_axis'], 
+                     s.loc['semi_major_axis_error_max'], ''],
+                ['inc', 'gaussian', s.loc['inclination'], 
+                     s.loc['inclination_error_max'], ''],
+                ['rp', 'uniform',  
+                     0.8*radius_const*s.loc['radius']/s.loc['star_radius'], 
                      1.2*radius_const*s.loc['radius']/s.loc['star_radius'], 0],
-                    #['ecc', 'fixed', s.loc['eccentricity'], s.loc['eccentricity_error_max'], ''],
+                ['ecc', 'fixed', s.loc['eccentricity'], 
+                     s.loc['eccentricity_error_max'], ''],
                     ['w', 'fixed', 90 , '' , ''],
                     ['host_T', 'fixed', host_T[0] , host_T[1] , ''],
                     ['host_z', 'fixed', host_z[0] , host_z[1] , ''],
                     ['host_r', 'fixed', host_r[0] , host_r[1] , ''],
                     ['host_logg', 'fixed', host_logg[0] , host_logg[1] , '']]
     elif dtype == 'nasa':
-        cols = [['P', 'gaussian', s.loc['pl_orbper'], s.loc['pl_orbpererr1'], ''],
-                    ['t0', 'gaussian', s.loc['pl_tranmid'], s.loc['pl_tranmiderr1'], ''],
-                    ['a', 'gaussian', s.loc['pl_orbsmax'], s.loc['pl_orbsmaxerr1'], ''],
-                    ['inc', 'gaussian', s.loc['pl_orbincl'], s.loc['pl_orbinclerr1'], ''],
-                    ['rp', 'uniform',  0.8*radius_const*s.loc['pl_radj']/s.loc['st_rad'], 
+        cols = [['P', 'gaussian', s.loc['pl_orbper'], 
+                 s.loc['pl_orbpererr1'], ''],
+                ['t0', 'gaussian', s.loc['pl_tranmid'], 
+                     s.loc['pl_tranmiderr1'], ''],
+                ['a', 'gaussian', s.loc['pl_orbsmax'], 
+                     s.loc['pl_orbsmaxerr1'], ''],
+                ['inc', 'gaussian', s.loc['pl_orbincl'], 
+                     s.loc['pl_orbinclerr1'], ''],
+                ['rp', 'uniform',  
+                     0.8*radius_const*s.loc['pl_radj']/s.loc['st_rad'], 
                      1.2*radius_const*s.loc['pl_radj']/s.loc['st_rad'], 0],
-                    ['ecc', 'fixed', s.loc['pl_orbeccen'], s.loc['pl_orbeccenerr1'], ''],
-                    ['w', 'fixed', s.loc['pl_orblper'] , s.loc['pl_orblpererr1'] , ''],
+                ['ecc', 'fixed', s.loc['pl_orbeccen'], 
+                     s.loc['pl_orbeccenerr1'], ''],
+                ['w', 'fixed', s.loc['pl_orblper'], 
+                     s.loc['pl_orblpererr1'] , ''],
                     ['host_T', 'fixed', host_T[0] , host_T[1] , ''],
                     ['host_z', 'fixed', host_z[0] , host_z[1] , ''],
                     ['host_r', 'fixed', host_r[0] , host_r[1] , ''],
@@ -248,7 +277,8 @@ def target(exoplanet, curves = 1, dtype = 'eu'):
     repack = pd.DataFrame(cols, columns = ['Parameter', 'Distribution', 
                                      'Input_A', 'Input_B', 'Filter'])
     repack = repack.to_string(index = False)
-    print('Assigned the following values for',exoplanet,'and passing to TransitFit..')
+    print('Assigned the following values for '+exoplanet+
+                                                'and passing to TransitFit..')
     print(repack)
     return host_T, host_z, host_r, host_logg
 
