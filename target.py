@@ -57,54 +57,50 @@ def target(exoplanet, curves = 1, dtype = 'eu'):
     '''
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Download EU Data
-    download_link = 'http://exoplanet.eu/catalog/csv'
-    
     os.makedirs('data', exist_ok = True)
-    if not os.path.exists('data/eu.csv'):
-        print('eu.csv does not exist, downloading...')
-        df = pd.read_csv(download_link)
-        df.to_csv('data/eu.csv', index = False)
+    
+    if dtype == 'eu':
+        download_link = 'http://exoplanet.eu/catalog/csv'
         
-    ten_days_ago = datetime.now() - timedelta(days = 10)
-    filetime = datetime.fromtimestamp(path.getctime('data/eu.csv'))
-    if filetime < ten_days_ago:
-        print('eu.csv is 10 days old, redownloading...')
-        df = pd.read_csv(download_link)
-        df.to_csv('data/eu.csv', index = False)
-    else:
-        print('eu.csv is recent.')
-        pass
+        if not os.path.exists('data/eu.csv'):
+            print('eu.csv does not exist, downloading...')
+            df = pd.read_csv(download_link)
+            df.to_csv('data/eu.csv', index = False)
+            
+        ten_days_ago = datetime.now() - timedelta(days = 10)
+        filetime = datetime.fromtimestamp(path.getctime('data/eu.csv'))
+        if filetime < ten_days_ago:
+            print('eu.csv is 10 days old, redownloading...')
+            df = pd.read_csv(download_link)
+            df.to_csv('data/eu.csv', index = False)
+        else:
+            print('eu.csv is recent.')
+            pass
     # Download NASA Data
-    download_link =                                                          \
-        'https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+'  +\
-        'pl_name,ra,dec,pl_orbper,pl_orbpererr1,pl_orbsmax,pl_orbsmaxerr1,' +\
-        'pl_radj,pl_radjerr1,pl_orbeccen,pl_orbeccenerr1,'                  +\
-        'st_teff,st_tefferr1,st_rad,st_raderr1,st_mass,st_masserr1,st_logg,'+\
-        'st_loggerr1,st_met,st_meterr1,pl_tranmid,pl_tranmiderr1,'          +\
-        'pl_orbincl,pl_orbinclerr1,pl_orblper,pl_orblpererr1'               +\
-        '+from+ps&format=csv'
-    
-    # Deprecated
-    # download_link = 'https://exoplanetarchive.ipac.caltech.edu/cgi-bin/nstedAPI/'+ \
-    # 'nph-nstedAPI?table=exoplanets&select=pl_name,ra,dec,pl_orbper,pl_orbpererr1,'+ \
-    # 'pl_orbsmax,pl_orbsmaxerr1,pl_radj,pl_radjerr1,pl_orbeccen,pl_orbeccenerr1,'+ \
-    # 'st_teff,st_tefferr1,st_rad,st_raderr1,st_mass,st_masserr1,st_logg,'+ \
-    # 'st_loggerr1,st_metfe,st_metfeerr1,pl_tranmid,pl_tranmiderr1,pl_orbincl,'+ \
-    # 'pl_orbinclerr1,pl_orblper,pl_orblpererr1,st_nplc,pl_ttvflag'
-    
-    if not os.path.exists('data/nasa.csv'):
-        print('nasa.csv does not exist, downloading...')
-        df = pd.read_csv(download_link)
-        df.to_csv('data/nasa.csv', index = False)
-    five_days_ago = datetime.now() - timedelta(days = 10)
-    filetime = datetime.fromtimestamp(path.getctime('data/nasa.csv'))
-    if filetime < five_days_ago:
-        print('nasa.csv is 10 days old, redownloading...')
-        df = pd.read_csv(download_link)
-        df.to_csv('data/nasa.csv', index = False)
     else:
-        print('nasa.csv is recent.')
-        pass
+        download_link =                                                      \
+            'https://exoplanetarchive.ipac.caltech.edu/'                    +\
+            'TAP/sync?query=select+'                                        +\
+            'pl_name,pl_orbper,pl_orbpererr1,pl_orbsmax,pl_orbsmaxerr1,'    +\
+            'pl_radj,pl_radjerr1,pl_orbeccen,pl_orbeccenerr1,'              +\
+            'st_teff,st_tefferr1,st_rad,st_raderr1,st_mass,st_masserr1,'    +\
+            'st_met,st_meterr1,pl_tranmid,pl_tranmiderr1,'                  +\
+            'pl_orbincl,pl_orbinclerr1,pl_orblper,pl_orblpererr1'           +\
+            '+from+ps&format=csv'
+        
+        if not os.path.exists('data/nasa.csv'):
+            print('nasa.csv does not exist, downloading...')
+            df = pd.read_csv(download_link)
+            df.to_csv('data/nasa.csv', index = False)
+        five_days_ago = datetime.now() - timedelta(days = 10)
+        filetime = datetime.fromtimestamp(path.getctime('data/nasa.csv'))
+        if filetime < five_days_ago:
+            print('nasa.csv is 10 days old, redownloading...')
+            df = pd.read_csv(download_link)
+            df.to_csv('data/nasa.csv', index = False)
+        else:
+            print('nasa.csv is recent.')
+            pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Set the Data Paths
     cols = ['Path', 'Telescope', 'Filter', 'Epochs', 'Detrending']
@@ -138,7 +134,6 @@ def target(exoplanet, curves = 1, dtype = 'eu'):
                     'st_teff', 'st_tefferr1',
                     'st_rad', 'st_raderr1',
                     'st_mass', 'st_masserr1',
-                    'st_logg', 'st_loggerr1',
                     'pl_tranmid', 'pl_tranmiderr1',
                     'pl_orbincl', 'pl_orbinclerr1',
                     'pl_orblper', 'pl_orblpererr1',
@@ -286,7 +281,7 @@ def target(exoplanet, curves = 1, dtype = 'eu'):
 #exoplanet, curves = 'LHS 3844 b', 27
 #exoplanet, curves = 'LTT 9779 b', 27
 exoplanet, curves = 'WASP-43 b', 27
-host_T, host_z, host_r, host_logg  = target(exoplanet, curves, 'nasa')
+host_T, host_z, host_r, host_logg  = target(exoplanet, curves, 'eu')
 
 # Paths to data, priors, and filter info:
 data = 'data/data_paths.csv'
