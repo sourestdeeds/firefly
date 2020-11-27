@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 def target(exoplanet, curves = 1, dtype = 'eu'):
     '''
     Generates the priors and host star variables for a chosen target.
-    Downloads exoplanet archives and stores in /data.
+    Downloads exoplanet archives every 10 days and stores in /data.
     Target lightcurve files must be contained within a folder by the name of 
     its target.
     
@@ -138,28 +138,28 @@ def target(exoplanet, curves = 1, dtype = 'eu'):
                     'star_radius', 'star_radius_error_max',
                     'star_mass', 'star_mass_error_max',
                     'star_metallicity', 'star_metallicity_error_max']
-    col_subset_nasa = ['pl_name', 'pl_orbper', 'pl_orbpererr1',
-                    'pl_orbsmax', 'pl_orbsmaxerr1',
-                    'pl_radj', 'pl_radjerr1',
-                    'pl_orbeccen', 'pl_orbeccenerr1',
-                    'st_teff', 'st_tefferr1',
-                    'st_rad', 'st_raderr1',
-                    'st_mass', 'st_masserr1',
-                    'pl_tranmid', 'pl_tranmiderr1',
-                    'pl_orbincl', 'pl_orbinclerr1',
-                    'pl_orblper', 'pl_orblpererr1',
-                    'st_met', 'st_meterr1']
+    # col_subset_nasa = ['pl_name', 'pl_orbper', 'pl_orbpererr1',
+    #                 'pl_orbsmax', 'pl_orbsmaxerr1',
+    #                 'pl_radj', 'pl_radjerr1',
+    #                 'pl_orbeccen', 'pl_orbeccenerr1',
+    #                 'st_teff', 'st_tefferr1',
+    #                 'st_rad', 'st_raderr1',
+    #                 'st_mass', 'st_masserr1',
+    #                 'pl_tranmid', 'pl_tranmiderr1',
+    #                 'pl_orbincl', 'pl_orbinclerr1',
+    #                 'pl_orblper', 'pl_orblpererr1',
+    #                 'st_met', 'st_meterr1']
     if dtype == 'eu':
         csv_file = pd.read_csv('data/eu.csv', index_col = '# name',  
                                usecols = col_subset_eu)
     elif dtype == 'nasa':
-        csv_file = pd.read_csv('data/nasa.csv', index_col = 'pl_name',  
-                           usecols = col_subset_nasa)
+        csv_file = pd.read_csv('data/nasa.csv', index_col = 'pl_name')  
+                           #usecols = col_subset_nasa)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Pick Out Chosen Exoplanet Priors
     df = pd.DataFrame(csv_file)
     df = df.loc[[exoplanet]] 
-    s = df.mean()
+    s = df.mean() # Takes the mean of values if multiple entries
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Assign Host data to Transitfit
     G = 6.674e-11
@@ -292,7 +292,7 @@ def target(exoplanet, curves = 1, dtype = 'eu'):
 #exoplanet, curves = 'LHS 3844 b', 27
 #exoplanet, curves = 'LTT 9779 b', 27
 exoplanet, curves = 'WASP-43 b', 27
-host_T, host_z, host_r, host_logg  = target(exoplanet, curves, 'eu')
+host_T, host_z, host_r, host_logg  = target(exoplanet, curves, 'nasa')
 
 # Paths to data, priors, and filter info:
 data = 'data/data_paths.csv'
