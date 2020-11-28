@@ -103,9 +103,9 @@ def target(exoplanet, curves = 1, dtype = 'eu'):
             print('nasa.csv does not exist, downloading...')
             df = pd.read_csv(download_link)
             df.to_csv('data/nasa.csv', index = False)
-        five_days_ago = datetime.now() - timedelta(days = 10)
+        ten_days_ago = datetime.now() - timedelta(days = 10)
         filetime = datetime.fromtimestamp(path.getctime('data/nasa.csv'))
-        if filetime < five_days_ago:
+        if filetime < ten_days_ago:
             print('nasa.csv is 10 days old, redownloading...')
             df = pd.read_csv(download_link)
             df.to_csv('data/nasa.csv', index = False)
