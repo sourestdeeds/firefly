@@ -232,8 +232,7 @@ def target(exoplanet, curves = 1, dtype = 'eu'):
                 ['ecc', 'fixed', s.loc['pl_orbeccen'], 
                      s.loc['pl_orbeccenerr1'], ''],
                 ['w', 'fixed', s.loc['pl_orblper'], 
-                     s.loc['pl_orblpererr1'] , '']
-               ]
+                     s.loc['pl_orblpererr1'] , '']]
     repack = pd.DataFrame(cols, columns = ['Parameter', 'Distribution', 
                                      'Input_A', 'Input_B', 'Filter'])
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -289,9 +288,9 @@ def target(exoplanet, curves = 1, dtype = 'eu'):
     return host_T, host_z, host_r, host_logg
 
 # Host Info
-#exoplanet, curves = 'LHS 3844 b', 27
-#exoplanet, curves = 'LTT 9779 b', 27
-exoplanet, curves = 'WASP-43 b', 27
+#exoplanet, curves = 'LHS 3844 b', 1
+#exoplanet, curves = 'LTT 9779 b', 1
+exoplanet, curves = 'WASP-43 b', 1
 host_T, host_z, host_r, host_logg  = target(exoplanet, curves, 'nasa')
 
 # Paths to data, priors, and filter info:
