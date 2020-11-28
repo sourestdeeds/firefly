@@ -103,9 +103,9 @@ def target(exoplanet, curves = 1, dtype = 'eu'):
             print('nasa.csv does not exist, downloading...')
             df = pd.read_csv(download_link)
             df.to_csv('data/nasa.csv', index = False)
-        five_days_ago = datetime.now() - timedelta(days = 10)
+        ten_days_ago = datetime.now() - timedelta(days = 10)
         filetime = datetime.fromtimestamp(path.getctime('data/nasa.csv'))
-        if filetime < five_days_ago:
+        if filetime < ten_days_ago:
             print('nasa.csv is 10 days old, redownloading...')
             df = pd.read_csv(download_link)
             df.to_csv('data/nasa.csv', index = False)
@@ -127,6 +127,7 @@ def target(exoplanet, curves = 1, dtype = 'eu'):
         df['Epochs'] = range(0, len(df))
     df.to_csv(r'data/data_paths.csv', index = False, header = True)
     print('Assigned data paths for '+exoplanet+'..')
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Find Target
     col_subset_eu = ['# name', 'orbital_period', 'orbital_period_error_max',
                     'semi_major_axis', 'semi_major_axis_error_max',
@@ -138,17 +139,6 @@ def target(exoplanet, curves = 1, dtype = 'eu'):
                     'star_radius', 'star_radius_error_max',
                     'star_mass', 'star_mass_error_max',
                     'star_metallicity', 'star_metallicity_error_max']
-    # col_subset_nasa = ['pl_name', 'pl_orbper', 'pl_orbpererr1',
-    #                 'pl_orbsmax', 'pl_orbsmaxerr1',
-    #                 'pl_radj', 'pl_radjerr1',
-    #                 'pl_orbeccen', 'pl_orbeccenerr1',
-    #                 'st_teff', 'st_tefferr1',
-    #                 'st_rad', 'st_raderr1',
-    #                 'st_mass', 'st_masserr1',
-    #                 'pl_tranmid', 'pl_tranmiderr1',
-    #                 'pl_orbincl', 'pl_orbinclerr1',
-    #                 'pl_orblper', 'pl_orblpererr1',
-    #                 'st_met', 'st_meterr1']
     if dtype == 'eu':
         csv_file = pd.read_csv('data/eu.csv', index_col = '# name',  
                                usecols = col_subset_eu)
@@ -197,7 +187,6 @@ def target(exoplanet, curves = 1, dtype = 'eu'):
         host_T = (s.loc['st_teff'], s.loc['st_tefferr1'])
         host_z = (s.loc['st_met'], s.loc['st_meterr1'])
         host_r = (s.loc['st_rad'], s.loc['st_raderr1'])
-        #host_logg = (s.loc['st_logg'], s.loc['st_loggerr1'])
         host_logg = ( logg, err_logg )
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Assign Exoplanet Priors to TransitFit
@@ -232,7 +221,8 @@ def target(exoplanet, curves = 1, dtype = 'eu'):
                 ['ecc', 'fixed', s.loc['pl_orbeccen'], 
                      s.loc['pl_orbeccenerr1'], ''],
                 ['w', 'fixed', s.loc['pl_orblper'], 
-                     s.loc['pl_orblpererr1'] , '']]
+                     s.loc['pl_orblpererr1'] , '']
+               ]
     repack = pd.DataFrame(cols, columns = ['Parameter', 'Distribution', 
                                      'Input_A', 'Input_B', 'Filter'])
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -288,10 +278,8 @@ def target(exoplanet, curves = 1, dtype = 'eu'):
     return host_T, host_z, host_r, host_logg
 
 # Host Info
-#exoplanet, curves = 'LHS 3844 b', 1
-#exoplanet, curves = 'LTT 9779 b', 1
-exoplanet, curves = 'WASP-43 b', 1
-host_T, host_z, host_r, host_logg  = target(exoplanet, curves, 'nasa')
+exoplanet, curves, dtype = 'WASP-43 b', 27, 'eu'
+host_T, host_z, host_r, host_logg  = target(exoplanet, curves, dtype)
 
 # Paths to data, priors, and filter info:
 data = 'data/data_paths.csv'
