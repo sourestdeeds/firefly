@@ -221,8 +221,7 @@ def target(exoplanet, curves = 1, dtype = 'eu'):
                 ['ecc', 'fixed', s.loc['pl_orbeccen'], 
                      s.loc['pl_orbeccenerr1'], ''],
                 ['w', 'fixed', s.loc['pl_orblper'], 
-                     s.loc['pl_orblpererr1'] , '']
-               ]
+                     s.loc['pl_orblpererr1'] , '']]
     repack = pd.DataFrame(cols, columns = ['Parameter', 'Distribution', 
                                      'Input_A', 'Input_B', 'Filter'])
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
