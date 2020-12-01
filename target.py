@@ -341,6 +341,8 @@ def main(exoplanet, curves):
     priors = 'data/priors.csv'
     filters = 'data/TESS_filter.csv'
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    detrending = [['nth order', 2]]
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Outputs
     results_output_folder = 'Planet/'+exoplanet+'/output_parameters'
     fitted_lightcurve_folder = 'Planet/'+exoplanet+'/fitted_lightcurves'
@@ -355,4 +357,4 @@ def main(exoplanet, curves):
                                 final_lightcurve_folder = fitted_lightcurve_folder,
                                 plot_folder = plot_folder)
 
-main('WASP-43 b', 1)         
+main('WASP-43 b', 1)
