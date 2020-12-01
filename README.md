@@ -4,21 +4,30 @@
         lightkurve
         transitfit
 
-
-
+A target data retriever for confirmed/candidate TESS exoplanets.
 Generates the priors and host star variables for a chosen target.
-Requires a sub-directory /data/ to store exoplanet csv files from the archive.
-Target lightcurve files must be contained within a folder by the name of its target.
-Example use with TransitFit is the following:
+Downloads exoplanet archives every 10 days and stores in /data.
+Target lightcurve files are downloaded from MAST, fits file is
+stored in Planet/exoplanet/exoplanet.fits.
+    
+    An example use with TransitFit is the following:
         
-        # Host Info
-        exoplanet, curves = 'WASP-43 b', 1
-        host_T, host_z, host_r, host_logg  = target(exoplanet, curves)
+    Host Info
+        exoplanet = 'WASP-43 b'
         
-        # Paths to data, priors, and filter info:
+        host_T, host_z, host_r, host_logg  = target(exoplanet)
+        
+    Paths to data, priors, and filter info:
         data = 'data/data_paths.csv'
+        
         priors = 'data/priors.csv'
         
+    Outputs
+        results_output_folder = 'Planet/'+exoplanet+'/output_parameters'
+        
+        fitted_lightcurve_folder = 'Planet/'+exoplanet+'/fitted_lightcurves'
+    
+        plot_folder = 'Planet/'+exoplanet+'/plots'
     Parameters
     ----------
     exoplanet : string, example: 'WASP-43 b'
@@ -26,24 +35,25 @@ Example use with TransitFit is the following:
         
     curves : int, optional
         How many light curves to fit. Updates data paths for chosen target.
-        Must be contained within the target folder, ie 'WASP-43 b/split_curve_0.csv'.
+        Must be contained within the target folder, 
+        ie 'WASP-43 b/split_curve_0.csv'.
         The default is 1.
         
     dtype : string, optional
-        Allows for inputs 'nasa' or 'eu'. The default is 'eu'.
+        Allows for inputs 'nasa' or 'eu'. The default is 'nasa'.
         
-        EU : File must be renamed and contained within directory 'data/eu_data.csv'.
+        EU : Data downloaded and stored in 'data/eu_data.csv'.
         http://exoplanet.eu/catalog/#
         
-        NASA : File must be renamed and contained within directory 'data/nasa_data.csv'.
+        NASA : Data downloaded and stored in 'data/nasa_data.csv'.
         https://exoplanetarchive.ipac.caltech.edu/index.html
-        
     Returns
     -------
     host_T : tuple or None
         The effective temperature of the host star, in Kelvin. 
     host_z : tuple or None
-        The log_10 of the surface gravity of the host star, with gravity measured in cm/s2. 
+        The log_10 of the surface gravity of the host star, 
+        with gravity measured in cm/s2. 
     host_r : tuple or None
         The metalicity of the host, given as a (value, uncertainty) pair.
     host_logg : tuple or None
@@ -52,4 +62,12 @@ Example use with TransitFit is the following:
         The locations of the light curves to fit.
     data/priors.csv : file
         The priors for the chosen target.
-   
+    data/eu.csv : file
+        EU : Data downloaded and stored in 'data/eu_data.csv'.
+        http://exoplanet.eu/catalog/#
+    data/nasa.csv : file
+        NASA : Data downloaded and stored in 'data/nasa_data.csv'.
+        https://exoplanetarchive.ipac.caltech.edu/index.html
+    Planet/exoplanet/exoplanet.fits : file
+        MAST : Data downloaded and stored in 'Planet/exoplanet/exoplanet.fits'.
+        https://mast.stsci.edu/portal/Mashup/Clients/Mast/Portal.html
