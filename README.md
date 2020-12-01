@@ -10,23 +10,19 @@ Downloads exoplanet archives every 10 days and stores in /data.
 Target lightcurve files are downloaded from MAST, fits file is
 stored in Planet/exoplanet/exoplanet.fits.
     
-    An example use with TransitFit is the following:
+An example use with TransitFit is the following:
         
     Host Info
         exoplanet = 'WASP-43 b'
-        
         host_T, host_z, host_r, host_logg  = target(exoplanet)
         
     Paths to data, priors, and filter info:
         data = 'data/data_paths.csv'
-        
         priors = 'data/priors.csv'
         
     Outputs
         results_output_folder = 'Planet/'+exoplanet+'/output_parameters'
-        
         fitted_lightcurve_folder = 'Planet/'+exoplanet+'/fitted_lightcurves'
-    
         plot_folder = 'Planet/'+exoplanet+'/plots'
     Parameters
     ----------
