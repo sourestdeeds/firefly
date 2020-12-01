@@ -1,31 +1,40 @@
 from astropy.io import fits
-#import transitfit as tf
+import transitfit as tf
+import lightkurve as lk
 import numpy as np
 import pandas as pd
 import csv
 import os
 from os import path
 from datetime import datetime, timedelta
-import lightkurve as lk
 
-def target(exoplanet, dtype = 'nasa'):
+def target(exoplanet, curves = 1, dtype = 'nasa'):
     '''
+    A target data retriever for confirmed/candidate TESS exoplanets.
     Generates the priors and host star variables for a chosen target.
     Downloads exoplanet archives every 10 days and stores in /data.
-    Target lightcurve files must be contained within a folder by the name of 
-    its target.
+    Target lightcurve files are downloaded from MAST, fits file is
+    stored in Planet/exoplanet/exoplanet.fits.
+    
     
     An example use with TransitFit is the following:
         
     Host Info
-        exoplanet, curves, dtype = 'WASP-43 b', 1, 'eu'
+        exoplanet = 'WASP-43 b'
         
-        host_T, host_z, host_r, host_logg  = target(exoplanet, curves)
+        host_T, host_z, host_r, host_logg  = target(exoplanet)
         
     Paths to data, priors, and filter info:
         data = 'data/data_paths.csv'
         
         priors = 'data/priors.csv'
+        
+    Outputs
+        results_output_folder = 'Planet/'+exoplanet+'/output_parameters'
+        
+        fitted_lightcurve_folder = 'Planet/'+exoplanet+'/fitted_lightcurves'
+    
+        plot_folder = 'Planet/'+exoplanet+'/plots'
 
     Parameters
     ----------
@@ -39,7 +48,7 @@ def target(exoplanet, dtype = 'nasa'):
         The default is 1.
         
     dtype : string, optional
-        Allows for inputs 'nasa' or 'eu'. The default is 'eu'.
+        Allows for inputs 'nasa' or 'eu'. The default is 'nasa'.
         
         EU : Data downloaded and stored in 'data/eu_data.csv'.
         http://exoplanet.eu/catalog/#
@@ -68,6 +77,9 @@ def target(exoplanet, dtype = 'nasa'):
     data/nasa.csv : file
         NASA : Data downloaded and stored in 'data/nasa_data.csv'.
         https://exoplanetarchive.ipac.caltech.edu/index.html
+    Planet/exoplanet/exoplanet.fits : file
+        MAST : Data downloaded and stored in 'Planet/exoplanet/exoplanet.fits'.
+        https://mast.stsci.edu/portal/Mashup/Clients/Mast/Portal.html
     '''
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Download EU Data
@@ -88,7 +100,7 @@ def target(exoplanet, dtype = 'nasa'):
             df = pd.read_csv(download_link)
             df.to_csv('data/eu.csv', index = False)
         else:
-            print('eu.csv is recent.')
+            print('eu.csv is less than 10 days old.')
             pass
     # Download NASA Data
     else:
@@ -106,47 +118,54 @@ def target(exoplanet, dtype = 'nasa'):
             print('nasa.csv does not exist, downloading...')
             df = pd.read_csv(download_link)
             df.to_csv('data/nasa.csv', index = False)
-        five_days_ago = datetime.now() - timedelta(days = 10)
+        ten_days_ago = datetime.now() - timedelta(days = 10)
         filetime = datetime.fromtimestamp(path.getctime('data/nasa.csv'))
-        if filetime < five_days_ago:
+        if filetime < ten_days_ago:
             print('nasa.csv is 10 days old, redownloading...')
             df = pd.read_csv(download_link)
             df.to_csv('data/nasa.csv', index = False)
         else:
-            print('nasa.csv is recent.')
+            print('nasa.csv is less than 10 days old.')
             pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Download MAST lightcurves
-    print('Downloading MAST Lightcurves...')
-    os.makedirs('Planet/'+exoplanet+'', exist_ok = True)    
-    lcfs = lk.search_lightcurvefile(exoplanet, mission='TESS').download_all() \
-        .PDCSAP_FLUX.stitch().remove_nans() \
-        ############ USER OPTIONS #############
-        # .remove_outliers(sigma=20, sigma_upper=4).flatten() \
-        # .fold(P, t0=t0).bin(bins=2001, method='median')
-    lcfs.to_fits(path='Planet/'+exoplanet+'/'+exoplanet+'.fits', overwrite=True)
+    if not os.path.exists('Planet/'+exoplanet+''):
+        print('Downloading MAST Lightcurves...')
+        os.makedirs('Planet/'+exoplanet+'', exist_ok = True)    
+        lcfs = lk.search_lightcurvefile(exoplanet, mission = 'TESS')         \
+        .download_all().PDCSAP_FLUX.stitch().remove_nans()                   
+        lcfs.to_fits(path='Planet/'+exoplanet+'/'+exoplanet+'.fits', 
+                                                               overwrite=True)
+    else:
+        print('MAST Lightcurves already exist..')
+        pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Extract Time series
-    print('Extracting the Time Series..')
-    fitsfile = 'Planet/'+exoplanet+'/'+exoplanet+'.fits'
-    with fits.open(fitsfile) as TESS_fits:
-        time = TESS_fits[1].data['TIME'] + 2457000
-        flux = TESS_fits[1].data['FLUX']
-        flux_err = TESS_fits[1].data['FLUX_ERR']
+    csvfile = 'Planet/'+exoplanet+'/'+exoplanet+'.csv'
+    if not os.path.exists(csvfile):
+        fitsfile = 'Planet/'+exoplanet+'/'+exoplanet+'.fits'
+        print('Extracting the Time Series..')
+        with fits.open(fitsfile) as TESS_fits:
+            time = TESS_fits[1].data['TIME'] + 2457000
+            flux = TESS_fits[1].data['FLUX']
+            flux_err = TESS_fits[1].data['FLUX_ERR']
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Extract all light curves to a single csv file
-    print('Writing csv file..')
-    write_dict = []
-    for i in range(len(time)):
-        write_dict.append({'Time': time[i] , 'Flux':flux[i], 
-                           'Flux err':flux_err[i]})   
-    csv_name = os.path.splitext(fitsfile)[0] + '.csv'
-
-    with open(csv_name, 'w') as f:
-        columns = ['Time', 'Flux', 'Flux err']
-        writer = csv.DictWriter(f, columns)
-        writer.writeheader()
-        writer.writerows(write_dict)
+        print('Writing csv file..')
+        write_dict = []
+        for i in range(len(time)):
+            write_dict.append({'Time': time[i] , 'Flux':flux[i], 
+                               'Flux err':flux_err[i]})   
+        csv_name = os.path.splitext(fitsfile)[0] + '.csv'
+    
+        with open(csv_name, 'w') as f:
+            columns = ['Time', 'Flux', 'Flux err']
+            writer = csv.DictWriter(f, columns)
+            writer.writeheader()
+            writer.writerows(write_dict)
+    else:
+        print('Lightcurves already extracted to csv..')
+        pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Find Target
     col_subset_eu = ['# name', 'orbital_period', 'orbital_period_error_max',
@@ -241,17 +260,21 @@ def target(exoplanet, dtype = 'nasa'):
     repack.to_csv(r'data/priors.csv', index = False, header = True)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Split the Light curves
-    print('Splitting the light curves...')
-    if dtype == 'eu':
-        t0, P = s.loc['tzero_tr'], s.loc['orbital_period']
+    curvefile = 'Planet/'+exoplanet+'/split_curve_0.csv'
+    if not os.path.exists(curvefile):
+        print('Splitting the light curves...')
+        if dtype == 'eu':
+            t0, P = s.loc['tzero_tr'], s.loc['orbital_period']
+        else:
+            t0, P, t14 = s.loc['pl_tranmid'] - 247000, s.loc['pl_orbper'], \
+                                s.loc['pl_trandur']*24
+        csvfile = '/data/cmindoza/TransitFit/Planet/'+exoplanet+     \
+               '/'+exoplanet+'.csv'
+                # Needs to return how many curves have been output
+        tf.split_lightcurve_file(csvfile, t0, P, t14)
     else:
-        t0, P, tran_dur = s.loc['pl_tranmid'] - 247000, s.loc['pl_orbper'], \
-                            s.loc['pl_trandur']*24
-    csvfile = '/data/cmindoza/TransitFit/Planet/'+exoplanet+     \
-           '/'+exoplanet+'.csv'
-            # Needs to return how many curves have been output
-    #tf.split_lightcurve_file(csvfile, t0, P)
-    curves = 1
+        print('Lightcurves already split..')
+        pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Set the Data Paths
     cols = ['Path', 'Telescope', 'Filter', 'Epochs', 'Detrending']
@@ -309,12 +332,14 @@ def target(exoplanet, dtype = 'nasa'):
     print(repack)
     return host_T, host_z, host_r, host_logg
 
-# Check Target Data
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-
-def main(exoplanet):
+def main(exoplanet, curves):
     
-    host_T, host_z, host_r, host_logg = target(exoplanet)
+    host_T, host_z, host_r, host_logg = target(exoplanet, curves)
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Paths to data, priors, and filter info:
+    data = 'data/data_paths.csv'
+    priors = 'data/priors.csv'
+    filters = 'data/TESS_filter.csv'
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Outputs
     results_output_folder = 'Planet/'+exoplanet+'/output_parameters'
@@ -322,13 +347,12 @@ def main(exoplanet):
     plot_folder = 'Planet/'+exoplanet+'/plots'
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Run the retrieval
-    # results = tf.run_retrieval(data, priors, filters, detrending, host_T=host_T,
-    #                            host_logg = host_logg, host_z = host_z, 
-    #                            host_r=host_r[0], dynesty_sample = 'rslice',
-    #                            fitting_mode = 'folded', fit_ttv = True,
-    #                            results_output_folder = results_output_folder,
-    #                            final_lightcurve_folder = fitted_lightcurve_folder,
-    #                            plot_folder = plot_folder)
-    
-main('WASP-43 b')                       
+    results = tf.run_retrieval(data, priors, filters, detrending, host_T=host_T,
+                                host_logg = host_logg, host_z = host_z, 
+                                host_r=host_r[0], dynesty_sample = 'rslice',
+                                fitting_mode = 'folded', fit_ttv = True,
+                                results_output_folder = results_output_folder,
+                                final_lightcurve_folder = fitted_lightcurve_folder,
+                                plot_folder = plot_folder)
 
+main('WASP-43 b', 1)         
