@@ -1,11 +1,14 @@
-import os
-import pandas as pd
+from astropy.io import fits
+#import transitfit as tf
 import numpy as np
+import pandas as pd
+import csv
+import os
 from os import path
 from datetime import datetime, timedelta
+import lightkurve as lk
 
-
-def target(exoplanet, curves = 1, dtype = 'eu'):
+def target(exoplanet, dtype = 'nasa'):
     '''
     Generates the priors and host star variables for a chosen target.
     Downloads exoplanet archives every 10 days and stores in /data.
@@ -95,7 +98,7 @@ def target(exoplanet, curves = 1, dtype = 'eu'):
             'pl_name,pl_orbper,pl_orbpererr1,pl_orbsmax,pl_orbsmaxerr1,'    +\
             'pl_radj,pl_radjerr1,pl_orbeccen,pl_orbeccenerr1,'              +\
             'st_teff,st_tefferr1,st_rad,st_raderr1,st_mass,st_masserr1,'    +\
-            'st_met,st_meterr1,pl_tranmid,pl_tranmiderr1,'                  +\
+            'st_met,st_meterr1,pl_tranmid,pl_tranmiderr1,pl_trandur,'       +\
             'pl_orbincl,pl_orbinclerr1,pl_orblper,pl_orblpererr1'           +\
             '+from+ps&format=csv'
         
@@ -113,20 +116,38 @@ def target(exoplanet, curves = 1, dtype = 'eu'):
             print('nasa.csv is recent.')
             pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # Set the Data Paths
-    cols = ['Path', 'Telescope', 'Filter', 'Epochs', 'Detrending']
-    df = pd.DataFrame(columns = cols)  
-    for i in range(curves):
-        ############ UPDATE PATH TO LIGHTCURVES HERE #############
-        # df = df.append([{'Path':'/Your/Path/Here/'
-        df = df.append([{'Path':'/data/cmindoza/TransitFit/Planet/'
-        ############ UPDATE PATH TO LIGHTCURVES HERE #############
-                      +exoplanet+'/split_curve_'+str(i)+'.csv'}
-                        ], ignore_index = True)
-        df['Telescope'], df['Filter'], df['Detrending'] = 0, 0, 0
-        df['Epochs'] = range(0, len(df))
-    df.to_csv(r'data/data_paths.csv', index = False, header = True)
-    print('Assigned data paths for '+exoplanet+'..')
+    # Download MAST lightcurves
+    print('Downloading MAST Lightcurves...')
+    os.makedirs('Planet/'+exoplanet+'', exist_ok = True)    
+    lcfs = lk.search_lightcurvefile(exoplanet, mission='TESS').download_all() \
+        .PDCSAP_FLUX.stitch().remove_nans() \
+        ############ USER OPTIONS #############
+        # .remove_outliers(sigma=20, sigma_upper=4).flatten() \
+        # .fold(P, t0=t0).bin(bins=2001, method='median')
+    lcfs.to_fits(path='Planet/'+exoplanet+'/'+exoplanet+'.fits', overwrite=True)
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Extract Time series
+    print('Extracting the Time Series..')
+    fitsfile = 'Planet/'+exoplanet+'/'+exoplanet+'.fits'
+    with fits.open(fitsfile) as TESS_fits:
+        time = TESS_fits[1].data['TIME'] + 2457000
+        flux = TESS_fits[1].data['FLUX']
+        flux_err = TESS_fits[1].data['FLUX_ERR']
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Extract all light curves to a single csv file
+    print('Writing csv file..')
+    write_dict = []
+    for i in range(len(time)):
+        write_dict.append({'Time': time[i] , 'Flux':flux[i], 
+                           'Flux err':flux_err[i]})   
+    csv_name = os.path.splitext(fitsfile)[0] + '.csv'
+
+    with open(csv_name, 'w') as f:
+        columns = ['Time', 'Flux', 'Flux err']
+        writer = csv.DictWriter(f, columns)
+        writer.writeheader()
+        writer.writerows(write_dict)
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Find Target
     col_subset_eu = ['# name', 'orbital_period', 'orbital_period_error_max',
                     'semi_major_axis', 'semi_major_axis_error_max',
@@ -185,7 +206,6 @@ def target(exoplanet, curves = 1, dtype = 'eu'):
         host_T = (s.loc['st_teff'], s.loc['st_tefferr1'])
         host_z = (s.loc['st_met'], s.loc['st_meterr1'])
         host_r = (s.loc['st_rad'], s.loc['st_raderr1'])
-        #host_logg = (s.loc['st_logg'], s.loc['st_loggerr1'])
         host_logg = ( logg, err_logg )
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Assign Exoplanet Priors to TransitFit
@@ -201,11 +221,7 @@ def target(exoplanet, curves = 1, dtype = 'eu'):
                      s.loc['inclination_error_max'], ''],
                 ['rp', 'uniform',  
                      0.8*radius_const*s.loc['radius']/s.loc['star_radius'], 
-                     1.2*radius_const*s.loc['radius']/s.loc['star_radius'], 0],
-                # ['ecc', 'fixed', s.loc['eccentricity'], 
-                #      s.loc['eccentricity_error_max'], ''],
-                # ['w', 'fixed', 90 , '' , '']]
-               ]
+                     1.2*radius_const*s.loc['radius']/s.loc['star_radius'], 0]]
     elif dtype == 'nasa':
         cols = [['P', 'gaussian', s.loc['pl_orbper'], 
                      s.loc['pl_orbpererr1'], ''],
@@ -217,17 +233,40 @@ def target(exoplanet, curves = 1, dtype = 'eu'):
                      s.loc['pl_orbinclerr1'], ''],
                 ['rp', 'uniform',  
                      0.8*radius_const*s.loc['pl_radj']/s.loc['st_rad'], 
-                     1.2*radius_const*s.loc['pl_radj']/s.loc['st_rad'], 0],
-                # ['ecc', 'fixed', s.loc['pl_orbeccen'], 
-                #      s.loc['pl_orbeccenerr1'], ''],
-                # ['w', 'fixed', s.loc['pl_orblper'], 
-                #      s.loc['pl_orblpererr1'] , '']
-               ]
+                     1.2*radius_const*s.loc['pl_radj']/s.loc['st_rad'], 0]]
     repack = pd.DataFrame(cols, columns = ['Parameter', 'Distribution', 
                                      'Input_A', 'Input_B', 'Filter'])
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Save the priors
     repack.to_csv(r'data/priors.csv', index = False, header = True)
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Split the Light curves
+    print('Splitting the light curves...')
+    if dtype == 'eu':
+        t0, P = s.loc['tzero_tr'], s.loc['orbital_period']
+    else:
+        t0, P, tran_dur = s.loc['pl_tranmid'] - 247000, s.loc['pl_orbper'], \
+                            s.loc['pl_trandur']*24
+    csvfile = '/data/cmindoza/TransitFit/Planet/'+exoplanet+     \
+           '/'+exoplanet+'.csv'
+            # Needs to return how many curves have been output
+    #tf.split_lightcurve_file(csvfile, t0, P)
+    curves = 1
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Set the Data Paths
+    cols = ['Path', 'Telescope', 'Filter', 'Epochs', 'Detrending']
+    df = pd.DataFrame(columns = cols)  
+    for i in range(curves):
+        ############ UPDATE PATH TO LIGHTCURVES HERE #############
+        # df = df.append([{'Path':'/Your/Path/Here/'
+        df = df.append([{'Path':'/data/cmindoza/TransitFit/Planet/'
+        ############ UPDATE PATH TO LIGHTCURVES HERE #############
+                      +exoplanet+'/split_curve_'+str(i)+'.csv'}
+                        ], ignore_index = True)
+        df['Telescope'], df['Filter'], df['Detrending'] = 0, 0, 0
+        df['Epochs'] = range(0, len(df))
+    df.to_csv(r'data/data_paths.csv', index = False, header = True)
+    print('Assigned data paths for '+exoplanet+'..')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # For printing variables only
     if dtype == 'eu':
@@ -242,9 +281,6 @@ def target(exoplanet, curves = 1, dtype = 'eu'):
                 ['rp', 'uniform',  
                      0.8*radius_const*s.loc['radius']/s.loc['star_radius'], 
                      1.2*radius_const*s.loc['radius']/s.loc['star_radius'], 0],
-                # ['ecc', 'fixed', s.loc['eccentricity'], 
-                #      s.loc['eccentricity_error_max'], ''],
-                # ['w', 'fixed', 90 , '' , ''],
                 ['host_T', 'fixed', host_T[0] , host_T[1] , ''],
                 ['host_z', 'fixed', host_z[0] , host_z[1] , ''],
                 ['host_r', 'fixed', host_r[0] , host_r[1] , ''],
@@ -261,10 +297,6 @@ def target(exoplanet, curves = 1, dtype = 'eu'):
                 ['rp', 'uniform',  
                      0.8*radius_const*s.loc['pl_radj']/s.loc['st_rad'], 
                      1.2*radius_const*s.loc['pl_radj']/s.loc['st_rad'], 0],
-                # ['ecc', 'fixed', s.loc['pl_orbeccen'], 
-                #      s.loc['pl_orbeccenerr1'], ''],
-                # ['w', 'fixed', s.loc['pl_orblper'], 
-                     # s.loc['pl_orblpererr1'] , ''],
                 ['host_T', 'fixed', host_T[0] , host_T[1] , ''],
                 ['host_z', 'fixed', host_z[0] , host_z[1] , ''],
                 ['host_r', 'fixed', host_r[0] , host_r[1] , ''],
@@ -273,19 +305,30 @@ def target(exoplanet, curves = 1, dtype = 'eu'):
                                      'Input_A', 'Input_B', 'Filter'])
     repack = repack.to_string(index = False)
     print('Assigned the following values for '+exoplanet+
-                                                'and passing to TransitFit..')
+                                                ' and passing to TransitFit..')
     print(repack)
-    if dtype == 'eu':
-        t0, P = s.loc['tzero_tr'], s.loc['orbital_period']
-    else:
-        t0, P = s.loc['pl_tranmid'], s.loc['pl_orbper']
-    return host_T, host_z, host_r, host_logg, t0, P
+    return host_T, host_z, host_r, host_logg
 
+# Check Target Data
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
-# Host Info
-exoplanet, curves, dtype = 'WASP-43 b', 27, 'eu'
-host_T, host_z, host_r, host_logg, t0, P  = target(exoplanet, curves, dtype)
+def main(exoplanet):
+    
+    host_T, host_z, host_r, host_logg = target(exoplanet)
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Outputs
+    results_output_folder = 'Planet/'+exoplanet+'/output_parameters'
+    fitted_lightcurve_folder = 'Planet/'+exoplanet+'/fitted_lightcurves'
+    plot_folder = 'Planet/'+exoplanet+'/plots'
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Run the retrieval
+    # results = tf.run_retrieval(data, priors, filters, detrending, host_T=host_T,
+    #                            host_logg = host_logg, host_z = host_z, 
+    #                            host_r=host_r[0], dynesty_sample = 'rslice',
+    #                            fitting_mode = 'folded', fit_ttv = True,
+    #                            results_output_folder = results_output_folder,
+    #                            final_lightcurve_folder = fitted_lightcurve_folder,
+    #                            plot_folder = plot_folder)
+    
+main('WASP-43 b')                       
 
-# Paths to data, priors, and filter info:
-data = 'data/data_paths.csv'
-priors = 'data/priors.csv'
