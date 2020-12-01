@@ -1,5 +1,11 @@
 # target
 
+## Dependancies
+        lightkurve
+        transitfit
+
+
+
 Generates the priors and host star variables for a chosen target.
 Requires a sub-directory /data/ to store exoplanet csv files from the archive.
 Target lightcurve files must be contained within a folder by the name of its target.
