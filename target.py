@@ -6,6 +6,7 @@ from astropy.io import fits
 from csv import DictWriter
 from numpy import log, log10, sqrt
 from pandas import DataFrame, read_csv
+from shutil import rmtree
 
 def target(exoplanet, curves = 1, dtype = 'nasa'):
     '''
@@ -131,10 +132,11 @@ def target(exoplanet, curves = 1, dtype = 'nasa'):
         makedirs('Planet/'+exoplanet+'', exist_ok = True)   
         print('Downloading MAST Lightcurves...')
         lcfs = search_lightcurvefile(exoplanet, mission = 'TESS')         \
-        .download_all().PDCSAP_FLUX.stitch().remove_nans()        
+        .download_all(download_dir = 'Planet/'+exoplanet+'')              \
+        .PDCSAP_FLUX.stitch().remove_nans()             
         lcfs.to_fits(path='Planet/'+exoplanet+'/'+exoplanet+'.fits', 
                                                                overwrite=True)
-        #lcfs.fold(period = P, t0 = t0).scatter(s = 0.1)
+        rmtree('Planet/'+exoplanet+'/mastDownload')
     else:
         print('MAST Lightcurves already exist..')
         pass
@@ -279,9 +281,9 @@ def target(exoplanet, curves = 1, dtype = 'nasa'):
     for i in range(curves):
         ############ UPDATE PATH TO LIGHTCURVES HERE #############
         # df = df.append([{'Path':'/Your/Path/Here/'
-        df = df.append([{'Path':'/data/cmindoza/TransitFit/Planet/'
+        df = df.append([{'Path':'/data/cmindoza/TransitFit'
         ############ UPDATE PATH TO LIGHTCURVES HERE #############
-                      +exoplanet+'/split_curve_'+str(i)+'.csv'}
+                      +'/Planet/'+exoplanet+'/split_curve_'+str(i)+'.csv'}
                         ], ignore_index = True)
         df['Telescope'], df['Filter'], df['Detrending'] = 0, 0, 0
         df['Epochs'] = range(0, len(df))
