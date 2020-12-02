@@ -1,12 +1,12 @@
-from astropy.io import fits
-import transitfit as tf
-import lightkurve as lk
-import numpy as np
-import pandas as pd
-import csv
-import os
-from os import path
+from transitfit import split_lightcurve_file, run_retrieval
+from lightkurve import search_lightcurvefile
 from datetime import datetime, timedelta
+from os import path, makedirs
+from astropy.io import fits
+from csv import DictWriter
+from numpy import log, log10, sqrt
+from pandas import DataFrame, read_csv
+
 
 def target(exoplanet, curves = 1, dtype = 'nasa'):
     '''
@@ -83,21 +83,20 @@ def target(exoplanet, curves = 1, dtype = 'nasa'):
     '''
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Download EU Data
-    os.makedirs('data', exist_ok = True)
-    
+    makedirs('data', exist_ok = True) 
     if dtype == 'eu':
         download_link = 'http://exoplanet.eu/catalog/csv'
         
-        if not os.path.exists('data/eu.csv'):
+        if not path.exists('data/eu.csv'):
             print('eu.csv does not exist, downloading...')
-            df = pd.read_csv(download_link)
+            df = read_csv(download_link)
             df.to_csv('data/eu.csv', index = False)
             
         ten_days_ago = datetime.now() - timedelta(days = 10)
         filetime = datetime.fromtimestamp(path.getctime('data/eu.csv'))
         if filetime < ten_days_ago:
             print('eu.csv is 10 days old, redownloading...')
-            df = pd.read_csv(download_link)
+            df = read_csv(download_link)
             df.to_csv('data/eu.csv', index = False)
         else:
             print('eu.csv is less than 10 days old.')
@@ -114,35 +113,36 @@ def target(exoplanet, curves = 1, dtype = 'nasa'):
             'pl_orbincl,pl_orbinclerr1,pl_orblper,pl_orblpererr1'           +\
             '+from+ps&format=csv'
         
-        if not os.path.exists('data/nasa.csv'):
+        if not path.exists('data/nasa.csv'):
             print('nasa.csv does not exist, downloading...')
-            df = pd.read_csv(download_link)
+            df = read_csv(download_link)
             df.to_csv('data/nasa.csv', index = False)
         ten_days_ago = datetime.now() - timedelta(days = 10)
         filetime = datetime.fromtimestamp(path.getctime('data/nasa.csv'))
         if filetime < ten_days_ago:
             print('nasa.csv is 10 days old, redownloading...')
-            df = pd.read_csv(download_link)
+            df = read_csv(download_link)
             df.to_csv('data/nasa.csv', index = False)
         else:
             print('nasa.csv is less than 10 days old.')
             pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Download MAST lightcurves
-    if not os.path.exists('Planet/'+exoplanet+''):
+    if not path.exists('Planet/'+exoplanet+''):
+        makedirs('Planet/'+exoplanet+'', exist_ok = True)   
         print('Downloading MAST Lightcurves...')
-        os.makedirs('Planet/'+exoplanet+'', exist_ok = True)    
-        lcfs = lk.search_lightcurvefile(exoplanet, mission = 'TESS')         \
-        .download_all().PDCSAP_FLUX.stitch().remove_nans()                   
+        lcfs = search_lightcurvefile(exoplanet, mission = 'TESS')         \
+        .download_all().PDCSAP_FLUX.stitch().remove_nans()        
         lcfs.to_fits(path='Planet/'+exoplanet+'/'+exoplanet+'.fits', 
                                                                overwrite=True)
+        #lcfs.fold(period = P, t0 = t0).scatter(s = 0.1)
     else:
         print('MAST Lightcurves already exist..')
         pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Extract Time series
     csvfile = 'Planet/'+exoplanet+'/'+exoplanet+'.csv'
-    if not os.path.exists(csvfile):
+    if not path.exists(csvfile):
         fitsfile = 'Planet/'+exoplanet+'/'+exoplanet+'.fits'
         print('Extracting the Time Series..')
         with fits.open(fitsfile) as TESS_fits:
@@ -156,11 +156,11 @@ def target(exoplanet, curves = 1, dtype = 'nasa'):
         for i in range(len(time)):
             write_dict.append({'Time': time[i] , 'Flux':flux[i], 
                                'Flux err':flux_err[i]})   
-        csv_name = os.path.splitext(fitsfile)[0] + '.csv'
+        csv_name = path.splitext(fitsfile)[0] + '.csv'
     
         with open(csv_name, 'w') as f:
             columns = ['Time', 'Flux', 'Flux err']
-            writer = csv.DictWriter(f, columns)
+            writer = DictWriter(f, columns)
             writer.writeheader()
             writer.writerows(write_dict)
     else:
@@ -179,13 +179,13 @@ def target(exoplanet, curves = 1, dtype = 'nasa'):
                     'star_mass', 'star_mass_error_max',
                     'star_metallicity', 'star_metallicity_error_max']
     if dtype == 'eu':
-        csv_file = pd.read_csv('data/eu.csv', index_col = '# name',  
+        csv_file = read_csv('data/eu.csv', index_col = '# name',  
                                usecols = col_subset_eu)
     elif dtype == 'nasa':
-        csv_file = pd.read_csv('data/nasa.csv', index_col = 'pl_name')  
+        csv_file = read_csv('data/nasa.csv', index_col = 'pl_name')  
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Pick Out Chosen Exoplanet Priors
-    df = pd.DataFrame(csv_file)
+    df = DataFrame(csv_file)
     df = df.loc[[exoplanet]] 
     s = df.mean() # Takes the mean of values if multiple entries
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -200,10 +200,10 @@ def target(exoplanet, curves = 1, dtype = 'nasa'):
         r = r_sun*s.loc['star_radius']
         err_r = r_sun*s.loc['star_radius_error_max']
         g = m * G * r ** -2 * 100
-        err_g = G/(r ** 2) * np.sqrt(err_m ** 2 + 
+        err_g = G/(r ** 2) * sqrt(err_m ** 2 + 
                                      (4 * m**2 * err_r ** 2)/r**2) * 100
-        logg = np.log10(g)
-        err_logg = err_g / (g * np.log(10))
+        logg = log10(g)
+        err_logg = err_g / (g * log(10))
         
         host_T = (s.loc['star_teff'], s.loc['star_teff_error_max'])
         host_z = (s.loc['star_metallicity'], 
@@ -217,10 +217,10 @@ def target(exoplanet, curves = 1, dtype = 'nasa'):
         r = r_sun*s.loc['st_rad']
         err_r = r_sun*s.loc['st_raderr1']
         g = m * G * r ** -2 * 100
-        err_g = G/(r ** 2) * np.sqrt(err_m ** 2 + 
+        err_g = G/(r ** 2) * sqrt(err_m ** 2 + 
                                      (4 * m**2 * err_r ** 2)/r**2) * 100
-        logg = np.log10(g)
-        err_logg = err_g / (g * np.log(10))
+        logg = log10(g)
+        err_logg = err_g / (g * log(10))
         
         host_T = (s.loc['st_teff'], s.loc['st_tefferr1'])
         host_z = (s.loc['st_met'], s.loc['st_meterr1'])
@@ -253,7 +253,7 @@ def target(exoplanet, curves = 1, dtype = 'nasa'):
                 ['rp', 'uniform',  
                      0.8*radius_const*s.loc['pl_radj']/s.loc['st_rad'], 
                      1.2*radius_const*s.loc['pl_radj']/s.loc['st_rad'], 0]]
-    repack = pd.DataFrame(cols, columns = ['Parameter', 'Distribution', 
+    repack = DataFrame(cols, columns = ['Parameter', 'Distribution', 
                                      'Input_A', 'Input_B', 'Filter'])
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Save the priors
@@ -261,7 +261,7 @@ def target(exoplanet, curves = 1, dtype = 'nasa'):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Split the Light curves
     curvefile = 'Planet/'+exoplanet+'/split_curve_0.csv'
-    if not os.path.exists(curvefile):
+    if not path.exists(curvefile):
         print('Splitting the light curves...')
         if dtype == 'eu':
             t0, P = s.loc['tzero_tr'], s.loc['orbital_period']
@@ -270,15 +270,14 @@ def target(exoplanet, curves = 1, dtype = 'nasa'):
                                 s.loc['pl_trandur']*24
         csvfile = '/data/cmindoza/TransitFit/Planet/'+exoplanet+     \
                '/'+exoplanet+'.csv'
-                # Needs to return how many curves have been output
-        tf.split_lightcurve_file(csvfile, t0, P, t14)
+        split_lightcurve_file(csvfile, t0, P, t14)
     else:
         print('Lightcurves already split..')
         pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Set the Data Paths
     cols = ['Path', 'Telescope', 'Filter', 'Epochs', 'Detrending']
-    df = pd.DataFrame(columns = cols)  
+    df = DataFrame(columns = cols)  
     for i in range(curves):
         ############ UPDATE PATH TO LIGHTCURVES HERE #############
         # df = df.append([{'Path':'/Your/Path/Here/'
@@ -324,7 +323,7 @@ def target(exoplanet, curves = 1, dtype = 'nasa'):
                 ['host_z', 'fixed', host_z[0] , host_z[1] , ''],
                 ['host_r', 'fixed', host_r[0] , host_r[1] , ''],
                 ['host_logg', 'fixed', host_logg[0] , host_logg[1] , '']]
-    repack = pd.DataFrame(cols, columns = ['Parameter', 'Distribution', 
+    repack = DataFrame(cols, columns = ['Parameter', 'Distribution', 
                                      'Input_A', 'Input_B', 'Filter'])
     repack = repack.to_string(index = False)
     print('Assigned the following values for '+exoplanet+
@@ -349,7 +348,7 @@ def main(exoplanet, curves):
     plot_folder = 'Planet/'+exoplanet+'/plots'
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Run the retrieval
-    results = tf.run_retrieval(data, priors, filters, detrending, host_T=host_T,
+    results = run_retrieval(data, priors, filters, detrending, host_T=host_T,
                                 host_logg = host_logg, host_z = host_z, 
                                 host_r=host_r[0], dynesty_sample = 'rslice',
                                 fitting_mode = 'folded', fit_ttv = True,
@@ -358,3 +357,5 @@ def main(exoplanet, curves):
                                 plot_folder = plot_folder)
 
 main('WASP-43 b', 1)
+                       
+
