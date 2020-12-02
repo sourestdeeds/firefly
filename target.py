@@ -1,7 +1,7 @@
 from transitfit import split_lightcurve_file, run_retrieval
 from lightkurve import search_lightcurvefile
 from datetime import datetime, timedelta
-from os import path, makedirs, remove
+from os import path, makedirs, remove, getcwd
 from astropy.io import fits
 from csv import DictWriter
 from numpy import log, log10, sqrt
@@ -280,10 +280,7 @@ def target(exoplanet, curves = 1, dtype = 'nasa'):
     cols = ['Path', 'Telescope', 'Filter', 'Epochs', 'Detrending']
     df = DataFrame(columns = cols)  
     for i in range(curves):
-        ############ UPDATE PATH TO LIGHTCURVES HERE #############
-        # df = df.append([{'Path':'/Your/Path/Here/'
-        df = df.append([{'Path':'/data/cmindoza/TransitFit'
-        ############ UPDATE PATH TO LIGHTCURVES HERE #############
+        df = df.append([{'Path':getcwd()
                       +'/Planet/'+exoplanet+'/split_curve_'+str(i)+'.csv'}
                         ], ignore_index = True)
         df['Telescope'], df['Filter'], df['Detrending'] = 0, 0, 0
@@ -337,7 +334,7 @@ def main(exoplanet, curves):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Override if data not present - Guess!
     # host_T = ( , )
-    # host_z = (0.1 , 0.1)
+    host_z = (0.1 , 0.1)
     # host_r = ( , )
     # host_logg = ( , )
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
