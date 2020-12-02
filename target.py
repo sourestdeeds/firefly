@@ -7,7 +7,6 @@ from csv import DictWriter
 from numpy import log, log10, sqrt
 from pandas import DataFrame, read_csv
 
-
 def target(exoplanet, curves = 1, dtype = 'nasa'):
     '''
     A target data retriever for confirmed/candidate TESS exoplanets.
@@ -268,8 +267,7 @@ def target(exoplanet, curves = 1, dtype = 'nasa'):
         else:
             t0, P, t14 = s.loc['pl_tranmid'] - 247000, s.loc['pl_orbper'], \
                                 s.loc['pl_trandur']*24
-        csvfile = '/data/cmindoza/TransitFit/Planet/'+exoplanet+     \
-               '/'+exoplanet+'.csv'
+        csvfile = 'Planet/'+exoplanet+'/'+exoplanet+'.csv'
         split_lightcurve_file(csvfile, t0, P, t14)
     else:
         print('Lightcurves already split..')
@@ -332,13 +330,12 @@ def target(exoplanet, curves = 1, dtype = 'nasa'):
     return host_T, host_z, host_r, host_logg
 
 def main(exoplanet, curves):
-    
     host_T, host_z, host_r, host_logg = target(exoplanet, curves)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Paths to data, priors, and filter info:
     data = 'data/data_paths.csv'
     priors = 'data/priors.csv'
-    filters = 'data/TESS_filter.csv'
+    filters = 'data/TESS_filter_path.csv'
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     detrending = [['nth order', 2]]
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -348,14 +345,12 @@ def main(exoplanet, curves):
     plot_folder = 'Planet/'+exoplanet+'/plots'
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Run the retrieval
-    results = run_retrieval(data, priors, filters, detrending, host_T=host_T,
-                                host_logg = host_logg, host_z = host_z, 
-                                host_r=host_r[0], dynesty_sample = 'rslice',
-                                fitting_mode = 'folded', fit_ttv = True,
-                                results_output_folder = results_output_folder,
-                                final_lightcurve_folder = fitted_lightcurve_folder,
-                                plot_folder = plot_folder)
+    run_retrieval(data, priors, filters, detrending, host_T=host_T,
+                  host_logg = host_logg, host_z = host_z, 
+                  host_r=host_r[0], dynesty_sample = 'rslice',
+                  fitting_mode = 'folded', fit_ttv = True,
+                  results_output_folder = results_output_folder,
+                  final_lightcurve_folder = fitted_lightcurve_folder,
+                  plot_folder = plot_folder)
 
 main('WASP-43 b', 1)
-                       
-
