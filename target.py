@@ -1,7 +1,7 @@
 from transitfit import split_lightcurve_file, run_retrieval
 from lightkurve import search_lightcurvefile
 from datetime import datetime, timedelta
-from os import path, makedirs
+from os import path, makedirs, remove
 from astropy.io import fits
 from csv import DictWriter
 from numpy import log, log10, sqrt
@@ -164,6 +164,7 @@ def target(exoplanet, curves = 1, dtype = 'nasa'):
             writer = DictWriter(f, columns)
             writer.writeheader()
             writer.writerows(write_dict)
+        remove('Planet/'+exoplanet+'/'+exoplanet+'.fits')
     else:
         print('Lightcurves already extracted to csv..')
         pass
@@ -334,6 +335,12 @@ def target(exoplanet, curves = 1, dtype = 'nasa'):
 def main(exoplanet, curves):
     host_T, host_z, host_r, host_logg = target(exoplanet, curves)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Override if data not present - Guess!
+    # host_T = ( , )
+    # host_z = (0.1 , 0.1)
+    # host_r = ( , )
+    # host_logg = ( , )
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Paths to data, priors, and filter info:
     data = 'data/data_paths.csv'
     priors = 'data/priors.csv'
@@ -355,4 +362,4 @@ def main(exoplanet, curves):
                   final_lightcurve_folder = fitted_lightcurve_folder,
                   plot_folder = plot_folder)
 
-main('WASP-43 b', 1)
+main('WASP-43 b', 149)
