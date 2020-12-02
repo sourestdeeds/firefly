@@ -362,4 +362,4 @@ def main(exoplanet, curves):
                   final_lightcurve_folder = fitted_lightcurve_folder,
                   plot_folder = plot_folder)
 
-main('WASP-43 b', 149)
+main('WASP-43 b', 1)
