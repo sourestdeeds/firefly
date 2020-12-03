@@ -192,8 +192,8 @@ def target(exoplanet, curves = 1, dtype = 'nasa'):
     s = df.mean() # Takes the mean of values if multiple entries
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Assign Host data to Transitfit
-    G = 6.674e-11
-    m_sun = 1.989e30
+    G = 6.67430e-11
+    m_sun = 1.98847e30
     r_sun = 6.957e8
     if dtype == 'eu':
         # Host Logg Calc
@@ -281,7 +281,7 @@ def target(exoplanet, curves = 1, dtype = 'nasa'):
     df = DataFrame(columns = cols)  
     for i in range(curves):
         df = df.append([{'Path':getcwd()
-                      +'/Planet/'+exoplanet+'/split_curve_'+str(i)+'.csv'}
+                         +'/Planet/'+exoplanet+'/split_curve_'+str(i)+'.csv'}
                         ], ignore_index = True)
         df['Telescope'], df['Filter'], df['Detrending'] = 0, 0, 0
         df['Epochs'] = range(0, len(df))
@@ -334,7 +334,7 @@ def main(exoplanet, curves):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Override if data not present - Guess!
     # host_T = ( , )
-    host_z = (0.1 , 0.1)
+    # host_z = ( , )
     # host_r = ( , )
     # host_logg = ( , )
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -359,4 +359,4 @@ def main(exoplanet, curves):
                   final_lightcurve_folder = fitted_lightcurve_folder,
                   plot_folder = plot_folder)
 
-main('WASP-43 b', 1)
+main('WASP-91 b', 1)
