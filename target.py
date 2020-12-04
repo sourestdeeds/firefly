@@ -271,12 +271,12 @@ def target(exoplanet, curves = 1, dtype = 'nasa'):
     if not path.exists(curvefile):
         print('Splitting the light curves...')
         if dtype == 'eu':
-            t0, P = s.loc['tzero_tr'] - 247000, s.loc['orbital_period']
+            t0, P = s.loc['tzero_tr'] - 2457000, s.loc['orbital_period']
             csvfile = 'Planet/'+exoplanet+'/'+exoplanet+'.csv'
             split_lightcurve_file(csvfile, t0, P)
         else:
-            t0, P, t14 = s.loc['pl_tranmid'] - 247000, s.loc['pl_orbper'], \
-                                s.loc['pl_trandur']*24
+            t0, P, t14 = s.loc['pl_tranmid'] - 2457000, s.loc['pl_orbper'], \
+                                s.loc['pl_trandur']*24*60
             csvfile = 'Planet/'+exoplanet+'/'+exoplanet+'.csv'
             split_lightcurve_file(csvfile, t0, P, t14)
     else:
@@ -288,7 +288,7 @@ def target(exoplanet, curves = 1, dtype = 'nasa'):
     df = DataFrame(columns = cols)  
     for i in range(curves):
         df = df.append([{'Path':getcwd()
-                         +'/Planet/'+exoplanet+'/split_curve_'+str(i)+'.csv'}
+                      +'/Planet/'+exoplanet+'/split_curve_'+str(i)+'.csv'}
                         ], ignore_index = True)
         df['Telescope'], df['Filter'], df['Detrending'] = 0, 0, 0
         df['Epochs'] = range(0, len(df))
@@ -341,7 +341,7 @@ def main(exoplanet, curves):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Override if data not present - Guess!
     # host_T = ( , )
-    # host_z = (0.1 , 0.1)
+    # host_z = ( , )
     # host_r = ( , )
     # host_logg = ( , )
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
