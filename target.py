@@ -7,6 +7,7 @@ from csv import DictWriter
 from numpy import log, log10, sqrt
 from pandas import DataFrame, read_csv
 from shutil import rmtree
+from sys import exit
 
 def target(exoplanet, curves = 1, dtype = 'nasa'):
     '''
@@ -128,18 +129,22 @@ def target(exoplanet, curves = 1, dtype = 'nasa'):
             pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Download MAST lightcurves
-    if not path.exists('Planet/'+exoplanet+''):
-        makedirs('Planet/'+exoplanet+'', exist_ok = True)   
-        print('Downloading MAST Lightcurves...')
-        lcfs = search_lightcurvefile(exoplanet, mission = 'TESS')         \
-        .download_all(download_dir = 'Planet/'+exoplanet+'')              \
-        .PDCSAP_FLUX.stitch().remove_nans()             
-        lcfs.to_fits(path='Planet/'+exoplanet+'/'+exoplanet+'.fits', 
+    try:
+        if not path.exists('Planet/'+exoplanet+''):
+            makedirs('Planet/'+exoplanet+'', exist_ok = True)   
+            print('Downloading MAST Lightcurves...')
+            lcfs = search_lightcurvefile(exoplanet, mission = 'TESS')         \
+            .download_all(download_dir = 'Planet/'+exoplanet+'')              \
+            .PDCSAP_FLUX.stitch().remove_nans()             
+            lcfs.to_fits(path='Planet/'+exoplanet+'/'+exoplanet+'.fits', 
                                                                overwrite=True)
-        rmtree('Planet/'+exoplanet+'/mastDownload')
-    else:
-        print('MAST Lightcurves already exist..')
-        pass
+            rmtree('Planet/'+exoplanet+'/mastDownload')
+        else:
+            print('MAST Lightcurves already exist..')
+            pass
+    except Exception:
+        rmtree('Planet/'+exoplanet+'')
+        exit('Currently only TESS targets are supported.')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Extract Time series
     csvfile = 'Planet/'+exoplanet+'/'+exoplanet+'.csv'
@@ -266,12 +271,14 @@ def target(exoplanet, curves = 1, dtype = 'nasa'):
     if not path.exists(curvefile):
         print('Splitting the light curves...')
         if dtype == 'eu':
-            t0, P = s.loc['tzero_tr'], s.loc['orbital_period']
+            t0, P = s.loc['tzero_tr'] - 247000, s.loc['orbital_period']
+            csvfile = 'Planet/'+exoplanet+'/'+exoplanet+'.csv'
+            split_lightcurve_file(csvfile, t0, P)
         else:
             t0, P, t14 = s.loc['pl_tranmid'] - 247000, s.loc['pl_orbper'], \
                                 s.loc['pl_trandur']*24
-        csvfile = 'Planet/'+exoplanet+'/'+exoplanet+'.csv'
-        split_lightcurve_file(csvfile, t0, P, t14)
+            csvfile = 'Planet/'+exoplanet+'/'+exoplanet+'.csv'
+            split_lightcurve_file(csvfile, t0, P, t14)
     else:
         print('Lightcurves already split..')
         pass
@@ -334,7 +341,7 @@ def main(exoplanet, curves):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Override if data not present - Guess!
     # host_T = ( , )
-    # host_z = ( , )
+    # host_z = (0.1 , 0.1)
     # host_r = ( , )
     # host_logg = ( , )
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -359,4 +366,4 @@ def main(exoplanet, curves):
                   final_lightcurve_folder = fitted_lightcurve_folder,
                   plot_folder = plot_folder)
 
-main('WASP-91 b', 1)
+main('WASP-43 b', 1)
