@@ -129,16 +129,16 @@ def target(exoplanet, curves = 1, dtype = 'nasa'):
             pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Download MAST lightcurves
+    curvefile = 'Planet/'+exoplanet+'/split_curve_0.csv'
     try:
-        if not path.exists('Planet/'+exoplanet+''):
+        if not path.exists(curvefile):
             makedirs('Planet/'+exoplanet+'', exist_ok = True)   
             print('Downloading MAST Lightcurves...')
-            lcfs = search_lightcurvefile(exoplanet, mission = 'TESS')         \
-            .download_all(download_dir = 'Planet/'+exoplanet+'')              \
-            .PDCSAP_FLUX.stitch().remove_nans()             
+            lcfs = search_lightcurvefile(exoplanet, mission = 'TESS')        \
+            .download_all(download_dir = 'Planet/'+exoplanet+'')             \
+            .PDCSAP_FLUX.stitch().remove_nans()  
             lcfs.to_fits(path='Planet/'+exoplanet+'/'+exoplanet+'.fits', 
                                                                overwrite=True)
-            rmtree('Planet/'+exoplanet+'/mastDownload')
         else:
             print('MAST Lightcurves already exist..')
             pass
@@ -147,8 +147,7 @@ def target(exoplanet, curves = 1, dtype = 'nasa'):
         exit('Currently only TESS targets are supported.')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Extract Time series
-    csvfile = 'Planet/'+exoplanet+'/'+exoplanet+'.csv'
-    if not path.exists(csvfile):
+    if not path.exists(curvefile):
         fitsfile = 'Planet/'+exoplanet+'/'+exoplanet+'.fits'
         print('Extracting the Time Series..')
         with fits.open(fitsfile) as TESS_fits:
@@ -169,7 +168,6 @@ def target(exoplanet, curves = 1, dtype = 'nasa'):
             writer = DictWriter(f, columns)
             writer.writeheader()
             writer.writerows(write_dict)
-        remove('Planet/'+exoplanet+'/'+exoplanet+'.fits')
     else:
         print('Lightcurves already extracted to csv..')
         pass
@@ -267,7 +265,6 @@ def target(exoplanet, curves = 1, dtype = 'nasa'):
     repack.to_csv(r'data/priors.csv', index = False, header = True)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Split the Light curves
-    curvefile = 'Planet/'+exoplanet+'/split_curve_0.csv'
     if not path.exists(curvefile):
         print('Splitting the light curves...')
         if dtype == 'eu':
@@ -288,7 +285,7 @@ def target(exoplanet, curves = 1, dtype = 'nasa'):
     df = DataFrame(columns = cols)  
     for i in range(curves):
         df = df.append([{'Path':getcwd()
-                      +'/Planet/'+exoplanet+'/split_curve_'+str(i)+'.csv'}
+                         +'/Planet/'+exoplanet+'/split_curve_'+str(i)+'.csv'}
                         ], ignore_index = True)
         df['Telescope'], df['Filter'], df['Detrending'] = 0, 0, 0
         df['Epochs'] = range(0, len(df))
@@ -334,6 +331,15 @@ def target(exoplanet, curves = 1, dtype = 'nasa'):
     print('Assigned the following values for '+exoplanet+
                                                 ' and passing to TransitFit..')
     print(repack)
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Cleanup
+    try:
+        rmtree('Planet/'+exoplanet+'/mastDownload')
+        remove('Planet/'+exoplanet+'/'+exoplanet+'.csv')
+        remove('Planet/'+exoplanet+'/'+exoplanet+'.fits')
+    except Exception:
+        pass
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     return host_T, host_z, host_r, host_logg
 
 def main(exoplanet, curves):
