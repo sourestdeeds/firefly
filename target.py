@@ -83,6 +83,15 @@ def target(exoplanet, curves = 1, dtype = 'nasa'):
         https://mast.stsci.edu/portal/Mashup/Clients/Mast/Portal.html
     '''
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Filter Setup
+    cols = ['filter_idx', 'low_wl', 'high_wl']
+    df = DataFrame(columns = cols)
+    df = df.append([{'filter_idx':0,
+                     'low_wl':getcwd()+'/data/TESS_Filter/TESS_filter.csv'}], 
+                                                          ignore_index = True)
+    df.to_csv(r'data/TESS_filter_path.csv', index = False, header = True)
+    print('Assigned filter paths for '+exoplanet+'..')
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Download EU Data
     makedirs('data', exist_ok = True) 
     if dtype == 'eu':
