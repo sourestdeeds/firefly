@@ -364,9 +364,9 @@ def main(exoplanet, curves):
     plot_folder = 'Planet/'+exoplanet+'/plots'
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Run the retrieval
-    run_retrieval(data, priors, filters, detrending, host_T=host_T,
+    run_retrieval(data, priors, filters, detrending, host_T = host_T,
                   host_logg = host_logg, host_z = host_z, 
-                  host_r=host_r[0], dynesty_sample = 'rslice',
+                  host_r = host_r[0], dynesty_sample = 'rslice',
                   fitting_mode = 'folded', fit_ttv = True,
                   results_output_folder = results_output_folder,
                   final_lightcurve_folder = fitted_lightcurve_folder,
