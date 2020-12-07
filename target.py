@@ -150,7 +150,7 @@ def target(exoplanet, dtype='nasa'):
                      exist_ok=True)
             lcfs = search_lightcurvefile(exoplanet, mission='TESS',
                                          sector=sector)
-            print('\nDownloading MAST Lightcurve for sector ' +
+            print('\nDownloading MAST Lightcurve for TESS Sector ' +
                   str(sector) + '.')
             lcfs.download_all(
                 download_dir='Planet/' + exoplanet + '') \
@@ -159,7 +159,8 @@ def target(exoplanet, dtype='nasa'):
                          str(sector) + '/' + exoplanet + '.fits',
                          overwrite=True)
         else:
-            print('\nMAST Lightcurve for sector previously downloaded.')
+            print('\nMAST Lightcurve for TESS Sector ' + str(sector) +\
+                  ' previously downloaded.')
             pass
     except Exception:
         rmtree('Planet/' + exoplanet)
@@ -383,4 +384,4 @@ def target(exoplanet, dtype='nasa'):
                   plot_folder=plot_folder)
 
 
-target('WASP-91 b')
+target('WASP-43 b')
