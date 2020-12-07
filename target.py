@@ -159,7 +159,7 @@ def target(exoplanet, dtype='nasa'):
                          str(sector) + '/' + exoplanet + '.fits',
                          overwrite=True)
         else:
-            print('\nMAST Lightcurve for sector already downloaded.')
+            print('\nMAST Lightcurve for sector previously downloaded.')
             pass
     except Exception:
         rmtree('Planet/' + exoplanet)
@@ -265,7 +265,11 @@ def target(exoplanet, dtype='nasa'):
                                       'Input_A', 'Input_B', 'Filter'])
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Save the priors
-    repack.to_csv(r'data/priors.csv', index=False, header=True)
+    priors = 'Planet/' + exoplanet + '/' + exoplanet + ' Priors.csv'
+    if not path.exists(priors):
+        repack.to_csv(priors, index=False, header=True)
+    else:
+        pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # For printing variables only
     if dtype == 'eu':
@@ -303,8 +307,8 @@ def target(exoplanet, dtype='nasa'):
     repack = DataFrame(cols, columns=['Parameter', 'Distribution',
                                       'Input_A', 'Input_B', 'Filter'])
     repack = repack.to_string(index=False)
-    print(' ')
-    print('Assigned the following priors for ' + exoplanet + '.\n')
+    print('\nPriors generated for ' + exoplanet + 
+              ' are available to edit.\n')
     print(repack)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Split the Light curves
@@ -328,7 +332,7 @@ def target(exoplanet, dtype='nasa'):
     # Set the Data Paths
     cols = ['Path', 'Telescope', 'Filter', 'Epochs', 'Detrending']
     df = DataFrame(columns=cols)
-    curves = int(input('Enter how many lightcurves you wish to use: '))
+    curves = int(input('Enter how many lightcurves you wish to fit: '))
     print()
     for i in range(curves):
         df = df.append([{'Path': getcwd() + '/Planet/' + exoplanet +
@@ -351,7 +355,7 @@ def target(exoplanet, dtype='nasa'):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Paths to data, priors, and filter info:
     data = 'data/data_paths.csv'
-    priors = 'data/priors.csv'
+    priors = 'Planet/' + exoplanet + '/' + exoplanet + ' Priors.csv'
     filters = 'data/TESS_filter_path.csv'
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Outputs
