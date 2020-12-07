@@ -152,14 +152,9 @@ def target(exoplanet, curves=1, dtype='nasa'):
             lcfs = search_lightcurvefile(exoplanet, mission='TESS')
             print(lcfs)
             lcfs.download_all(
-                download_dir='Planet/' +
-                exoplanet +
+                download_dir='Planet/' + exoplanet +
                 '') .PDCSAP_FLUX.stitch().remove_nans() .to_fits(
-                path='Planet/' +
-                exoplanet +
-                '/' +
-                exoplanet +
-                '.fits',
+                path='Planet/' + exoplanet + '/' + exoplanet + '.fits',
                 overwrite=True)
         else:
             print('MAST Lightcurves already exist..')
