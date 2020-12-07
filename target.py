@@ -1,16 +1,15 @@
-from transitfit import split_lightcurve_file, run_retrieval
+from transitfit import split_lightcurve_file, run_retrieval, calculate_logg
 from lightkurve import search_lightcurvefile
 from datetime import datetime, timedelta
 from os import path, makedirs, remove, getcwd
 from astropy.io import fits
 from csv import DictWriter
-from numpy import log, log10, sqrt
 from pandas import DataFrame, read_csv
 from shutil import rmtree
 from sys import exit
 
 
-def target(exoplanet, curves=1, dtype='nasa'):
+def target(exoplanet, dtype='nasa'):
     '''
     A target data retriever for confirmed/candidate TESS exoplanets.
     Generates the priors and host star variables for a chosen target.
@@ -93,9 +92,7 @@ def target(exoplanet, curves=1, dtype='nasa'):
         df = df.append([{'filter_idx': 0,
                          'low_wl': tess_filter}], ignore_index=True)
         df.to_csv(r'data/TESS_filter_path.csv', index=False, header=True)
-        print('Assigned TESS filter paths for ' + exoplanet + '..')
     else:
-        print('TESS filter paths already assigned..')
         pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Download EU Data
@@ -104,18 +101,17 @@ def target(exoplanet, curves=1, dtype='nasa'):
         download_link = 'http://exoplanet.eu/catalog/csv'
 
         if not path.exists('data/eu.csv'):
-            print('eu.csv does not exist, downloading...')
+            print('eu.csv does not exist, downloading.')
             df = read_csv(download_link)
             df.to_csv('data/eu.csv', index=False)
 
         ten_days_ago = datetime.now() - timedelta(days=10)
         filetime = datetime.fromtimestamp(path.getctime('data/eu.csv'))
         if filetime < ten_days_ago:
-            print('eu.csv is 10 days old, redownloading...')
+            print('eu.csv is 10 days old, updating.')
             df = read_csv(download_link)
             df.to_csv('data/eu.csv', index=False)
         else:
-            print('eu.csv is less than 10 days old.')
             pass
     # Download NASA Data
     else:
@@ -130,50 +126,58 @@ def target(exoplanet, curves=1, dtype='nasa'):
             '+from+ps&format=csv'
 
         if not path.exists('data/nasa.csv'):
-            print('nasa.csv does not exist, downloading...')
+            print('nasa.csv does not exist, downloading.')
             df = read_csv(download_link)
             df.to_csv('data/nasa.csv', index=False)
         ten_days_ago = datetime.now() - timedelta(days=10)
         filetime = datetime.fromtimestamp(path.getctime('data/nasa.csv'))
         if filetime < ten_days_ago:
-            print('nasa.csv is 10 days old, redownloading...')
+            print('nasa.csv is 10 days old, updating.')
             df = read_csv(download_link)
             df.to_csv('data/nasa.csv', index=False)
         else:
-            print('nasa.csv is less than 10 days old.')
             pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Download MAST lightcurves
-    curvefile = 'Planet/' + exoplanet + '/split_curve_0.csv'
     try:
-        if not path.exists(curvefile):
-            makedirs('Planet/' + exoplanet + '', exist_ok=True)
-            print('Downloading MAST Lightcurves...')
-            lcfs = search_lightcurvefile(exoplanet, mission='TESS')
-            print(lcfs)
+        lcfs = search_lightcurvefile(exoplanet, mission='TESS')
+        print(lcfs)
+        sector = int(input('Enter which sector you' +
+                           ' would like to download: '))
+        sector_folder = 'Planet/' + exoplanet + '/TESS Sector ' + str(sector)
+        if not path.exists(sector_folder):
+            makedirs('Planet/' + exoplanet + '/TESS Sector ' + str(sector),
+                     exist_ok=True)
+            lcfs = search_lightcurvefile(exoplanet, mission='TESS',
+                                         sector=sector)
+            print('\nDownloading MAST Lightcurve for sector ' +
+                  str(sector) + '.')
             lcfs.download_all(
-                download_dir='Planet/' + exoplanet +
-                '') .PDCSAP_FLUX.stitch().remove_nans() .to_fits(
-                path='Planet/' + exoplanet + '/' + exoplanet + '.fits',
-                overwrite=True)
+                download_dir='Planet/' + exoplanet + '') \
+                .PDCSAP_FLUX.stitch() .remove_nans() \
+                .to_fits(path='Planet/' + exoplanet + '/TESS Sector ' +
+                         str(sector) + '/' + exoplanet + '.fits',
+                         overwrite=True)
         else:
-            print('MAST Lightcurves already exist..')
+            print('\nMAST Lightcurve for sector already downloaded.')
             pass
     except Exception:
-        rmtree('Planet/' + exoplanet + '')
-        exit('Currently only TESS targets are supported.')
+        rmtree('Planet/' + exoplanet)
+        exit('Currently only TESS targets are supported.' +
+             ' The sector number you entered does not exist.')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Extract Time series
+    curvefile = 'Planet/' + exoplanet + '/TESS Sector ' + \
+                str(sector) + '/split_curve_0.csv'
     if not path.exists(curvefile):
-        fitsfile = 'Planet/' + exoplanet + '/' + exoplanet + '.fits'
-        print('Extracting the Time Series..')
+        fitsfile = 'Planet/' + exoplanet + '/TESS Sector ' + \
+            str(sector) + '/' + exoplanet + '.fits'
         with fits.open(fitsfile) as TESS_fits:
             time = TESS_fits[1].data['TIME'] + 2457000
             flux = TESS_fits[1].data['FLUX']
             flux_err = TESS_fits[1].data['FLUX_ERR']
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Extract all light curves to a single csv file
-        print('Writing csv file..')
         write_dict = []
         for i in range(len(time)):
             write_dict.append({'Time': time[i], 'Flux': flux[i],
@@ -186,7 +190,6 @@ def target(exoplanet, curves=1, dtype='nasa'):
             writer.writeheader()
             writer.writerows(write_dict)
     else:
-        print('Lightcurves already extracted to csv..')
         pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Find Target
@@ -211,38 +214,22 @@ def target(exoplanet, curves=1, dtype='nasa'):
     s = df.mean()  # Takes the mean of values if multiple entries
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Assign Host data to Transitfit
-    G = 6.67430e-11
-    m_sun = 1.98847e30
-    r_sun = 6.957e8
     if dtype == 'eu':
         # Host Logg Calc
-        m = m_sun * s.loc['star_mass']
-        err_m = m_sun * s.loc['star_mass_error_max']
-        r = r_sun * s.loc['star_radius']
-        err_r = r_sun * s.loc['star_radius_error_max']
-        g = m * G * r ** -2 * 100
-        err_g = G / (r ** 2) * sqrt(err_m ** 2 +
-                                    (4 * m**2 * err_r ** 2) / r**2) * 100
-        logg = log10(g)
-        err_logg = err_g / (g * log(10))
-
+        logg, err_logg = calculate_logg((s.loc['star_mass'], 
+                                         s.loc['star_mass_error_max']),
+                                        (s.loc['star_radius'],
+                                         s.loc['star_radius_error_max']))
         host_T = (s.loc['star_teff'], s.loc['star_teff_error_max'])
         host_z = (s.loc['star_metallicity'],
                   s.loc['star_metallicity_error_max'])
         host_r = (s.loc['star_radius'], s.loc['star_radius_error_max'])
         host_logg = (logg, err_logg)
     elif dtype == 'nasa':
-        # Host Logg Calc
-        m = m_sun * s.loc['st_mass']
-        err_m = m_sun * s.loc['st_masserr1']
-        r = r_sun * s.loc['st_rad']
-        err_r = r_sun * s.loc['st_raderr1']
-        g = m * G * r ** -2 * 100
-        err_g = G / (r ** 2) * sqrt(err_m ** 2 +
-                                    (4 * m**2 * err_r ** 2) / r**2) * 100
-        logg = log10(g)
-        err_logg = err_g / (g * log(10))
-
+        logg, err_logg = calculate_logg((s.loc['st_mass'], 
+                                         s.loc['st_masserr1']),
+                                        (s.loc['st_rad'],
+                                         s.loc['st_raderr1']))
         host_T = (s.loc['st_teff'], s.loc['st_tefferr1'])
         host_z = (s.loc['st_met'], s.loc['st_meterr1'])
         host_r = (s.loc['st_rad'], s.loc['st_raderr1'])
@@ -280,33 +267,6 @@ def target(exoplanet, curves=1, dtype='nasa'):
     # Save the priors
     repack.to_csv(r'data/priors.csv', index=False, header=True)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # Split the Light curves
-    if not path.exists(curvefile):
-        print('Splitting the light curves...')
-        if dtype == 'eu':
-            t0, P = s.loc['tzero_tr'] - 2457000, s.loc['orbital_period']
-            csvfile = 'Planet/' + exoplanet + '/' + exoplanet + '.csv'
-            split_lightcurve_file(csvfile, t0, P)
-        else:
-            t0, P, t14 = s.loc['pl_tranmid'] - 2457000, s.loc['pl_orbper'], \
-                s.loc['pl_trandur'] * 24 * 60
-            csvfile = 'Planet/' + exoplanet + '/' + exoplanet + '.csv'
-            split_lightcurve_file(csvfile, t0, P, t14)
-    else:
-        print('Lightcurves already split..')
-        pass
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # Set the Data Paths
-    cols = ['Path', 'Telescope', 'Filter', 'Epochs', 'Detrending']
-    df = DataFrame(columns=cols)
-    for i in range(curves):
-        df = df.append([{'Path': getcwd() + '/Planet/' + exoplanet + \
-                       '/split_curve_' + str(i) + '.csv'}], ignore_index=True)
-        df['Telescope'], df['Filter'], df['Detrending'] = 0, 0, 0
-        df['Epochs'] = range(0, len(df))
-    df.to_csv(r'data/data_paths.csv', index=False, header=True)
-    print('Assigned data paths for ' + exoplanet + '..')
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # For printing variables only
     if dtype == 'eu':
         cols = [['P', 'gaussian', s.loc['orbital_period'],
@@ -343,23 +303,64 @@ def target(exoplanet, curves=1, dtype='nasa'):
     repack = DataFrame(cols, columns=['Parameter', 'Distribution',
                                       'Input_A', 'Input_B', 'Filter'])
     repack = repack.to_string(index=False)
-    print('Assigned the following values for ' + exoplanet +
-          ' and passing to TransitFit..')
+    print(' ')
+    print('Assigned the following priors for ' + exoplanet + '.\n')
     print(repack)
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Split the Light curves
+    if not path.exists(curvefile):
+        if dtype == 'eu':
+            t0, P = s.loc['tzero_tr'] - 2457000, s.loc['orbital_period']
+            csvfile = 'Planet/' + exoplanet + '/TESS Sector ' + str(sector) \
+                + '/' + exoplanet + '.csv'
+            a = split_lightcurve_file(csvfile, t0, P)
+            print('\nA total of ' + str(len(a)) + ' lightcurves were created.')
+        else:
+            t0, P, t14 = s.loc['pl_tranmid'] - 2457000, s.loc['pl_orbper'], \
+                s.loc['pl_trandur'] * 24 * 60
+            csvfile = 'Planet/' + exoplanet + '/TESS Sector ' + str(sector) \
+                + '/' + exoplanet + '.csv'
+            a = split_lightcurve_file(csvfile, t0, P, t14)
+            print('\nA total of ' + str(len(a)) + ' lightcurves were created.')
+    else:
+        pass
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Set the Data Paths
+    cols = ['Path', 'Telescope', 'Filter', 'Epochs', 'Detrending']
+    df = DataFrame(columns=cols)
+    curves = int(input('Enter how many lightcurves you wish to use: '))
+    print()
+    for i in range(curves):
+        df = df.append([{'Path': getcwd() + '/Planet/' + exoplanet +
+                         '/TESS Sector ' + str(sector) +
+                         '/split_curve_' + str(i) + '.csv'}],
+                       ignore_index=True)
+        df['Telescope'], df['Filter'], df['Detrending'] = 0, 0, 0
+        df['Epochs'] = range(0, len(df))
+    df.to_csv(r'data/data_paths.csv', index=False, header=True)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Cleanup
     try:
         rmtree('Planet/' + exoplanet + '/mastDownload')
-        remove('Planet/' + exoplanet + '/' + exoplanet + '.csv')
-        remove('Planet/' + exoplanet + '/' + exoplanet + '.fits')
+        remove('Planet/' + exoplanet + '/' + '/TESS Sector ' + str(sector)
+               + '/' + exoplanet + '.csv')
+        remove('Planet/' + exoplanet + '/' + '/TESS Sector ' + str(sector)
+               + '/' + exoplanet + '.fits')
     except Exception:
         pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    return host_T, host_z, host_r, host_logg
-
-
-def main(exoplanet, curves):
-    host_T, host_z, host_r, host_logg = target(exoplanet, curves)
+    # Paths to data, priors, and filter info:
+    data = 'data/data_paths.csv'
+    priors = 'data/priors.csv'
+    filters = 'data/TESS_filter_path.csv'
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Outputs
+    results_output_folder = 'Planet/' + exoplanet + '/' + '/TESS Sector ' +\
+        str(sector) + '/output_parameters'
+    fitted_lightcurve_folder = 'Planet/' + exoplanet + '/' + '/TESS Sector ' +\
+        str(sector) + '/fitted_lightcurves'
+    plot_folder = 'Planet/' + exoplanet + '/' + '/TESS Sector ' +\
+        str(sector) + '/plots'
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Override if data not present - Guess!
     # host_T = ( , )
@@ -367,19 +368,8 @@ def main(exoplanet, curves):
     # host_r = ( , )
     # host_logg = ( , )
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # Paths to data, priors, and filter info:
-    data = 'data/data_paths.csv'
-    priors = 'data/priors.csv'
-    filters = 'data/TESS_filter_path.csv'
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    detrending = [['nth order', 2]]
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # Outputs
-    results_output_folder = 'Planet/' + exoplanet + '/output_parameters'
-    fitted_lightcurve_folder = 'Planet/' + exoplanet + '/fitted_lightcurves'
-    plot_folder = 'Planet/' + exoplanet + '/plots'
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Run the retrieval
+    detrending = [['nth order', 2]]
     run_retrieval(data, priors, filters, detrending, host_T=host_T,
                   host_logg=host_logg, host_z=host_z,
                   host_r=host_r[0], dynesty_sample='rslice',
@@ -389,4 +379,4 @@ def main(exoplanet, curves):
                   plot_folder=plot_folder)
 
 
-main('WASP-43 b', 1)
+target('WASP-91 b')
