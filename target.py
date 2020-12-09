@@ -1,16 +1,15 @@
 from transitfit import split_lightcurve_file, run_retrieval, calculate_logg
 from lightkurve import search_lightcurvefile
 from datetime import datetime, timedelta
-from os import path, makedirs, remove, getcwd, walk, listdir
+from os import path, makedirs, remove, getcwd, walk
 from astropy.io import fits
 from csv import DictWriter
 from pandas import DataFrame, read_csv
 from shutil import rmtree, move
 from sys import exit
-from numpy import pi
 
 
-def target(exoplanet, user = True, dtype='nasa'):
+def target(exoplanet, user = True, dtype='eu'):
     '''
     A target data retriever for confirmed/candidate TESS exoplanets.
     Generates the priors and host star variables for a chosen target.
@@ -83,6 +82,11 @@ def target(exoplanet, user = True, dtype='nasa'):
         MAST : Data downloaded and stored in 'Planet/exoplanet/exoplanet.fits'.
         https://mast.stsci.edu/portal/Mashup/Clients/Mast/Portal.html
     '''
+    # Check inputs are sensible
+    if not dtype == 'eu' or dtype == 'nasa':
+        exit('Archive data options for dtype are: \'eu\' or \'nasa\'')
+    else:
+        pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Filter Setup
     tess_filter_path = '/data/TESS_filter_path.csv'
@@ -143,6 +147,8 @@ def target(exoplanet, user = True, dtype='nasa'):
     try:
         lcfs = search_lightcurvefile(exoplanet, mission='TESS')
         print(lcfs)
+        # if print(lcfs) == 'SearchResult containing 6 data products.':
+        #     exit('gone')
         sector = int(input('Enter which TESS Sector you' +
                            ' would like to download: '))
         sector_folder = 'Exoplanet/' + exoplanet + '/TESS Sector ' + str(sector)
@@ -316,7 +322,11 @@ def target(exoplanet, user = True, dtype='nasa'):
     repack = DataFrame(cols, columns=['Parameter', 'Distribution',
                                       'Input_A', 'Input_B', 'Filter'])
     repack = repack.to_string(index=False)
-    print('\nPriors generated for ' + exoplanet + 
+    if dtype == 'eu':
+        print('\nPriors generated from the EU Archive for ' + exoplanet + 
+              ' are available to edit.\n')
+    elif dtype == 'nasa':
+        print('\nPriors generated from the NASA Archive for ' + exoplanet + 
               ' are available to edit.\n')
     # print(s.loc['rowupdate'])
     print(repack)
@@ -393,10 +403,10 @@ def target(exoplanet, user = True, dtype='nasa'):
     run_retrieval(data, priors, filters, detrending, host_T=host_T,
                   host_logg=host_logg, host_z=host_z,
                   host_r=host_r[0], dynesty_sample='rslice',
-                  fitting_mode='folded', fit_ttv=False,
+                  fitting_mode='folded', fit_ttv=True,
                   results_output_folder=results_output_folder,
                   final_lightcurve_folder=fitted_lightcurve_folder,
                   plot_folder=plot_folder)
 
 
-target('WASP-18 b', user = False, dtype = 'nasa')
+target('WASP-18 b', dtype = 'eu')
