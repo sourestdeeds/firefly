@@ -1,5 +1,5 @@
 from transitfit import split_lightcurve_file, run_retrieval, calculate_logg
-from lightkurve import search_lightcurvefile
+from lightkurve import search_lightcurvefile, search
 from datetime import datetime, timedelta
 from os import path, makedirs, remove, getcwd, walk
 from astropy.io import fits
@@ -102,83 +102,79 @@ def target(exoplanet, user = True, dtype='eu'):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Download EU Data
     makedirs('data', exist_ok=True)
-    if dtype == 'eu':
-        download_link = 'http://exoplanet.eu/catalog/csv'
-
-        if not path.exists('data/eu.csv'):
-            print('eu.csv does not exist, downloading.')
-            df = read_csv(download_link)
-            df.to_csv('data/eu.csv', index=False)
-
-        ten_days_ago = datetime.now() - timedelta(days=10)
-        filetime = datetime.fromtimestamp(path.getctime('data/eu.csv'))
-        if filetime < ten_days_ago:
-            print('eu.csv is 10 days old, updating.')
-            df = read_csv(download_link)
-            df.to_csv('data/eu.csv', index=False)
-        else:
-            pass
-    # Download NASA Data
+    download_link = 'http://exoplanet.eu/catalog/csv'
+    if not path.exists('data/eu.csv'):
+        print('eu.csv does not exist, downloading.')
+        df = read_csv(download_link)
+        df.to_csv('data/eu.csv', index=False)
+    ten_days_ago = datetime.now() - timedelta(days=10)
+    filetime = datetime.fromtimestamp(path.getctime('data/eu.csv'))
+    if filetime < ten_days_ago:
+        print('eu.csv is 10 days old, updating.')
+        df = read_csv(download_link)
+        df.to_csv('data/eu.csv', index=False)
     else:
-        download_link =  \
-            'https://exoplanetarchive.ipac.caltech.edu/' +\
-            'TAP/sync?query=select+' +\
-            'pl_name,pl_orbper,pl_orbpererr1,pl_orbsmax,pl_orbsmaxerr1,' +\
-            'pl_radj,pl_radjerr1,pl_orbeccen,pl_orbeccenerr1,' +\
-            'st_teff,st_tefferr1,st_rad,st_raderr1,st_mass,st_masserr1,' +\
-            'st_met,st_meterr1,pl_tranmid,pl_tranmiderr1,pl_trandur,' +\
-            'pl_orbincl,pl_orbinclerr1,pl_orblper,pl_orblpererr1,rowupdate' +\
-            '+from+ps&format=csv'
-
-        if not path.exists('data/nasa.csv'):
-            print('nasa.csv does not exist, downloading.')
-            df = read_csv(download_link)
-            df.to_csv('data/nasa.csv', index=False)
-        ten_days_ago = datetime.now() - timedelta(days=10)
-        filetime = datetime.fromtimestamp(path.getctime('data/nasa.csv'))
-        if filetime < ten_days_ago:
-            print('nasa.csv is 10 days old, updating.')
-            df = read_csv(download_link)
-            df.to_csv('data/nasa.csv', index=False)
-        else:
-            pass
+        pass
+    # Download NASA Data
+    download_link =  \
+        'https://exoplanetarchive.ipac.caltech.edu/' +\
+        'TAP/sync?query=select+' +\
+        'pl_name,pl_orbper,pl_orbpererr1,pl_orbsmax,pl_orbsmaxerr1,' +\
+        'pl_radj,pl_radjerr1,pl_orbeccen,pl_orbeccenerr1,disc_facility,' +\
+        'st_teff,st_tefferr1,st_rad,st_raderr1,st_mass,st_masserr1,' +\
+        'st_met,st_meterr1,pl_tranmid,pl_tranmiderr1,pl_trandur,' +\
+        'pl_orbincl,pl_orbinclerr1,pl_orblper,pl_orblpererr1,rowupdate' +\
+        '+from+ps&format=csv'
+    if not path.exists('data/nasa.csv'):
+        print('nasa.csv does not exist, downloading.')
+        df = read_csv(download_link)
+        df.to_csv('data/nasa.csv', index=False)
+    ten_days_ago = datetime.now() - timedelta(days=10)
+    filetime = datetime.fromtimestamp(path.getctime('data/nasa.csv'))
+    if filetime < ten_days_ago:
+        print('nasa.csv is 10 days old, updating.')
+        df = read_csv(download_link)
+        df.to_csv('data/nasa.csv', index=False)
+    else:
+        pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Download MAST lightcurves
+    lc = search_lightcurvefile(exoplanet, mission='TESS')
+    print(lc)
     try:
-        lcfs = search_lightcurvefile(exoplanet, mission='TESS')
-        print(lcfs)
-        # if print(lcfs) == 'SearchResult containing 6 data products.':
-        #     exit('gone')
-        sector = int(input('Enter which TESS Sector you' +
-                           ' would like to download: '))
-        sector_folder = 'Exoplanet/' + exoplanet + '/TESS Sector ' + str(sector)
-        if not path.exists(sector_folder):
-            makedirs('Exoplanet/' + exoplanet + '/TESS Sector ' + str(sector),
-                     exist_ok=True)
-            lcfs = search_lightcurvefile(exoplanet, mission='TESS',
-                                         sector=sector)
-            print('\nDownloading MAST Lightcurve for TESS Sector ' +
-                  str(sector) + '.')
-            lcfs.download_all(download_dir='Exoplanet/' + exoplanet)
-            source = 'Exoplanet/' + exoplanet + '/mastDownload/TESS/'
-            files_in_dir = []
-            # r=>root, d=>directories, f=>files
-            for r, d, f in walk(source):
-               for item in f:
-                  if '.fits' in item:
-                     files_in_dir.append(path.join(r, item))
-            destination = sector_folder + '/' + exoplanet + '.fits'
-            for files in files_in_dir:
-                if files.endswith(".fits"):
-                    move(files,destination)
-        else:
-            print('\nMAST Lightcurve for TESS Sector ' + str(sector) +\
-                  ' previously downloaded.')
-            pass
+        lc.ra
+        pass
     except Exception:
-        rmtree('Exoplanet/' + exoplanet)
-        exit('Currently only TESS targets are supported.' +
-             ' The sector number you entered does not exist.')
+        exit('Search result contains no data products for ' + exoplanet + '.')
+    sector = int(input('Enter which TESS Sector you' +
+                       ' would like to download: '))
+    sector_folder = 'Exoplanet/' + exoplanet + '/TESS Sector ' + str(sector)
+    if not path.exists(sector_folder):
+        makedirs('Exoplanet/' + exoplanet + '/TESS Sector ' + str(sector),
+                 exist_ok=True)
+        lc = search_lightcurvefile(exoplanet, mission='TESS',
+                                     sector=sector)
+        print('\nDownloading MAST Lightcurve for TESS Sector ' +
+              str(sector) + '.')
+        lc.download_all(download_dir='Exoplanet/' + exoplanet)
+        source = 'Exoplanet/' + exoplanet + '/mastDownload/TESS/'
+        if not path.exists(source):
+            rmtree(sector_folder)
+            exit('No data products exist for the chosen TESS Sector.')
+        files_in_dir = []
+        # r=>root, d=>directories, f=>files
+        for r, d, f in walk(source):
+           for item in f:
+              if '.fits' in item:
+                 files_in_dir.append(path.join(r, item))
+        destination = sector_folder + '/' + exoplanet + '.fits'
+        for files in files_in_dir:
+            if files.endswith(".fits"):
+                move(files,destination)
+    else:
+        print('\nMAST Lightcurve for TESS Sector ' + str(sector) +\
+              ' previously downloaded.')
+        pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Extract Time series
     curvefile = 'Exoplanet/' + exoplanet + '/TESS Sector ' + \
@@ -401,12 +397,12 @@ def target(exoplanet, user = True, dtype='eu'):
     # Run the retrieval
     detrending = [['nth order', 2]]
     run_retrieval(data, priors, filters, detrending, host_T=host_T,
-                  host_logg=host_logg, host_z=host_z,
-                  host_r=host_r[0], dynesty_sample='rslice',
+                  host_logg=host_logg, host_z=host_z, # nlive = 1000
+                  host_r=host_r, dynesty_sample='rslice',
                   fitting_mode='folded', fit_ttv=True,
                   results_output_folder=results_output_folder,
                   final_lightcurve_folder=fitted_lightcurve_folder,
                   plot_folder=plot_folder)
 
 
-target('WASP-18 b', dtype = 'eu')
+target('WASP-18 b')
