@@ -388,16 +388,10 @@ def target(exoplanet, user = True, dtype='eu'):
     plot_folder = 'Exoplanet/' + exoplanet + '/' + '/TESS Sector ' +\
         str(sector) + '/plots'
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # Override if data not present - Guess!
-    # host_T = ( , )
-    # host_z = ( , )
-    # host_r = ( , )
-    # host_logg = ( , )
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Run the retrieval
     detrending = [['nth order', 2]]
     run_retrieval(data, priors, filters, detrending, host_T=host_T,
-                  host_logg=host_logg, host_z=host_z, # nlive = 1000
+                  host_logg=host_logg, host_z=host_z, nlive = 1000,
                   host_r=host_r, dynesty_sample='rslice',
                   fitting_mode='folded', fit_ttv=True,
                   results_output_folder=results_output_folder,
