@@ -744,12 +744,12 @@ def auto_target(exoplanet, dtype='eu'):
     # Run the retrieval
             detrending = [['nth order', 2]]
             run_retrieval(data, priors, filters, detrending, host_T=host_T,
-                          host_logg=host_logg, host_z=host_z, nlive = 1000,
+                          host_logg=host_logg, host_z=host_z, nlive = 50,
                           host_r=host_r, dynesty_sample='rslice',
                           fitting_mode='folded', fit_ttv=True,
                           results_output_folder=results_output_folder,
                           final_lightcurve_folder=fitted_lightcurve_folder,
-                          plot_folder=plot_folder)       
+                          plot_folder=plot_folder, max_batch_parameters = 15)       
 
 def target_list(user, exoplanets):
     for i in exoplanets:
@@ -758,12 +758,14 @@ def target_list(user, exoplanets):
             auto_target(exoplanets)
             email('User: '+user+', Exoplanet: ' +exoplanets+ ' Complete', 
                   'A new target has been fully retrieved.')
+        except KeyboardInterrupt:
+            print('User terminated retrieval')
         except:
             trace_back = format_exc()
             email('ERROR! User: '+user+', Exoplanet: '+exoplanets, trace_back)
             pass    
 
 
-exoplanets = ['WASP-126 b', 'WASP-91 b']
+exoplanets = ['WASP-126 b']
 user = 'cmindoza'
 target_list(user, exoplanets)
