@@ -2,11 +2,28 @@ from transitfit import split_lightcurve_file, run_retrieval, calculate_logg
 from lightkurve import search_lightcurvefile
 from datetime import datetime, timedelta
 from os import path, makedirs, remove, getcwd, walk
+from smtplib import SMTP_SSL
 from astropy.io import fits
 from csv import DictWriter
 from pandas import DataFrame, read_csv
 from shutil import rmtree, move
 from sys import exit
+
+def email(subject, body):
+    username = 'transitfit.server@gmail.com'
+    password = 'yvoq efzi dcib dmbm'
+    sent_from = username
+    to = username # Send to yourself
+    message = f'Subject: {subject}\n\n{body}'
+    try:
+        server = SMTP_SSL('smtp.gmail.com', 465)
+        server.ehlo()
+        server.login(username, password)
+        server.sendmail(sent_from, to, message)
+        server.close()
+    except:
+        # Continue on failure to not break code
+        pass
 
 def target(exoplanet, dtype='eu'):
     '''
@@ -687,8 +704,7 @@ def auto_target(exoplanet, dtype='eu'):
     # Set the Data Paths
             cols = ['Path', 'Telescope', 'Filter', 'Epochs', 'Detrending']
             df = DataFrame(columns=cols)
-            # curves = len(a)
-            curves = 1
+            curves = len(a)
             print()
             for i in range(curves):
                 df = df.append([{'Path': getcwd() + '/Exoplanet/' + exoplanet +
@@ -727,12 +743,26 @@ def auto_target(exoplanet, dtype='eu'):
     # Run the retrieval
             detrending = [['nth order', 2]]
             run_retrieval(data, priors, filters, detrending, host_T=host_T,
-                          host_logg=host_logg, host_z=host_z,
+                          host_logg=host_logg, host_z=host_z, nlive = 1000,
                           host_r=host_r, dynesty_sample='rslice',
                           fitting_mode='folded', fit_ttv=True,
                           results_output_folder=results_output_folder,
                           final_lightcurve_folder=fitted_lightcurve_folder,
-                          plot_folder=plot_folder)
-            
+                          plot_folder=plot_folder)       
 
-target('WASP-12 b')
+def target_list(user, exoplanets):
+    for i in exoplanets:
+        exoplanets = i
+        try:
+            auto_target(exoplanets)
+            email('User: '+user+', Exoplanet: ' +exoplanets+ ' Complete', 
+                  'A new target has been fully retrieved.')
+        except:
+            email('ERROR! User: '+user+', Exoplanet: '+exoplanets, 
+              'Failed to fit target.')
+            pass    
+
+
+exoplanets = ['WASP-126 b', 'WASP-91 b']
+user = 'cmindoza'
+target_list(user, exoplanets)
