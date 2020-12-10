@@ -405,7 +405,6 @@ def target(exoplanet, dtype='eu'):
                   plot_folder=plot_folder)
 
 def auto_target(exoplanet):
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Filter Setup
     tess_filter_path = '/data/TESS_filter_path.csv'
     tess_filter = getcwd() + '/data/Filters/TESS_filter.csv'
@@ -417,7 +416,6 @@ def auto_target(exoplanet):
         df.to_csv(r'data/TESS_filter_path.csv', index=False, header=True)
     else:
         pass
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Download EU Data
     makedirs('data', exist_ok=True)
     download_link = 'http://exoplanet.eu/catalog/csv'
@@ -433,7 +431,6 @@ def auto_target(exoplanet):
         df.to_csv('data/eu.csv', index=False)
     else:
         pass
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Download MAST lightcurves
     lc = search_lightcurvefile(exoplanet, mission='TESS')
     print(lc)
@@ -469,8 +466,7 @@ def auto_target(exoplanet):
             for files in files_in_dir:
                 if files.endswith(".fits"):
                     move(files, destination)
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # Extract Time series
+            # Extract Time series
             curvefile = 'Exoplanet/' + exoplanet + '/TESS Sector ' + \
                         str(sector) + '/split_curve_0.csv'
             if not path.exists(curvefile):
@@ -481,8 +477,7 @@ def auto_target(exoplanet):
                     time += TESS_fits[1].data['TIMECORR']
                     flux = TESS_fits[1].data['PDCSAP_FLUX']
                     flux_err = TESS_fits[1].data['PDCSAP_FLUX_ERR']
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # Extract all light curves to a single csv file
+                # Extract all light curves to a single csv file
                 write_dict = []
                 for i in range(len(time)):
                     write_dict.append({'Time': time[i], 'Flux': flux[i],
@@ -496,8 +491,7 @@ def auto_target(exoplanet):
                     writer.writerows(write_dict)
             else:
                 pass
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # Find Target
+            # Read in eu.csv
             col_subset_eu = [
                 '# name',
                 'orbital_period',
@@ -522,13 +516,10 @@ def auto_target(exoplanet):
                 'star_metallicity_error_max']
             csv_file = read_csv('data/eu.csv', index_col='# name',
                                     usecols=col_subset_eu)
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # Pick Out Chosen Exoplanet Priors
+            # Pick Out Chosen Exoplanet Priors
             df = DataFrame(csv_file).loc[[exoplanet]]
             s = df # .mean()
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # Assign Host data to Transitfit
-            # Host Logg Calc
+            # Assign Host data to Transitfit
             logg, err_logg = calculate_logg((s.loc['star_mass'],
                                              s.loc['star_mass_error_max']),
                                             (s.loc['star_radius'],
@@ -538,8 +529,7 @@ def auto_target(exoplanet):
                       s.loc['star_metallicity_error_max'])
             host_r = (s.loc['star_radius'], s.loc['star_radius_error_max'])
             host_logg = (logg, err_logg)
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # Assign Exoplanet Priors to TransitFit
+            # Assign Exoplanet Priors to TransitFit
             radius_const = 0.1027626851
             cols = [['P', 'gaussian', s.loc['orbital_period'],
                      s.loc['orbital_period_error_max'] * 1e5, ''],
@@ -556,15 +546,13 @@ def auto_target(exoplanet):
                                           s.loc['star_radius'], 0]]
             repack = DataFrame(cols, columns=['Parameter', 'Distribution',
                                               'Input_A', 'Input_B', 'Filter'])
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # Save the priors
+            # Save the priors
             priors = 'Exoplanet/' + exoplanet + '/' + exoplanet + ' Priors.csv'
             if not path.exists(priors):
                 repack.to_csv(priors, index=False, header=True)
             else:
                 pass
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # For printing variables only
+            # For printing variables only
             cols = [['P', 'gaussian', s.loc['orbital_period'],
                      s.loc['orbital_period_error_max'], ''],
                     ['t0', 'gaussian', s.loc['tzero_tr'],
@@ -585,13 +573,10 @@ def auto_target(exoplanet):
             repack = DataFrame(cols, columns=['Parameter', 'Distribution',
                                               'Input_A', 'Input_B', 'Filter'])
             repack = repack.to_string(index=False)
-            print(
-                '\nPriors generated from the EU Archive for ' +
-                exoplanet +
-                ' are available to edit.\n')
+            print('\nPriors generated from the EU Archive for ' + exoplanet +
+                  ' are available to edit.\n')
             print(repack)
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # Split the Light curves
+            # Split the Light curves
             if not path.exists(curvefile):
                 t0, P = s.loc['tzero_tr'], s.loc['orbital_period']
                 csvfile = 'Exoplanet/' + exoplanet + '/TESS Sector ' + \
@@ -601,8 +586,7 @@ def auto_target(exoplanet):
                       ' lightcurves were created.')
             else:
                 pass
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # Set the Data Paths
+            # Set the Data Paths
             cols = ['Path', 'Telescope', 'Filter', 'Epochs', 'Detrending']
             df = DataFrame(columns=cols)
             curves = len(a)
@@ -615,8 +599,7 @@ def auto_target(exoplanet):
                 df['Telescope'], df['Filter'], df['Detrending'] = 0, 0, 0
                 df['Epochs'] = range(0, len(df))
             df.to_csv(r'data/data_paths.csv', index=False, header=True)
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # Cleanup
+            # Cleanup
             try:
                 rmtree('Exoplanet/' + exoplanet + '/mastDownload')
                 remove('Exoplanet/' + exoplanet + '/' + '/TESS Sector ' +\
@@ -627,21 +610,18 @@ def auto_target(exoplanet):
                        + '/' + exoplanet + '.fits')
             except Exception:
                 pass
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # Paths to data, priors, and filter info:
+            # Paths to data, priors, and filter info:
             data = 'data/data_paths.csv'
             priors = 'Exoplanet/' + exoplanet + '/' + exoplanet + ' Priors.csv'
             filters = 'data/TESS_filter_path.csv'
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # Outputs
+            # Output folders
             results_output_folder = 'Exoplanet/' + exoplanet + '/' + \
                 '/TESS Sector ' + str(sector) + '/output_parameters'
             fitted_lightcurve_folder = 'Exoplanet/' + exoplanet + '/' + \
                 '/TESS Sector ' + str(sector) + '/fitted_lightcurves'
             plot_folder = 'Exoplanet/' + exoplanet + '/' + '/TESS Sector ' +\
                 str(sector) + '/plots'
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # Run the retrieval
+            # Run the retrieval
             detrending = [['nth order', 2]]
             run_retrieval(data, priors, filters, detrending, host_T=host_T,
                           host_logg=host_logg, host_z=host_z, nlive = 1000,
@@ -652,6 +632,35 @@ def auto_target(exoplanet):
                           plot_folder=plot_folder)       
 
 def target_list(user, exoplanet_list):
+    '''
+    Automated version of target which inherits from auto_target. Sends an 
+    email to transitfit.server@gmail.com upon an error or full completion of
+    a target. Iteratively takes targets and employs TransitFit across each 
+    sector for every exoplanet in the list given. Runs TransitFit for all 
+    available split curves with the following options set:
+        
+        detrending = [['nth order', 2]]
+        
+        fitting_mode = 'folded'
+        
+        dynesty_sample = 'rslice'
+        
+        nlive = 1000
+        
+        fit_ttv = True
+
+    Parameters
+    ----------
+    user : str
+        The user running the target_list to identify upon email send.
+    exoplanet_list : str
+        A list of exoplanet targets.
+
+    Returns
+    -------
+    A whole lot of data to science!
+
+    '''
     for i in exoplanet_list:
         exoplanet_list = i
         try:
@@ -669,7 +678,6 @@ def target_list(user, exoplanet_list):
                            'Exoplanet: ' + exoplanet_list + '\n\n' +
                            trace_back)
             pass    
-
 
 user = 'cmindoza'
 exoplanet_list = ['WASP-18 b', 'WASP-126 b']
