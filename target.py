@@ -1,5 +1,6 @@
 from transitfit import split_lightcurve_file, run_retrieval, calculate_logg
 from lightkurve import search_lightcurvefile
+from traceback import format_exc
 from datetime import datetime, timedelta
 from os import path, makedirs, remove, getcwd, walk
 from smtplib import SMTP_SSL
@@ -758,8 +759,8 @@ def target_list(user, exoplanets):
             email('User: '+user+', Exoplanet: ' +exoplanets+ ' Complete', 
                   'A new target has been fully retrieved.')
         except:
-            email('ERROR! User: '+user+', Exoplanet: '+exoplanets, 
-              'Failed to fit target.')
+            trace_back = format_exc()
+            email('ERROR! User: '+user+', Exoplanet: '+exoplanets, trace_back)
             pass    
 
 
