@@ -14,7 +14,7 @@ def email(subject, body):
     username = 'transitfit.server@gmail.com'
     password = 'yvoq efzi dcib dmbm'
     sent_from = username
-    to = username # Send to yourself
+    to = ['transitfit.server@gmail.com']
     message = f'Subject: {subject}\n\n{body}'
     try:
         server = SMTP_SSL('smtp.gmail.com', 465)
@@ -526,7 +526,7 @@ def auto_target(exoplanet):
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
             # Pick Out Chosen Exoplanet Priors
             df = DataFrame(csv_file).loc[[exoplanet]]
-            s = df # .mean()
+            s = df.mean()
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
             # Assign Host data to Transitfit
             logg, err_logg = calculate_logg((s.loc['star_mass'],
@@ -698,5 +698,5 @@ def target_list(user, exoplanet_list):
             pass    
 
 user = 'cmindoza'
-exoplanet_list = ['WASP-18 b', 'WASP-126 b']
+exoplanet_list = ['WASP-18a b', 'WASP-126 b']
 target_list(user, exoplanet_list)
