@@ -698,5 +698,5 @@ def target_list(user, exoplanet_list):
             pass    
 
 user = 'cmindoza'
-exoplanet_list = ['WASP-18a b', 'WASP-126 b']
+exoplanet_list = ['WASP-18 b', 'WASP-126 b']
 target_list(user, exoplanet_list)
