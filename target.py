@@ -9,6 +9,7 @@ from csv import DictWriter
 from pandas import DataFrame, read_csv
 from shutil import rmtree, move
 from sys import exit
+from multiprocessing import Pool
 
 def email(subject, body):
     username = 'transitfit.server@gmail.com'
@@ -603,8 +604,7 @@ def auto_target(exoplanet):
             # Set the Data Paths
             cols = ['Path', 'Telescope', 'Filter', 'Epochs', 'Detrending']
             df = DataFrame(columns=cols)
-            # curves = len(a)
-            curves = 1
+            curves = len(a)
             print()
             for i in range(curves):
                 df = df.append([{'Path': getcwd() + '/Exoplanet/' + exoplanet +
@@ -650,7 +650,7 @@ def auto_target(exoplanet):
                           final_lightcurve_folder=fitted_lightcurve_folder,
                           plot_folder=plot_folder)       
 
-def auto_transitfit(exoplanet_list):
+def email_handler(exoplanet_list):
     '''
     Automated version of target which inherits from auto_target. Sends an 
     email to transitfit.server@gmail.com upon an error or full completion of
@@ -682,7 +682,7 @@ def auto_transitfit(exoplanet_list):
         exoplanet_list = i
         try:
             auto_target(exoplanet_list)
-            email('SUCCESS: ' + exoplanet_list, 
+            email('Success: ' + exoplanet_list, 
                   'Exoplanet: ' + exoplanet_list + '\n\n'
                   'A new target has been fully retrieved across ' +\
                   'all available TESS Sectors.')
@@ -690,9 +690,49 @@ def auto_transitfit(exoplanet_list):
             exit('User terminated retrieval')
         except:
             trace_back = format_exc()
-            email('ERROR: ' + exoplanet_list, trace_back)
+            email('Exception: ' + exoplanet_list, trace_back)
             pass    
 
+def auto_transitfit(exoplanet_list, processes = 4, chunksize = 1):
+    '''
+    Automated version of target which inherits from auto_target. Sends an 
+    email to transitfit.server@gmail.com upon an error or full completion of
+    a target. Iteratively takes targets and employs TransitFit across each 
+    sector for every exoplanet in the list given. Runs TransitFit for all 
+    available split curves with the following options set:
+        
+        detrending = [['nth order', 2]]
+        
+        fitting_mode = 'folded'
+        
+        dynesty_sample = 'rslice'
+        
+        nlive = 1000
+        
+        fit_ttv = True
 
-exoplanet_list = ['WASP-18 b', 'WASP-126 b']
+    Parameters
+    ----------
+    exoplanet_list : str
+        A list of exoplanet targets.
+    processes : int
+        The number of processes to run in parallel. The default is 4.
+    chunksize : int
+        How many targets to assign to each process. The default is 1.
+    
+    Returns
+    -------
+    A whole lot of data to science!
+
+    '''
+    # Initialise Parallel Processing
+    if __name__ == '__main__':
+        with Pool(processes=processes) as pool:
+            pool.map(email_handler, exoplanet_list, chunksize)
+
+# Plans to read in from an external list file?
+exoplanet_list = [
+                  ['WASP-91 b'], ['WASP-18 b'], ['WASP-43 b'], ['WASP-12 b'],
+                  ['WASP-126 b'], ['LHS 3844 b'], ['GJ 1252 b'], ['TOI-270 b']           
+                 ]
 auto_transitfit(exoplanet_list)
