@@ -603,7 +603,8 @@ def auto_target(exoplanet):
             # Set the Data Paths
             cols = ['Path', 'Telescope', 'Filter', 'Epochs', 'Detrending']
             df = DataFrame(columns=cols)
-            curves = len(a)
+            # curves = len(a)
+            curves = 1
             print()
             for i in range(curves):
                 df = df.append([{'Path': getcwd() + '/Exoplanet/' + exoplanet +
@@ -649,7 +650,7 @@ def auto_target(exoplanet):
                           final_lightcurve_folder=fitted_lightcurve_folder,
                           plot_folder=plot_folder)       
 
-def target_list(user, exoplanet_list):
+def auto_transitfit(exoplanet_list):
     '''
     Automated version of target which inherits from auto_target. Sends an 
     email to transitfit.server@gmail.com upon an error or full completion of
@@ -669,8 +670,6 @@ def target_list(user, exoplanet_list):
 
     Parameters
     ----------
-    user : str
-        The user running the target_list to identify upon email send.
     exoplanet_list : str
         A list of exoplanet targets.
 
@@ -683,8 +682,7 @@ def target_list(user, exoplanet_list):
         exoplanet_list = i
         try:
             auto_target(exoplanet_list)
-            email(exoplanet_list + ' Complete', 
-                  'User: ' + user + '\n' + 
+            email('SUCCESS: ' + exoplanet_list, 
                   'Exoplanet: ' + exoplanet_list + '\n\n'
                   'A new target has been fully retrieved across ' +\
                   'all available TESS Sectors.')
@@ -692,11 +690,9 @@ def target_list(user, exoplanet_list):
             exit('User terminated retrieval')
         except:
             trace_back = format_exc()
-            email('ERROR', 'User: ' + user + '\n' + 
-                           'Exoplanet: ' + exoplanet_list + '\n\n' +
-                           trace_back)
+            email('ERROR: ' + exoplanet_list + '\n\n' + trace_back)
             pass    
 
-user = 'cmindoza'
+
 exoplanet_list = ['WASP-18 b', 'WASP-126 b']
-target_list(user, exoplanet_list)
+auto_transitfit(exoplanet_list)
