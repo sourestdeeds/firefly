@@ -2,14 +2,24 @@ from transitfit import split_lightcurve_file, run_retrieval, calculate_logg
 from lightkurve import search_lightcurvefile
 from traceback import format_exc
 from datetime import datetime, timedelta
-from os import path, makedirs, remove, getcwd, walk
+from os import path, makedirs, remove, getcwd, walk, devnull
 from smtplib import SMTP_SSL
 from astropy.io import fits
 from csv import DictWriter
 from pandas import DataFrame, read_csv
 from shutil import rmtree, move
-from sys import exit
 from multiprocessing import Pool
+import sys
+
+
+class HiddenPrints:
+    def __enter__(self):
+        self.original_stdout = sys.stdout
+        sys.stdout = open(devnull, 'w')
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        sys.stdout.close()
+        sys.stdout = self.original_stdout
 
 def email(subject, body):
     username = 'transitfit.server@gmail.com'
@@ -96,7 +106,7 @@ def target(exoplanet, dtype='eu'):
     '''
     # Check inputs are sensible
     if not dtype == 'eu' or dtype == 'nasa':
-        exit('Archive data options for dtype are: \'eu\' or \'nasa\'')
+        sys.exit('Archive data options for dtype are: \'eu\' or \'nasa\'')
     else:
         pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -157,7 +167,7 @@ def target(exoplanet, dtype='eu'):
         sector_list = lc .table .to_pandas()['sequence_number'] \
                          .drop_duplicates() .tolist()
     except Exception:
-        exit('Search result contains no data products for ' + exoplanet + '.')
+        sys.exit('Search result contains no data products for ' + exoplanet + '.')
     sector = int(input('Enter which TESS Sector you' +
                        ' would like to download: '))
     sector_folder = 'Exoplanet/' + exoplanet + '/TESS Sector ' + str(sector)
@@ -442,7 +452,7 @@ def auto_target(exoplanet):
         sector_list = lc .table .to_pandas()['sequence_number'] \
                          .drop_duplicates() .tolist()
     except Exception:
-        exit('Search result contains no data products for ' + exoplanet + '.')
+        sys.exit('Search result contains no data products for ' + exoplanet + '.')
     sector = sector_list
     for i in sector:
         sector = i
@@ -459,7 +469,7 @@ def auto_target(exoplanet):
             source = 'Exoplanet/' + exoplanet + '/mastDownload/TESS/'
             if not path.exists(source):
                 rmtree(sector_folder)
-                exit('No data products exist for the chosen TESS Sector.')
+                sys.exit('No data products exist for the chosen TESS Sector.')
             files_in_dir = []
             #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
             # Root, Directories, Files
@@ -681,13 +691,15 @@ def email_handler(exoplanet_list):
     for i in exoplanet_list:
         exoplanet_list = i
         try:
-            auto_target(exoplanet_list)
+            # Printing inside with is blocked
+            with HiddenPrints():
+                auto_target(exoplanet_list)
             email('Success: ' + exoplanet_list, 
                   'Exoplanet: ' + exoplanet_list + '\n\n'
                   'A new target has been fully retrieved across ' +\
                   'all available TESS Sectors.')
         except KeyboardInterrupt:
-            exit('User terminated retrieval')
+            sys.exit('User terminated retrieval')
         except:
             trace_back = format_exc()
             email('Exception: ' + exoplanet_list, trace_back)
@@ -730,9 +742,10 @@ def auto_transitfit(exoplanet_list, processes = 4, chunksize = 1):
         with Pool(processes=processes) as pool:
             pool.map(email_handler, exoplanet_list, chunksize)
 
+
 # Plans to read in from an external list file?
 exoplanet_list = [
-                  ['WASP-91 b'], ['WASP-18 b'], ['WASP-43 b'], ['WASP-12 b'],
+                  ['WASP-91 ba'], ['WASP-18 b'], ['WASP-43 b'], ['WASP-12 b'],
                   ['WASP-126 b'], ['LHS 3844 b'], ['GJ 1252 b'], ['TOI-270 b']           
                  ]
 auto_transitfit(exoplanet_list)
