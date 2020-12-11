@@ -690,7 +690,7 @@ def auto_transitfit(exoplanet_list):
             exit('User terminated retrieval')
         except:
             trace_back = format_exc()
-            email('ERROR: ' + exoplanet_list + '\n\n' + trace_back)
+            email('ERROR: ' + exoplanet_list, trace_back)
             pass    
 
 
