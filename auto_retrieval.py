@@ -550,7 +550,6 @@ def auto_retrieval(exoplanet_list, processes=len(os.sched_getaffinity(0)),
     # processes = len(os.sched_getaffinity(0))
     # cpu_count only returns the amount of cores the machine has.
     # processes = 3 * cpu_count() // 4
-        pass
     # Initialise Parallel Processing
     if __name__ == '__main__':
         with Pool(processes=processes) as pool:
