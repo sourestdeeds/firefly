@@ -236,8 +236,7 @@ def auto_target(exoplanet):
             # Set the Data Paths
             cols = ['Path', 'Telescope', 'Filter', 'Epochs', 'Detrending']
             df = DataFrame(columns=cols)
-            # curves = len(a)
-            curves = 1
+            curves = len(a)
             print()
             for i in range(curves):
                 df = df.append([{'Path': getcwd() + '/Exoplanet/' + exoplanet +
