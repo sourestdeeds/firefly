@@ -283,33 +283,6 @@ def auto_target(exoplanet):
                           plot_folder=plot_folder)  
 
 def email_handler(exoplanet_list):
-    '''
-    Automated version of target which inherits from auto_target. Sends an 
-    email to transitfit.server@gmail.com upon an error or full completion of
-    a target. Iteratively takes targets and employs TransitFit across each 
-    sector for every exoplanet in the list given. Runs TransitFit for all 
-    available split curves with the following options set:
-        
-        detrending = [['nth order', 2]]
-        
-        fitting_mode = 'folded'
-        
-        dynesty_sample = 'rslice'
-        
-        nlive = 1000
-        
-        fit_ttv = True
-
-    Parameters
-    ----------
-    exoplanet_list : str
-        A list of exoplanet targets.
-
-    Returns
-    -------
-    A whole lot of data to science!
-
-    '''
     for i in exoplanet_list:
         exoplanet_list = i
         try:
