@@ -40,7 +40,7 @@ def auto_target_eu(exoplanet):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Filter Setup
     tess_filter_path = '/data/TESS_filter_path.csv'
-    tess_filter = os.getcwd() + '/data/Filters/TESS_filter.csv'
+    tess_filter = f'{os.getcwd()}/data/Filters/TESS_filter.csv'
     if not os.path.exists(tess_filter_path):
         cols = ['filter_idx', 'low_wl', 'high_wl']
         df = DataFrame(columns=cols)
@@ -73,26 +73,25 @@ def auto_target_eu(exoplanet):
         sector_list = lc .table .to_pandas()['sequence_number'] \
                          .drop_duplicates() .tolist()
     except Exception:
-        sys.exit('Search result contains no data products for ' + exoplanet + '.')
+        sys.exit(f'Search result contains no data products for {exoplanet}.')
     sector = sector_list
     for i in sector:
         sector = i
-        sector_folder = 'Exoplanet/' + exoplanet + '/TESS Sector ' + str(sector)
+        sector_folder = f'Exoplanet/{exoplanet}/TESS Sector {str(sector)}'
         os.makedirs(sector_folder, exist_ok=True)
         lc = search_lightcurvefile(exoplanet, mission='TESS',
                                    sector=sector)
-        print('\nDownloading MAST Lightcurve for TESS Sector ' +
-              str(sector) + '.')
+        print(f'\nDownloading MAST Lightcurve for TESS Sector {str(sector)}.')
         lc.download_all(download_dir=sector_folder)
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # Root, Directories, Files
         files_in_dir = []
-        source = sector_folder + '/mastDownload/TESS/'
+        source = f'{sector_folder}/mastDownload/TESS/'
         for r, d, f in os.walk(source):
             for item in f:
                 if '.fits' in item:
                     files_in_dir.append(os.path.join(r, item))
-        destination = sector_folder + '/' + exoplanet + '.fits'
+        destination = f'{sector_folder}/{exoplanet}.fits'
         for files in files_in_dir:
             if files.endswith(".fits"):
                 move(files, destination)
@@ -177,7 +176,7 @@ def auto_target_eu(exoplanet):
                                           'Input_A', 'Input_B', 'Filter'])
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # Save the priors
-        priors = 'Exoplanet/' + exoplanet + '/' + exoplanet + ' Priors.csv'
+        priors = f'Exoplanet/{exoplanet}/{exoplanet} Priors.csv'
         if not os.path.exists(priors):
             priors_csv.to_csv(priors, index=False, header=True)
         else:
@@ -185,10 +184,9 @@ def auto_target_eu(exoplanet):
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # Split the Light curves
         t0, P = s.loc['tzero_tr'], s.loc['orbital_period']
-        csvfile = sector_folder + '/' + exoplanet + '.csv'
+        csvfile = f'{sector_folder}/{exoplanet}.csv'
         split_curves = split_lightcurve_file(csvfile, t0=t0, P=P)
-        print('\nA total of ' + str(len(split_curves)) +
-              ' lightcurves were created.')
+        print(f'\nA total of {str(len(split_curves))} lightcurves were created.')
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # Set the Data Paths
         cols = ['Path', 'Telescope', 'Filter', 'Epochs', 'Detrending']
@@ -196,8 +194,8 @@ def auto_target_eu(exoplanet):
         curves = len(split_curves)
         print()
         for i in range(curves):
-            df = df.append([{'Path': os.getcwd() + '/' + sector_folder +
-                             '/split_curve_' + str(i) + '.csv'}],
+            df = df.append([{'Path': f'{os.getcwd()}/{sector_folder}' +\
+                             f'/split_curve_{str(i)}.csv'}],
                            ignore_index=True)
             df['Telescope'], df['Filter'], df['Detrending'] = 0, 0, 0
             df['Epochs'] = range(0, len(df))
@@ -205,16 +203,15 @@ def auto_target_eu(exoplanet):
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # Paths to data, priors, and filter info:
         data = 'data/data_paths.csv'
-        priors = 'Exoplanet/' + exoplanet + '/' + exoplanet + ' Priors.csv'
+        priors = f'Exoplanet/{exoplanet}/{exoplanet} Priors.csv'
         filters = 'data/TESS_filter_path.csv'
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # Output folders
-        results_output_folder = 'Exoplanet/' + exoplanet + '/' + \
-            '/TESS Sector ' + str(sector) + '/output_parameters'
-        fitted_lightcurve_folder = 'Exoplanet/' + exoplanet + '/' + \
-            '/TESS Sector ' + str(sector) + '/fitted_lightcurves'
-        plot_folder = 'Exoplanet/' + exoplanet + '/' + '/TESS Sector ' +\
-            str(sector) + '/plots'
+        results_output_folder = f'Exoplanet/{exoplanet}' +\
+            f'/TESS Sector {str(sector)}/output_parameters'
+        fitted_lightcurve_folder = f'Exoplanet/{exoplanet}' +\
+            f'/TESS Sector {str(sector)}/fitted_lightcurves'
+        plot_folder = f'Exoplanet/{exoplanet}/TESS Sector {str(sector)}/plots'
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # Run the retrieval
         detrending = [['nth order', 2]]
@@ -228,11 +225,11 @@ def auto_target_eu(exoplanet):
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # Cleanup
         try:
-            rmtree(sector_folder + '/mastDownload')
+            rmtree(f'{sector_folder}/mastDownload')
             os.remove(fitsfile)
             os.remove(csvfile)
             for i in range(len(split_curves)):
-                os.remove(sector_folder + '/split_curve_' + str(i) + '.csv')
+                os.remove(f'{sector_folder}/split_curve_{str(i)}.csv')
         except Exception:
             pass
 
@@ -240,7 +237,7 @@ def auto_target_nasa(exoplanet):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Filter Setup
     tess_filter_path = '/data/TESS_filter_path.csv'
-    tess_filter = os.getcwd() + '/data/Filters/TESS_filter.csv'
+    tess_filter = f'{os.getcwd()}/data/Filters/TESS_filter.csv'
     if not os.path.exists(tess_filter_path):
         cols = ['filter_idx', 'low_wl', 'high_wl']
         df = DataFrame(columns=cols)
@@ -280,26 +277,25 @@ def auto_target_nasa(exoplanet):
         sector_list = lc .table .to_pandas()['sequence_number'] \
                          .drop_duplicates() .tolist()
     except Exception:
-        sys.exit('Search result contains no data products for ' + exoplanet + '.')
+        sys.exit(f'Search result contains no data products for {exoplanet}.')
     sector = sector_list
     for i in sector:
         sector = i
-        sector_folder = 'Exoplanet/' + exoplanet + '/TESS Sector ' + str(sector)
+        sector_folder = f'Exoplanet/{exoplanet}/TESS Sector {str(sector)}'
         os.makedirs(sector_folder, exist_ok=True)
         lc = search_lightcurvefile(exoplanet, mission='TESS',
                                    sector=sector)
-        print('\nDownloading MAST Lightcurve for TESS Sector ' +
-              str(sector) + '.')
+        print(f'\nDownloading MAST Lightcurve for TESS Sector {str(sector)}.')
         lc.download_all(download_dir=sector_folder)
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # Root, Directories, Files
         files_in_dir = []
-        source = sector_folder + '/mastDownload/TESS/'
+        source = f'{sector_folder}/mastDownload/TESS/'
         for r, d, f in os.walk(source):
             for item in f:
                 if '.fits' in item:
                     files_in_dir.append(os.path.join(r, item))
-        destination = sector_folder + '/' + exoplanet + '.fits'
+        destination = f'{sector_folder}/{exoplanet}.fits'
         for files in files_in_dir:
             if files.endswith(".fits"):
                 move(files, destination)
@@ -358,7 +354,7 @@ def auto_target_nasa(exoplanet):
                                           'Input_A', 'Input_B', 'Filter'])
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # Save the priors
-        priors = 'Exoplanet/' + exoplanet + '/' + exoplanet + ' Priors.csv'
+        priors = f'Exoplanet/{exoplanet}/{exoplanet} Priors.csv'
         if not os.path.exists(priors):
             priors_csv.to_csv(priors, index=False, header=True)
         else:
@@ -367,10 +363,9 @@ def auto_target_nasa(exoplanet):
         # Split the Light curves
         t0, P, t14 = s.loc['pl_tranmid'], s.loc['pl_orbper'], \
             s.loc['pl_trandur'] * 24 * 60
-        csvfile = 'Exoplanet/' + exoplanet + '/TESS Sector ' + str(sector) \
-            + '/' + exoplanet + '.csv'
+        csvfile = f'{sector_folder}/{exoplanet}.csv'
         split_curves = split_lightcurve_file(csvfile, t0=t0, P=P)
-        print('\nA total of ' + str(len(split_curves)) + ' lightcurves were created.')
+        print(f'\nA total of {str(len(split_curves))} lightcurves were created.')
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # Set the Data Paths
         cols = ['Path', 'Telescope', 'Filter', 'Epochs', 'Detrending']
@@ -378,8 +373,8 @@ def auto_target_nasa(exoplanet):
         curves = len(split_curves)
         print()
         for i in range(curves):
-            df = df.append([{'Path': os.getcwd() + '/' + sector_folder +
-                             '/split_curve_' + str(i) + '.csv'}],
+            df = df.append([{'Path': f'{os.getcwd()}/{sector_folder}' +\
+                             f'/split_curve_{str(i)}.csv'}],
                            ignore_index=True)
             df['Telescope'], df['Filter'], df['Detrending'] = 0, 0, 0
             df['Epochs'] = range(0, len(df))
@@ -387,16 +382,15 @@ def auto_target_nasa(exoplanet):
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # Paths to data, priors, and filter info:
         data = 'data/data_paths.csv'
-        priors = 'Exoplanet/' + exoplanet + '/' + exoplanet + ' Priors.csv'
+        priors = f'Exoplanet/{exoplanet}/{exoplanet} Priors.csv'
         filters = 'data/TESS_filter_path.csv'
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # Output folders
-        results_output_folder = 'Exoplanet/' + exoplanet + '/' + \
-            '/TESS Sector ' + str(sector) + '/output_parameters'
-        fitted_lightcurve_folder = 'Exoplanet/' + exoplanet + '/' + \
-            '/TESS Sector ' + str(sector) + '/fitted_lightcurves'
-        plot_folder = 'Exoplanet/' + exoplanet + '/' + '/TESS Sector ' +\
-            str(sector) + '/plots'
+        results_output_folder = f'Exoplanet/{exoplanet}' +\
+            f'/TESS Sector {str(sector)}/output_parameters'
+        fitted_lightcurve_folder = f'Exoplanet/{exoplanet}' +\
+            f'/TESS Sector {str(sector)}/fitted_lightcurves'
+        plot_folder = f'Exoplanet/{exoplanet}/TESS Sector {str(sector)}/plots'
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # Run the retrieval
         detrending = [['nth order', 2]]
@@ -410,11 +404,11 @@ def auto_target_nasa(exoplanet):
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # Cleanup
         try:
-            rmtree(sector_folder + '/mastDownload')
+            rmtree(f'{sector_folder}/mastDownload')
             os.remove(fitsfile)
             os.remove(csvfile)
             for i in range(len(split_curves)):
-                os.remove(sector_folder + '/split_curve_' + str(i) + '.csv')
+                os.remove(f'{sector_folder}/split_curve_{str(i)}.csv')
         except Exception:
             pass
 
@@ -452,15 +446,15 @@ def iterable_target_eu(exoplanet_list):
             # Printing suppressed within scope
             with suppress_print():
                 auto_target_eu(exoplanet_list)
-            email('Success: ' + exoplanet_list, 
-                  'Exoplanet: ' + exoplanet_list + '\n\n'
+            email(f'Success: {exoplanet_list}', 
+                  f'Exoplanet: {exoplanet_list} \n\n'
                   'A new target has been fully retrieved across ' +\
                   'all available TESS Sectors.')
         except KeyboardInterrupt:
             sys.exit('User terminated retrieval')
         except:
             trace_back = format_exc()
-            email('Exception: ' + exoplanet_list, trace_back)
+            email(f'Exception: {exoplanet_list}', trace_back)
             pass    
 
 def iterable_target_nasa(exoplanet_list):
@@ -497,15 +491,15 @@ def iterable_target_nasa(exoplanet_list):
             # Printing suppressed within scope
             with suppress_print():
                 auto_target_nasa(exoplanet_list)
-            email('Success: ' + exoplanet_list, 
-                  'Exoplanet: ' + exoplanet_list + '\n\n'
+            email(f'Success: {exoplanet_list}', 
+                  f'Exoplanet: {exoplanet_list} \n\n'
                   'A new target has been fully retrieved across ' +\
                   'all available TESS Sectors.')
         except KeyboardInterrupt:
             sys.exit('User terminated retrieval')
         except:
             trace_back = format_exc()
-            email('Exception: ' + exoplanet_list, trace_back)
+            email(f'Exception: {exoplanet_list}', trace_back)
             pass    
 
 def auto_retrieval(exoplanet_list, processes=len(os.sched_getaffinity(0)),
