@@ -12,7 +12,7 @@ from multiprocessing import Pool
 import sys
 
 
-class HiddenPrints:
+class suppress_print():
     def __enter__(self):
         self.original_stdout = sys.stdout
         sys.stdout = open(devnull, 'w')
@@ -34,7 +34,7 @@ def email(subject, body):
         server.sendmail(sent_from, to, message)
         server.close()
     except:
-        # Continue on failure to not break code
+        # Continue on conn failure
         pass
 
 def target(exoplanet, dtype='eu'):
@@ -614,7 +614,8 @@ def auto_target(exoplanet):
             # Set the Data Paths
             cols = ['Path', 'Telescope', 'Filter', 'Epochs', 'Detrending']
             df = DataFrame(columns=cols)
-            curves = len(a)
+            # curves = len(a)
+            curves = 1
             print()
             for i in range(curves):
                 df = df.append([{'Path': getcwd() + '/Exoplanet/' + exoplanet +
@@ -658,7 +659,7 @@ def auto_target(exoplanet):
                           fitting_mode='folded', fit_ttv=True,
                           results_output_folder=results_output_folder,
                           final_lightcurve_folder=fitted_lightcurve_folder,
-                          plot_folder=plot_folder)       
+                          plot_folder=plot_folder)  
 
 def email_handler(exoplanet_list):
     '''
@@ -691,8 +692,8 @@ def email_handler(exoplanet_list):
     for i in exoplanet_list:
         exoplanet_list = i
         try:
-            # Printing inside with is blocked
-            with HiddenPrints():
+            # Printing suppressed within scope
+            with suppress_print():
                 auto_target(exoplanet_list)
             email('Success: ' + exoplanet_list, 
                   'Exoplanet: ' + exoplanet_list + '\n\n'
@@ -705,7 +706,7 @@ def email_handler(exoplanet_list):
             email('Exception: ' + exoplanet_list, trace_back)
             pass    
 
-def auto_transitfit(exoplanet_list, processes = 4, chunksize = 1):
+def auto_transitfit(exoplanet_list, processes=4, chunksize=1):
     '''
     Automated version of target which inherits from auto_target. Sends an 
     email to transitfit.server@gmail.com upon an error or full completion of
@@ -745,7 +746,7 @@ def auto_transitfit(exoplanet_list, processes = 4, chunksize = 1):
 
 # Plans to read in from an external list file?
 exoplanet_list = [
-                  ['WASP-91 b'], ['WASP-18 b'], ['WASP-43 b'], ['WASP-12 b'],
-                  ['WASP-126 b'], ['LHS 3844 b'], ['GJ 1252 b'], ['TOI-270 b']           
+    ['WASP-91 b'], ['WASP-18 b'], ['WASP-43 b'], ['WASP-12 b'],
+    ['WASP-126 b'], ['LHS 3844 b'], ['GJ 1252 b'], ['TOI-270 b']           
                  ]
 auto_transitfit(exoplanet_list)
