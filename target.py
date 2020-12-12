@@ -1,15 +1,15 @@
 from transitfit import split_lightcurve_file, run_retrieval, calculate_logg
-from lightkurve import search_lightcurvefile, search
+from lightkurve import search_lightcurvefile
 from datetime import datetime, timedelta
 from os import path, makedirs, remove, getcwd, walk
 from astropy.io import fits
 from csv import DictWriter
 from pandas import DataFrame, read_csv
 from shutil import rmtree, move
-from sys import exit
+import sys
 
 
-def target(exoplanet, user = True, dtype='eu'):
+def target(exoplanet, dtype='eu'):
     '''
     A target data retriever for confirmed/candidate TESS exoplanets.
     Generates the priors and host star variables for a chosen target.
@@ -41,12 +41,6 @@ def target(exoplanet, user = True, dtype='eu'):
     ----------
     exoplanet : string, example: 'WASP-43 b'
         The target exoplanet.
-
-    curves : int, optional
-        How many light curves to fit. Updates data paths for chosen target.
-        Must be contained within the target folder,
-        ie 'WASP-43 b/split_curve_0.csv'.
-        The default is 1.
 
     dtype : string, optional
         Allows for inputs 'nasa' or 'eu'. The default is 'nasa'.
@@ -84,7 +78,7 @@ def target(exoplanet, user = True, dtype='eu'):
     '''
     # Check inputs are sensible
     if not dtype == 'eu' or dtype == 'nasa':
-        exit('Archive data options for dtype are: \'eu\' or \'nasa\'')
+        sys.exit('Archive data options for dtype are: \'eu\' or \'nasa\'')
     else:
         pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -142,10 +136,10 @@ def target(exoplanet, user = True, dtype='eu'):
     lc = search_lightcurvefile(exoplanet, mission='TESS')
     print(lc)
     try:
-        lc.ra
-        pass
+        sector_list = lc .table .to_pandas()['sequence_number'] \
+                         .drop_duplicates() .tolist()
     except Exception:
-        exit('Search result contains no data products for ' + exoplanet + '.')
+        sys.exit('Search result contains no data products for ' + exoplanet + '.')
     sector = int(input('Enter which TESS Sector you' +
                        ' would like to download: '))
     sector_folder = 'Exoplanet/' + exoplanet + '/TESS Sector ' + str(sector)
@@ -162,7 +156,7 @@ def target(exoplanet, user = True, dtype='eu'):
             rmtree(sector_folder)
             exit('No data products exist for the chosen TESS Sector.')
         files_in_dir = []
-        # r=>root, d=>directories, f=>files
+        # Root, Directories, Files
         for r, d, f in walk(source):
            for item in f:
               if '.fits' in item:
@@ -173,8 +167,7 @@ def target(exoplanet, user = True, dtype='eu'):
                 move(files,destination)
     else:
         print('\nMAST Lightcurve for TESS Sector ' + str(sector) +\
-              ' previously downloaded.')
-        pass
+          ' previously downloaded.')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Extract Time series
     curvefile = 'Exoplanet/' + exoplanet + '/TESS Sector ' + \
@@ -324,7 +317,6 @@ def target(exoplanet, user = True, dtype='eu'):
     elif dtype == 'nasa':
         print('\nPriors generated from the NASA Archive for ' + exoplanet + 
               ' are available to edit.\n')
-    # print(s.loc['rowupdate'])
     print(repack)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Split the Light curves
@@ -351,10 +343,7 @@ def target(exoplanet, user = True, dtype='eu'):
     # Set the Data Paths
     cols = ['Path', 'Telescope', 'Filter', 'Epochs', 'Detrending']
     df = DataFrame(columns=cols)
-    if user == True:
-        curves = int(input('Enter how many lightcurves you wish to fit: '))
-    elif user == False:
-        curves = len(a)
+    curves = int(input('Enter how many lightcurves you wish to fit: '))
     print()
     for i in range(curves):
         df = df.append([{'Path': getcwd() + '/Exoplanet/' + exoplanet +
@@ -398,5 +387,4 @@ def target(exoplanet, user = True, dtype='eu'):
                   final_lightcurve_folder=fitted_lightcurve_folder,
                   plot_folder=plot_folder)
 
-
-target('WASP-18 b')
+target('WASP-43 b')
