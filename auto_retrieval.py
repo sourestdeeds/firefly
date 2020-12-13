@@ -6,10 +6,11 @@ from smtplib import SMTP_SSL
 from astropy.io import fits
 from csv import DictWriter
 from pandas import DataFrame, read_csv
-from shutil import rmtree, move
+from shutil import rmtree, move, make_archive
 from multiprocessing import Pool, cpu_count
 import sys, os
 
+__all__ = ['auto_retrieval']
 
 class suppress_print():
     def __enter__(self):
@@ -20,7 +21,7 @@ class suppress_print():
         sys.stdout.close()
         sys.stdout = self.original_stdout
 
-def email(subject, body):
+def _email(subject, body):
     username = 'transitfit.server@gmail.com'
     password = 'yvoq efzi dcib dmbm'
     sent_from = username
@@ -36,7 +37,7 @@ def email(subject, body):
         # Continue on conn failure
         pass
 
-def auto_target_eu(exoplanet):
+def _auto_target_eu(exoplanet):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Filter Setup
     tess_filter_path = '/data/TESS_filter_path.csv'
@@ -192,6 +193,7 @@ def auto_target_eu(exoplanet):
         cols = ['Path', 'Telescope', 'Filter', 'Epochs', 'Detrending']
         df = DataFrame(columns=cols)
         curves = len(split_curves)
+        curves = 1
         print()
         for i in range(curves):
             df = df.append([{'Path': f'{os.getcwd()}/{sector_folder}' +\
@@ -216,7 +218,7 @@ def auto_target_eu(exoplanet):
         # Run the retrieval
         detrending = [['nth order', 2]]
         run_retrieval(data, priors, filters, detrending, host_T=host_T,
-                      host_logg=host_logg, host_z=host_z, nlive = 1000,
+                      host_logg=host_logg, host_z=host_z, nlive = 50,
                       host_r=host_r, dynesty_sample='rslice',
                       fitting_mode='folded', fit_ttv=False,
                       results_output_folder=results_output_folder,
@@ -226,14 +228,23 @@ def auto_target_eu(exoplanet):
         # Cleanup
         try:
             rmtree(f'{sector_folder}/mastDownload')
-            os.remove(fitsfile)
+            move(fitsfile,f'Exoplanet/{exoplanet}.fits')
+            os.remove(f'Exoplanet/{exoplanet}.fits')
             os.remove(csvfile)
+            os.remove(priors)
             for i in range(len(split_curves)):
                 os.remove(f'{sector_folder}/split_curve_{str(i)}.csv')
         except Exception:
             pass
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Archive and sort
+    now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
+    make_archive(f'Exoplanet/{exoplanet} {now}', format='gztar', 
+                 root_dir=f'{os.getcwd()}/Exoplanet/',
+                 base_dir=f'{exoplanet}')
+    rmtree(f'Exoplanet/{exoplanet}')
 
-def auto_target_nasa(exoplanet):
+def _auto_target_nasa(exoplanet):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Filter Setup
     tess_filter_path = '/data/TESS_filter_path.csv'
@@ -387,9 +398,9 @@ def auto_target_nasa(exoplanet):
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # Output folders
         results_output_folder = f'Exoplanet/{exoplanet}' +\
-            f'/TESS Sector {str(sector)}/output_parameters'
+            f'/TESS Sector {str(sector)}output_parameters'
         fitted_lightcurve_folder = f'Exoplanet/{exoplanet}' +\
-            f'/TESS Sector {str(sector)}/fitted_lightcurves'
+            f'/TESS Sector {str(sector)}fitted_lightcurves'
         plot_folder = f'Exoplanet/{exoplanet}/TESS Sector {str(sector)}/plots'
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # Run the retrieval
@@ -405,48 +416,30 @@ def auto_target_nasa(exoplanet):
         # Cleanup
         try:
             rmtree(f'{sector_folder}/mastDownload')
-            os.remove(fitsfile)
+            move(fitsfile,f'Exoplanet/{exoplanet}.fits')
+            os.remove(f'Exoplanet/{exoplanet}.fits')
             os.remove(csvfile)
+            os.remove(priors)
             for i in range(len(split_curves)):
                 os.remove(f'{sector_folder}/split_curve_{str(i)}.csv')
         except Exception:
             pass
-
-def iterable_target_eu(exoplanet_list):
-    '''
-    Automated version of target which inherits from auto_target. Sends an 
-    email to transitfit.server@gmail.com upon an error or full completion of
-    a target. Iteratively takes targets and employs TransitFit across each 
-    sector for every exoplanet in the list given. Runs TransitFit for all 
-    available split curves with the following options set:
-        
-        detrending = [['nth order', 2]]
-        
-        fitting_mode = 'folded'
-        
-        dynesty_sample = 'rslice'
-        
-        nlive = 1000
-        
-        fit_ttv = True
-
-    Parameters
-    ----------
-    exoplanet_list : str
-        A list of exoplanet targets.
-
-    Returns
-    -------
-    A whole lot of data to science!
-
-    '''
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Archive and sort
+    now = datetime.now().strftime("%d-%b-%Y %H:%M:%S %Z")
+    make_archive(f'Exoplanet/{exoplanet} {now}', format='gztar', 
+                 root_dir=f'{os.getcwd()}/Exoplanet/',
+                 base_dir=f'{exoplanet}')
+    rmtree(f'Exoplanet/{exoplanet}')
+    
+def _iterable_target_eu(exoplanet_list):
     for i in exoplanet_list:
         exoplanet_list = i
         try:
             # Printing suppressed within scope
             with suppress_print():
-                auto_target_eu(exoplanet_list)
-            email(f'Success: {exoplanet_list}', 
+                _auto_target_eu(exoplanet_list)
+            _email(f'Success: {exoplanet_list}', 
                   f'Exoplanet: {exoplanet_list} \n\n'
                   'A new target has been fully retrieved across ' +\
                   'all available TESS Sectors.')
@@ -454,44 +447,17 @@ def iterable_target_eu(exoplanet_list):
             sys.exit('User terminated retrieval')
         except:
             trace_back = format_exc()
-            email(f'Exception: {exoplanet_list}', trace_back)
+            _email(f'Exception: {exoplanet_list}', trace_back)
             pass    
 
-def iterable_target_nasa(exoplanet_list):
-    '''
-    Automated version of target which inherits from auto_target. Sends an 
-    email to transitfit.server@gmail.com upon an error or full completion of
-    a target. Iteratively takes targets and employs TransitFit across each 
-    sector for every exoplanet in the list given. Runs TransitFit for all 
-    available split curves with the following options set:
-        
-        detrending = [['nth order', 2]]
-        
-        fitting_mode = 'folded'
-        
-        dynesty_sample = 'rslice'
-        
-        nlive = 1000
-        
-        fit_ttv = True
-
-    Parameters
-    ----------
-    exoplanet_list : str
-        A list of exoplanet targets.
-
-    Returns
-    -------
-    A whole lot of data to science!
-
-    '''
+def _iterable_target_nasa(exoplanet_list):
     for i in exoplanet_list:
         exoplanet_list = i
         try:
             # Printing suppressed within scope
             with suppress_print():
-                auto_target_nasa(exoplanet_list)
-            email(f'Success: {exoplanet_list}', 
+                _auto_target_nasa(exoplanet_list)
+            _email(f'Success: {exoplanet_list}', 
                   f'Exoplanet: {exoplanet_list} \n\n'
                   'A new target has been fully retrieved across ' +\
                   'all available TESS Sectors.')
@@ -499,7 +465,7 @@ def iterable_target_nasa(exoplanet_list):
             sys.exit('User terminated retrieval')
         except:
             trace_back = format_exc()
-            email(f'Exception: {exoplanet_list}', trace_back)
+            _email(f'Exception: {exoplanet_list}', trace_back)
             pass    
 
 def auto_retrieval(exoplanet_list, processes=len(os.sched_getaffinity(0)),
@@ -548,9 +514,9 @@ def auto_retrieval(exoplanet_list, processes=len(os.sched_getaffinity(0)),
     if __name__ == '__main__':
         with Pool(processes=processes) as pool:
             if archive == 'eu':
-                pool.map(iterable_target_eu, exoplanet_list, chunksize=1)
+                pool.map(_iterable_target_eu, exoplanet_list, chunksize=1)
             elif archive == 'nasa':
-                pool.map(iterable_target_nasa, exoplanet_list, chunksize=1)
+                pool.map(_iterable_target_nasa, exoplanet_list, chunksize=1)
 
 
 # Plans to read in from an external list file?
