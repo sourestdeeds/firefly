@@ -193,7 +193,6 @@ def _auto_target_eu(exoplanet):
         cols = ['Path', 'Telescope', 'Filter', 'Epochs', 'Detrending']
         df = DataFrame(columns=cols)
         curves = len(split_curves)
-        curves = 1
         print()
         for i in range(curves):
             df = df.append([{'Path': f'{os.getcwd()}/{sector_folder}' +\
@@ -218,7 +217,7 @@ def _auto_target_eu(exoplanet):
         # Run the retrieval
         detrending = [['nth order', 2]]
         run_retrieval(data, priors, filters, detrending, host_T=host_T,
-                      host_logg=host_logg, host_z=host_z, nlive = 50,
+                      host_logg=host_logg, host_z=host_z, nlive = 1000,
                       host_r=host_r, dynesty_sample='rslice',
                       fitting_mode='folded', fit_ttv=False,
                       results_output_folder=results_output_folder,
