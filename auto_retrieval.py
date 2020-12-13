@@ -220,6 +220,11 @@ def _auto_target_eu(exoplanet):
     except Exception:
         sys.exit(f'Search result contains no data products for {exoplanet}.')
     sector = sector_list
+    # Clear up previous sessions
+    try:
+        rmtree(f'Exoplanet/{exoplanet}')
+    except Exception:
+        pass
     for i in sector:
         sector = i
         sector_folder = f'Exoplanet/{exoplanet}/TESS Sector {str(sector)}'
@@ -432,6 +437,10 @@ def _auto_target_nasa(exoplanet):
                          .drop_duplicates() .tolist()
     except Exception:
         sys.exit(f'Search result contains no data products for {exoplanet}.')
+    try:
+        rmtree(f'Exoplanet/{exoplanet}')
+    except Exception:
+        pass
     sector = sector_list
     for i in sector:
         sector = i
@@ -590,7 +599,7 @@ def _iterable_target_eu(exoplanet_list):
             sys.exit('User terminated retrieval')
         except:
             trace_back = format_exc()
-            # _email(f'Exception: {exoplanet_list}', trace_back)
+            _email(f'Exception: {exoplanet_list}', trace_back)
             pass    
 
 def _iterable_target_nasa(exoplanet_list):
@@ -662,12 +671,8 @@ def auto_retrieval(exoplanet_list, processes=len(os.sched_getaffinity(0))//4,
                 pool.map(_iterable_target_nasa, exoplanet_list, chunksize=1)
 
 
-# exoplanet_list = (
-#     ['WASP-91 b'], ['WASP-18 b'], ['WASP-43 b'], ['WASP-12 b'],
-#     ['WASP-126 b'], ['LHS 3844 b'], ['GJ 1252 b'], ['TOI-270 b']           
-#                   )
-
 exoplanet_list = (
-    ['WASP-43 b'], ['WASP-12 b']
+    ['WASP-91 b'], ['WASP-18 b'], ['WASP-43 b'], ['WASP-12 b'],
+    ['WASP-126 b'], ['LHS 3844 b'], ['GJ 1252 b'], ['TOI-270 b']           
                   )
 auto_retrieval(exoplanet_list)
