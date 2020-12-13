@@ -426,7 +426,7 @@ def _auto_target_nasa(exoplanet):
             pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Archive and sort
-    now = datetime.now().strftime("%d-%b-%Y %H:%M:%S %Z")
+    now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
     make_archive(f'Exoplanet/{exoplanet} {now}', format='gztar', 
                  root_dir=f'{os.getcwd()}/Exoplanet/',
                  base_dir=f'{exoplanet}')
