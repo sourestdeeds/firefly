@@ -449,6 +449,8 @@ def auto_retrieval(exoplanet_list, processes=len(os.sched_getaffinity(0))//4,
                 pool.map(_iterable_target_eu, exoplanet_list, chunksize=1)
             elif archive == 'nasa':
                 pool.map(_iterable_target_nasa, exoplanet_list, chunksize=1)
+    else:
+        pass
 
 exoplanet_list = (
     ['WASP-91 b'], ['WASP-18 b'], ['WASP-43 b'], ['WASP-12 b'],
