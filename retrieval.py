@@ -498,7 +498,7 @@ def _retrieval(exoplanet, archive='eu'):
         # Run the retrieval
         detrending = [['nth order', 2]]
         run_retrieval(data, priors, filters, detrending, host_T=host_T,
-                      host_logg=host_logg, host_z=host_z, nlive = 50,
+                      host_logg=host_logg, host_z=host_z, nlive = 1000,
                       host_r=host_r, dynesty_sample='rslice',
                       fitting_mode='folded', fit_ttv=False,
                       results_output_folder=results_output_folder,
