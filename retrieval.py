@@ -1,13 +1,40 @@
 from transitfit import split_lightcurve_file, run_retrieval, calculate_logg
 from lightkurve import search_lightcurvefile
+from traceback import format_exc
 from datetime import datetime, timedelta
+from smtplib import SMTP_SSL
 from astropy.io import fits
 from csv import DictWriter
 from pandas import DataFrame, read_csv
 from shutil import rmtree, move, make_archive
+from multiprocessing import Pool, cpu_count
 import sys, os
 
-__all__ = ['retrieval']
+
+class suppress_print():
+    def __enter__(self):
+        self.original_stdout = sys.stdout
+        sys.stdout = open(os.devnull, 'w')
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        sys.stdout.close()
+        sys.stdout = self.original_stdout
+
+def _email(subject, body):
+    username = 'transitfit.server@gmail.com'
+    password = 'yvoq efzi dcib dmbm'
+    sent_from = username
+    to = ['transitfit.server@gmail.com']
+    message = f'Subject: {subject}\n\n{body}'
+    try:
+        server = SMTP_SSL('smtp.gmail.com', 465)
+        server.ehlo()
+        server.login(username, password)
+        server.sendmail(sent_from, to, message)
+        server.close()
+    except:
+        # Continue on conn failure
+        pass
 
 def _TESS_filter():
     tess_filter_path = '/data/TESS_filter_path.csv'
@@ -109,7 +136,7 @@ def _eu(exoplanet):
     repack = DataFrame(cols, columns=['Parameter', 'Distribution',
                                       'Input_A', 'Input_B', 'Filter'])
     repack = repack.to_string(index=False)
-    print(f'Priors generated from the EU Archive for {exoplanet}.\n')
+    print(f'\n Priors generated from the EU Archive for {exoplanet}.')
     print(repack)
     return host_T, host_z, host_r, host_logg, t0, P
 
@@ -201,7 +228,7 @@ def _nasa(exoplanet):
     repack = DataFrame(cols, columns=['Parameter', 'Distribution',
                                       'Input_A', 'Input_B', 'Filter'])
     repack = repack.to_string(index=False)
-    print(f'\nPriors generated from the NASA Archive for {exoplanet}.\n')
+    print(f'\n Priors generated from the NASA Archive for {exoplanet}.')
     print(repack)
     return host_T, host_z, host_r, host_logg, t0, P, t14
 
@@ -345,8 +372,8 @@ def retrieval(exoplanet, archive='eu'):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Split the Light curves
     csvfile = f'{sector_folder}/{exoplanet}.csv'
-    curves = len(split_curves)
-    print(f'\nA total of {str(curves)} lightcurves were created.')
+    split_curves = split_lightcurve_file(csvfile, t0=t0, P=P)
+    print(f'\nA total of {str(len(split_curves))} lightcurves were created.')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Set the Data Paths
     cols = ['Path', 'Telescope', 'Filter', 'Epochs', 'Detrending']
@@ -402,8 +429,191 @@ def retrieval(exoplanet, archive='eu'):
                  base_dir=f'{exoplanet}')
     rmtree(f'Exoplanet/{exoplanet}')
 
+def _retrieval(exoplanet, archive='eu'):
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Filter Setup
+    _TESS_filter()
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Download MAST lightcurves
+    lc = search_lightcurvefile(exoplanet, mission='TESS')
+    print(lc)
+    try:
+        sector_list = lc .table .to_pandas()['sequence_number'] \
+                         .drop_duplicates() .tolist()
+    except Exception:
+        sys.exit(f'Search result contains no data products for {exoplanet}.')
+    sector = sector_list
+    # Clear up previous sessions
+    try:
+        rmtree(f'Exoplanet/{exoplanet}')
+    except Exception:
+        pass
+    for i in sector:
+        sector = i
+        sector_folder = f'Exoplanet/{exoplanet}/TESS Sector {str(sector)}'
+        os.makedirs(sector_folder, exist_ok=True)
+        lc = search_lightcurvefile(exoplanet, mission='TESS',
+                                   sector=sector)
+        print(f'\nDownloading MAST Lightcurve for TESS Sector {str(sector)}.')
+        lc.download_all(download_dir=sector_folder)
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        # Extract all light curves to a single csv file
+        fitsfile = _fits(exoplanet, sector_folder)
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        # Download Archive
+        if archive == 'eu':
+            host_T, host_z, host_r, host_logg, t0, P = _eu(exoplanet)
+        elif archive == 'nasa':
+            host_T, host_z, host_r, host_logg, t0, P, t14 = _nasa(exoplanet)
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        # Split the Light curves
+        csvfile = f'{sector_folder}/{exoplanet}.csv'
+        split_curves = split_lightcurve_file(csvfile, t0=t0, P=P)
+        curves = len(split_curves)
+        print(f'\nA total of {str(curves)} lightcurves were created.')
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        # Set the Data Paths
+        cols = ['Path', 'Telescope', 'Filter', 'Epochs', 'Detrending']
+        df = DataFrame(columns=cols)
+        for i in range(curves):
+            df = df.append([{'Path': f'{os.getcwd()}/{sector_folder}' +\
+                             f'/split_curve_{str(i)}.csv'}],
+                           ignore_index=True)
+            df['Telescope'], df['Filter'], df['Detrending'] = 0, 0, 0
+            df['Epochs'] = range(0, len(df))
+        df.to_csv(r'data/data_paths.csv', index=False, header=True)
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        # Paths to data, priors, and filter info:
+        data = 'data/data_paths.csv'
+        priors = f'Exoplanet/{exoplanet}/{exoplanet} Priors.csv'
+        filters = 'data/TESS_filter_path.csv'
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        # Output folders
+        results_output_folder = f'Exoplanet/{exoplanet}' +\
+            f'/TESS Sector {str(sector)}/output_parameters'
+        fitted_lightcurve_folder = f'Exoplanet/{exoplanet}' +\
+            f'/TESS Sector {str(sector)}/fitted_lightcurves'
+        plot_folder = f'Exoplanet/{exoplanet}/TESS Sector {str(sector)}/plots'
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        # Run the retrieval
+        detrending = [['nth order', 2]]
+        run_retrieval(data, priors, filters, detrending, host_T=host_T,
+                      host_logg=host_logg, host_z=host_z, nlive = 50,
+                      host_r=host_r, dynesty_sample='rslice',
+                      fitting_mode='folded', fit_ttv=False,
+                      results_output_folder=results_output_folder,
+                      final_lightcurve_folder=fitted_lightcurve_folder,
+                      plot_folder=plot_folder)
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        # Cleanup
+        try:
+            rmtree(f'{sector_folder}/mastDownload')
+            move(fitsfile,f'Exoplanet/{exoplanet}.fits')
+            os.remove(f'Exoplanet/{exoplanet}.fits')
+            os.remove(csvfile)
+            os.remove(priors)
+            for i in range(len(split_curves)):
+                os.remove(f'{sector_folder}/split_curve_{str(i)}.csv')
+        except Exception:
+            pass
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Archive and sort
+    now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
+    make_archive(f'Exoplanet/{exoplanet} {now}', format='gztar', 
+                 root_dir=f'{os.getcwd()}/Exoplanet/',
+                 base_dir=f'{exoplanet}')
+    rmtree(f'Exoplanet/{exoplanet}')
+ 
+def _iterable_target_eu(exoplanet_list):
+    for i in exoplanet_list:
+        exoplanet_list = i
+        try:
+            # Printing suppressed within scope
+            with suppress_print():
+                _retrieval(exoplanet_list, archive='eu')
+            _email(f'Success: {exoplanet_list}', 
+                  f'Exoplanet: {exoplanet_list} \n\n'
+                  'A new target has been fully retrieved across ' +\
+                  'all available TESS Sectors.')
+        except KeyboardInterrupt:
+            sys.exit('User terminated retrieval')
+        except:
+            trace_back = format_exc()
+            _email(f'Exception: {exoplanet_list}', trace_back)
+            pass
 
-if __name__ == '__main__':
-    retrieval('WASP-43 b')
-else:
-    pass
+def _iterable_target_nasa(exoplanet_list):
+    for i in exoplanet_list:
+        exoplanet_list = i
+        try:
+            # Printing suppressed within scope
+            with suppress_print():
+                _retrieval(exoplanet_list, archive='nasa')
+            _email(f'Success: {exoplanet_list}', 
+                  f'Exoplanet: {exoplanet_list} \n\n'
+                  'A new target has been fully retrieved across ' +\
+                  'all available TESS Sectors.')
+        except KeyboardInterrupt:
+            sys.exit('User terminated retrieval')
+        except:
+            trace_back = format_exc()
+            _email(f'Exception: {exoplanet_list}', trace_back)
+            pass    
+
+def auto_retrieval(exoplanet_list, processes=len(os.sched_getaffinity(0)),
+                   archive='eu'):
+    '''
+    Automated version of target which inherits from auto_target. Sends an 
+    email to transitfit.server@gmail.com upon an error or full completion of
+    a target. Iteratively takes targets and employs TransitFit across each 
+    sector for every exoplanet in the list given. Runs TransitFit for all 
+    available split curves with the following options set:
+        
+        detrending = [['nth order', 2]]
+        
+        fitting_mode = 'folded'
+        
+        dynesty_sample = 'rslice'
+        
+        nlive = 1000
+        
+        fit_ttv = False
+
+    Parameters
+    ----------
+    exoplanet_list : str
+        A list of exoplanet targets.
+    archive: str
+        The exoplanet archive to use for priors. Supports 'eu' and 'nasa'.
+        The default is 'eu'.
+    processes : int
+        The number of processes to run in parallel. For UNIX, this default 
+        is the maximum available for the current process.
+        The default is maximum available cores for the current process.
+    chunksize : int
+        How many targets to assign to each process. The default is 1.
+    
+    Returns
+    -------
+    A whole lot of data to science!
+
+    '''
+    with Pool(processes=processes) as pool:
+        if archive == 'eu':
+            pool.map(_iterable_target_eu, exoplanet_list, chunksize=1)
+        elif archive == 'nasa':
+            pool.map(_iterable_target_nasa, exoplanet_list, chunksize=1)
+
+# Example use
+'''
+retrieval('WASP-43 b')
+
+exoplanet_list = (
+['WASP-91 b'], ['WASP-18 b'], ['WASP-43 b'], ['WASP-12 b'],
+['WASP-126 b'], ['LHS 3844 b'], ['GJ 1252 b'], ['TOI-270 b']           
+                  )
+
+auto_retrieval(exoplanet_list)
+
+'''
+    
