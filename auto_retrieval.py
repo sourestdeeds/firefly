@@ -308,13 +308,12 @@ def _auto_target(exoplanet, archive='eu'):
         # Split the Light curves
         csvfile = f'{sector_folder}/{exoplanet}.csv'
         split_curves = split_lightcurve_file(csvfile, t0=t0, P=P)
-        print(f'\nA total of {str(len(split_curves))} lightcurves were created.')
+        curves = len(split_curves)
+        print(f'\nA total of {str(curves)} lightcurves were created.')
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # Set the Data Paths
         cols = ['Path', 'Telescope', 'Filter', 'Epochs', 'Detrending']
         df = DataFrame(columns=cols)
-        curves = len(split_curves)
-        print()
         for i in range(curves):
             df = df.append([{'Path': f'{os.getcwd()}/{sector_folder}' +\
                              f'/split_curve_{str(i)}.csv'}],
@@ -400,7 +399,7 @@ def _iterable_target_nasa(exoplanet_list):
             _email(f'Exception: {exoplanet_list}', trace_back)
             pass    
 
-def auto_retrieval(exoplanet_list, processes=len(os.sched_getaffinity(0))//4,
+def auto_retrieval(exoplanet_list, processes=len(os.sched_getaffinity(0)),
                    archive='eu'):
     '''
     Automated version of target which inherits from auto_target. Sends an 
