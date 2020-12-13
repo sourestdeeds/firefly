@@ -109,7 +109,7 @@ def _eu(exoplanet):
     repack = DataFrame(cols, columns=['Parameter', 'Distribution',
                                       'Input_A', 'Input_B', 'Filter'])
     repack = repack.to_string(index=False)
-    print(f'\n Priors generated from the EU Archive for {exoplanet}.')
+    print(f'Priors generated from the EU Archive for {exoplanet}.\n')
     print(repack)
     return host_T, host_z, host_r, host_logg, t0, P
 
@@ -201,7 +201,7 @@ def _nasa(exoplanet):
     repack = DataFrame(cols, columns=['Parameter', 'Distribution',
                                       'Input_A', 'Input_B', 'Filter'])
     repack = repack.to_string(index=False)
-    print(f'\n Priors generated from the NASA Archive for {exoplanet}.')
+    print(f'\nPriors generated from the NASA Archive for {exoplanet}.\n')
     print(repack)
     return host_T, host_z, host_r, host_logg, t0, P, t14
 
@@ -345,8 +345,8 @@ def retrieval(exoplanet, archive='eu'):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Split the Light curves
     csvfile = f'{sector_folder}/{exoplanet}.csv'
-    split_curves = split_lightcurve_file(csvfile, t0=t0, P=P)
-    print(f'\nA total of {str(len(split_curves))} lightcurves were created.')
+    curves = len(split_curves)
+    print(f'\nA total of {str(curves)} lightcurves were created.')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Set the Data Paths
     cols = ['Path', 'Telescope', 'Filter', 'Epochs', 'Detrending']
