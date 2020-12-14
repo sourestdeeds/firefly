@@ -293,7 +293,8 @@ def _fits(exoplanet, sector_folder):
         writer.writerows(write_dict)
     return fitsfile
 
-def retrieval(exoplanet, archive='eu'):
+def retrieval(exoplanet, archive='eu', nlive=1000, detrending = [['nth order', 2]],
+               dynesty_sample='rslice', fitting_mode='folded', fit_ttv=False):
     '''
     A target data retriever for confirmed/candidate TESS exoplanets.
     Generates the priors and host star variables for a chosen target.
@@ -334,6 +335,21 @@ def retrieval(exoplanet, archive='eu'):
 
         NASA : Data downloaded and stored in 'data/nasa_data.csv'.
         https://exoplanetarchive.ipac.caltech.edu/index.html
+        
+    nlive : int, optional
+        The number of live points. The default is 1000.
+        
+    detrending :  optional
+        Detrending. The default is [['nth order', 2]].
+        
+    dynesty_sample : str, optional
+        Sampling method. The default is 'rslice'.
+        
+    fitting_mode : str, optional
+        Fitting mode. The default is 'folded'.
+        
+    fit_ttv : boolean, optional
+        Fit TTV. The default is False.
 
     Returns
     -------
@@ -416,14 +432,13 @@ def retrieval(exoplanet, archive='eu'):
     plot_folder = f'{sector_folder}/plots'
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Run the retrieval
-    detrending = [['nth order', 2]]
-    run_retrieval(data, priors, filters, detrending, host_T=host_T,
-                  host_logg=host_logg, host_z=host_z, nlive = 1000,
-                  host_r=host_r, dynesty_sample='rslice',
-                  fitting_mode='folded', fit_ttv=False,
-                  results_output_folder=results_output_folder,
-                  final_lightcurve_folder=fitted_lightcurve_folder,
-                  plot_folder=plot_folder)
+    run_retrieval(data, priors, filters, detrending=detrending, nlive=nlive,
+                      host_T=host_T, host_logg=host_logg, host_z=host_z, 
+                      host_r=host_r, dynesty_sample=dynesty_sample,
+                      fitting_mode=fitting_mode, fit_ttv=fit_ttv,
+                      results_output_folder=results_output_folder,
+                      final_lightcurve_folder=fitted_lightcurve_folder,
+                      plot_folder=plot_folder)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Cleanup
     try:
@@ -444,7 +459,8 @@ def retrieval(exoplanet, archive='eu'):
                  base_dir=f'{exoplanet}')
     rmtree(f'Exoplanet/{exoplanet}')
 
-def _retrieval(exoplanet, archive='eu'):
+def _retrieval(exoplanet, archive='eu', nlive=1000, detrending = [['nth order', 2]],
+               dynesty_sample='rslice', fitting_mode='folded', fit_ttv=False):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Filter Setup
     _TESS_filter()
@@ -507,11 +523,10 @@ def _retrieval(exoplanet, archive='eu'):
         plot_folder = f'{sector_folder}/plots'
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # Run the retrieval
-        detrending = [['nth order', 2]]
-        run_retrieval(data, priors, filters, detrending, host_T=host_T,
-                      host_logg=host_logg, host_z=host_z, nlive = 1000,
-                      host_r=host_r, dynesty_sample='rslice',
-                      fitting_mode='folded', fit_ttv=False,
+        run_retrieval(data, priors, filters, detrending=detrending, nlive=nlive,
+                      host_T=host_T, host_logg=host_logg, host_z=host_z, 
+                      host_r=host_r, dynesty_sample=dynesty_sample,
+                      fitting_mode=fitting_mode, fit_ttv=fit_ttv,
                       results_output_folder=results_output_folder,
                       final_lightcurve_folder=fitted_lightcurve_folder,
                       plot_folder=plot_folder)
