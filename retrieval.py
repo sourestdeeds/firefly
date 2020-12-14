@@ -293,7 +293,7 @@ def _fits(exoplanet, sector_folder):
         writer.writerows(write_dict)
     return fitsfile
 
-def retrieval(exoplanet, archive='eu', nlive=1000, detrending_list = [['nth order', 2]],
+def retrieval(exoplanet, archive='eu', nlive=1000, detrending_list=[['nth order', 2]],
                dynesty_sample='rslice', fitting_mode='folded', fit_ttv=False):
     '''
     A target data retriever for confirmed/candidate TESS exoplanets.
@@ -459,7 +459,7 @@ def retrieval(exoplanet, archive='eu', nlive=1000, detrending_list = [['nth orde
                  base_dir=f'{exoplanet}')
     rmtree(f'Exoplanet/{exoplanet}')
 
-def _retrieval(exoplanet, archive='eu', nlive=1000, detrending_list = [['nth order', 2]],
+def _retrieval(exoplanet, archive='eu', nlive=1000, detrending_list=[['nth order', 2]],
                dynesty_sample='rslice', fitting_mode='folded', fit_ttv=False):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Filter Setup
