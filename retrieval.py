@@ -105,8 +105,8 @@ def _eu(exoplanet):
             ['inc', 'gaussian', s.loc['inclination'],
              s.loc['inclination_error_max'], ''],
             ['rp', 'uniform',
-             0.8 * radius_const * s.loc['radius'] / s.loc['star_radius'],
-             1.2 * radius_const * s.loc['radius'] / s.loc['star_radius'], 0]]
+             0.5 * radius_const * s.loc['radius'] / s.loc['star_radius'],
+             2 * radius_const * s.loc['radius'] / s.loc['star_radius'], 0]]
     priors_csv = DataFrame(cols, columns=['Parameter', 'Distribution',
                           'Input_A', 'Input_B', 'Filter'])
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -195,8 +195,8 @@ def _nasa(exoplanet):
             ['inc', 'gaussian', s.loc['pl_orbincl'],
              s.loc['pl_orbinclerr1'], ''],
             ['rp', 'uniform',
-             0.8 * radius_const * s.loc['pl_radj'] / s.loc['st_rad'],
-             1.2 * radius_const * s.loc['pl_radj'] / s.loc['st_rad'], 0]]
+             0.5 * radius_const * s.loc['pl_radj'] / s.loc['st_rad'],
+             2 * radius_const * s.loc['pl_radj'] / s.loc['st_rad'], 0]]
     priors_csv = DataFrame(cols, columns=['Parameter', 'Distribution',
                                       'Input_A', 'Input_B', 'Filter'])
     priors_csv = DataFrame(cols, columns=['Parameter', 'Distribution',
