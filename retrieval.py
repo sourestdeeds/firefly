@@ -302,7 +302,7 @@ def _fits(exoplanet, sector_folder):
     return fitsfile
 
 
-def retrieval(exoplanet, archive='eu', nlive=1000, fit_ttv=False,
+def retrieval(exoplanet, archive='eu', nlive=300, fit_ttv=False,
                detrending_list=[['nth order', 2]],
                dynesty_sample='rslice', fitting_mode='folded',
                limb_darkening_model='quadratic', ld_fit_method='independent',
@@ -627,18 +627,8 @@ def auto_retrieval(file, processes=len(os.sched_getaffinity(0)) // 4,
     Automated version of retrieval. Sends an email to transitfit.server@gmail.com
     upon an error or full completion of a target. Iteratively takes targets and
     employs TransitFit across each TESS sector for every exoplanet in the list given.
-    Runs TransitFit for all available split curves with the following options set:
-
-        detrending = [['nth order', 2]]
-
-        fitting_mode = 'folded'
-
-        dynesty_sample = 'rslice'
-
-        nlive = 1000
-
-        fit_ttv = False
-
+    Runs TransitFit for all available split curves.
+    
     Parameters
     ----------
     file : str
@@ -785,12 +775,14 @@ def auto_retrieval(file, processes=len(os.sched_getaffinity(0)) // 4,
         exoplanet_list.append([exoplanet])
     func = partial(_iterable_target, 
                    archive=archive, nlive=nlive,
-                   detrending_list=detrending_list, ld_fit_method='independent',
+                   detrending_list=detrending_list, ld_fit_method=ld_fit_method,
                    dynesty_sample=dynesty_sample, fitting_mode=fitting_mode,
-                   fit_ttv=fit_ttv, limb_darkening_model='quadratic', 
-                   max_batch_parameters=25, batch_overlap=2, dlogz=None, 
-                   maxiter=None, maxcall=None, dynesty_bounding='multi', 
-                   normalise=True, detrend=True)
+                   fit_ttv=fit_ttv, limb_darkening_model=limb_darkening_model, 
+                   max_batch_parameters=max_batch_parameters, 
+                   batch_overlap=batch_overlap, dlogz=dlogz, 
+                   maxiter=maxiter, maxcall=maxcall, 
+                   dynesty_bounding=dynesty_bounding, 
+                   normalise=normalise, detrend=detrend)
     with Pool(processes=processes) as pool:
         pool.map(func, exoplanet_list, chunksize=1)
 
