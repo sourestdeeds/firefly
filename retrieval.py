@@ -540,11 +540,11 @@ def _retrieval(exoplanet, archive='eu'):
     rmtree(f'Exoplanet/{exoplanet}')
  
 def _iterable_target_eu(exoplanet_list):
-    for exoplanet in enumerate(exoplanet_list):
+    for i, exoplanet in enumerate(exoplanet_list):
         try:
             # Printing suppressed within scope
             with suppress_print():
-                _retrieval(exoplanet_list, archive='eu')
+                _retrieval(exoplanet, archive='eu')
             _email(f'Success: {exoplanet_list}', 
                   f'Exoplanet: {exoplanet_list} \n\n'
                   'A new target has been fully retrieved across ' +\
@@ -557,11 +557,11 @@ def _iterable_target_eu(exoplanet_list):
             pass
 
 def _iterable_target_nasa(exoplanet_list):
-    for exoplanet in enumerate(exoplanet_list):
+    for i, exoplanet in enumerate(exoplanet_list):
         try:
             # Printing suppressed within scope
             with suppress_print():
-                _retrieval(exoplanet_list, archive='nasa')
+                _retrieval(exoplanet, archive='nasa')
             _email(f'Success: {exoplanet_list}', 
                   f'Exoplanet: {exoplanet_list} \n\n'
                   'A new target has been fully retrieved across ' +\
