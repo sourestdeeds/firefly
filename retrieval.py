@@ -55,7 +55,7 @@ def _TESS_filter():
 
 def _eu(exoplanet):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # Download EU exo archive
+    # Download EU archive
     os.makedirs('data', exist_ok=True)
     download_link = 'http://exoplanet.eu/catalog/csv'
     if not os.path.exists('data/eu.csv'):
@@ -102,9 +102,9 @@ def _eu(exoplanet):
     # Assign Exoplanet Priors to TransitFit
     radius_const = 0.1027626851
     cols = [['P', 'gaussian', s.loc['orbital_period'],
-             s.loc['orbital_period_error_max'], ''],
+             s.loc['orbital_period_error_max'] * 1e5, ''],
             ['t0', 'gaussian', s.loc['tzero_tr'],
-             s.loc['tzero_tr_error_max'], ''],
+             s.loc['tzero_tr_error_max'] * 100, ''],
             ['a', 'gaussian', s.loc['semi_major_axis'],
              s.loc['semi_major_axis_error_max'], ''],
             ['inc', 'gaussian', s.loc['inclination'],
@@ -124,16 +124,16 @@ def _eu(exoplanet):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # For printing variables only
     cols = [['P', 'gaussian', s.loc['orbital_period'],
-             s.loc['orbital_period_error_max'], ''],
+             s.loc['orbital_period_error_max'] * 1e5, ''],
             ['t0', 'gaussian', s.loc['tzero_tr'],
-             s.loc['tzero_tr_error_max'], ''],
+             s.loc['tzero_tr_error_max'] * 100, ''],
             ['a', 'gaussian', s.loc['semi_major_axis'],
              s.loc['semi_major_axis_error_max'], ''],
             ['inc', 'gaussian', s.loc['inclination'],
              s.loc['inclination_error_max'], ''],
             ['rp', 'uniform',
-             0.8 * radius_const * s.loc['radius'] / s.loc['star_radius'],
-             1.2 * radius_const * s.loc['radius'] / s.loc['star_radius'], 0],
+             0.5 * radius_const * s.loc['radius'] / s.loc['star_radius'],
+             2 * radius_const * s.loc['radius'] / s.loc['star_radius'], 0],
             ['host_T', 'fixed', host_T[0], host_T[1], ''],
             ['host_z', 'fixed', host_z[0], host_z[1], ''],
             ['host_r', 'fixed', host_r[0], host_r[1], ''],
@@ -217,16 +217,16 @@ def _nasa(exoplanet):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # For printing variables only
     cols = [['P', 'gaussian', s.loc['pl_orbper'],
-             s.loc['pl_orbpererr1'], ''],
+             s.loc['pl_orbpererr1'] * 1e5, ''],
             ['t0', 'gaussian', s.loc['pl_tranmid'],
-             s.loc['pl_tranmiderr1'], ''],
+             s.loc['pl_tranmiderr1'] * 100, ''],
             ['a', 'gaussian', s.loc['pl_orbsmax'],
              s.loc['pl_orbsmaxerr1'], ''],
             ['inc', 'gaussian', s.loc['pl_orbincl'],
              s.loc['pl_orbinclerr1'], ''],
             ['rp', 'uniform',
-             0.8 * radius_const * s.loc['pl_radj'] / s.loc['st_rad'],
-             1.2 * radius_const * s.loc['pl_radj'] / s.loc['st_rad'], 0],
+             0.5 * radius_const * s.loc['pl_radj'] / s.loc['st_rad'],
+             2 * radius_const * s.loc['pl_radj'] / s.loc['st_rad'], 0],
             ['host_T', 'fixed', host_T[0], host_T[1], ''],
             ['host_z', 'fixed', host_z[0], host_z[1], ''],
             ['host_r', 'fixed', host_r[0], host_r[1], ''],
