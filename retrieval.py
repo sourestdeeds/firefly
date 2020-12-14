@@ -573,7 +573,7 @@ def _iterable_target_nasa(exoplanet_list):
             _email(f'Exception: {exoplanet}', trace_back)
             pass    
 
-def auto_retrieval(exoplanet_list, processes=len(os.sched_getaffinity(0)),
+def auto_retrieval(file, processes=len(os.sched_getaffinity(0)),
                    archive='eu'):
     '''
     Automated version of retrieval. Sends an email to transitfit.server@gmail.com 
@@ -610,6 +610,9 @@ def auto_retrieval(exoplanet_list, processes=len(os.sched_getaffinity(0)),
     A whole lot of data to science!
 
     '''
+    exoplanet_list = []
+    for i, exoplanet in enumerate(file):
+        exoplanet_list.append([exoplanet])
     with Pool(processes=processes) as pool:
         if archive == 'eu':
             pool.map(_iterable_target_eu, exoplanet_list, chunksize=1)
@@ -622,10 +625,10 @@ query('WASP_43 b')
 
 retrieval('WASP-43 b')
 
-exoplanet_list = (['WASP-43 b'], ['WASP-18 b'], ['WASP-91 b'], ['WASP-12 b'],
-                  ['WASP-126 b'], ['LHS 3844 b'], ['GJ 1252 b'], ['TOI-270 b'])
+file = ('WASP-43 b', 'WASP-18 b', 'WASP-91 b', 'WASP-12 b',
+                  'WASP-126 b', 'LHS 3844 b', 'GJ 1252 b', 'TOI-270 b')
 
-auto_retrieval(exoplanet_list)
+auto_retrieval(file)
 
 '''
     
