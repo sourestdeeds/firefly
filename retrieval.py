@@ -293,7 +293,7 @@ def _fits(exoplanet, sector_folder):
         writer.writerows(write_dict)
     return fitsfile
 
-def retrieval(exoplanet, archive='eu', nlive=1000, detrending = [['nth order', 2]],
+def retrieval(exoplanet, archive='eu', nlive=1000, detrending_list = [['nth order', 2]],
                dynesty_sample='rslice', fitting_mode='folded', fit_ttv=False):
     '''
     A target data retriever for confirmed/candidate TESS exoplanets.
@@ -432,13 +432,13 @@ def retrieval(exoplanet, archive='eu', nlive=1000, detrending = [['nth order', 2
     plot_folder = f'{sector_folder}/plots'
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Run the retrieval
-    run_retrieval(data, priors, filters, detrending=detrending, nlive=nlive,
-                      host_T=host_T, host_logg=host_logg, host_z=host_z, 
-                      host_r=host_r, dynesty_sample=dynesty_sample,
-                      fitting_mode=fitting_mode, fit_ttv=fit_ttv,
-                      results_output_folder=results_output_folder,
-                      final_lightcurve_folder=fitted_lightcurve_folder,
-                      plot_folder=plot_folder)
+    run_retrieval(data, priors, filters, detrending_list=detrending_list, 
+                    host_T=host_T, host_logg=host_logg, host_z=host_z, 
+                    host_r=host_r, dynesty_sample=dynesty_sample,
+                    fitting_mode=fitting_mode, fit_ttv=fit_ttv,
+                    results_output_folder=results_output_folder,
+                    final_lightcurve_folder=fitted_lightcurve_folder,
+                    plot_folder=plot_folder, nlive=nlive)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Cleanup
     try:
@@ -459,7 +459,7 @@ def retrieval(exoplanet, archive='eu', nlive=1000, detrending = [['nth order', 2
                  base_dir=f'{exoplanet}')
     rmtree(f'Exoplanet/{exoplanet}')
 
-def _retrieval(exoplanet, archive='eu', nlive=1000, detrending = [['nth order', 2]],
+def _retrieval(exoplanet, archive='eu', nlive=1000, detrending_list = [['nth order', 2]],
                dynesty_sample='rslice', fitting_mode='folded', fit_ttv=False):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Filter Setup
@@ -523,13 +523,13 @@ def _retrieval(exoplanet, archive='eu', nlive=1000, detrending = [['nth order', 
         plot_folder = f'{sector_folder}/plots'
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # Run the retrieval
-        run_retrieval(data, priors, filters, detrending=detrending, nlive=nlive,
-                      host_T=host_T, host_logg=host_logg, host_z=host_z, 
-                      host_r=host_r, dynesty_sample=dynesty_sample,
-                      fitting_mode=fitting_mode, fit_ttv=fit_ttv,
-                      results_output_folder=results_output_folder,
-                      final_lightcurve_folder=fitted_lightcurve_folder,
-                      plot_folder=plot_folder)
+        run_retrieval(data, priors, filters, detrending_list=detrending_list, 
+                    host_T=host_T, host_logg=host_logg, host_z=host_z, 
+                    host_r=host_r, dynesty_sample=dynesty_sample,
+                    fitting_mode=fitting_mode, fit_ttv=fit_ttv,
+                    results_output_folder=results_output_folder,
+                    final_lightcurve_folder=fitted_lightcurve_folder,
+                    plot_folder=plot_folder, nlive=nlive)
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # Cleanup
         try:
@@ -584,8 +584,7 @@ def _iterable_target_nasa(exoplanet_list):
             _email(f'Exception: {exoplanet}', trace_back)
             pass    
 
-def auto_retrieval(file, processes=len(os.sched_getaffinity(0)),
-                   archive='eu'):
+def auto_retrieval(file, processes=len(os.sched_getaffinity(0)), archive='eu'):
     '''
     Automated version of retrieval. Sends an email to transitfit.server@gmail.com 
     upon an error or full completion of a target. Iteratively takes targets and 
@@ -639,5 +638,3 @@ if __name__ == '__main__':
     auto_retrieval(file)
 else:
     pass
-
-    
