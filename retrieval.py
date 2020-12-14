@@ -545,15 +545,15 @@ def _iterable_target_eu(exoplanet_list):
             # Printing suppressed within scope
             with suppress_print():
                 _retrieval(exoplanet, archive='eu')
-            _email(f'Success: {exoplanet_list}', 
-                  f'Exoplanet: {exoplanet_list} \n\n'
+            _email(f'Success: {exoplanet}', 
+                  f'Exoplanet: {exoplanet} \n\n'
                   'A new target has been fully retrieved across ' +\
                   'all available TESS Sectors.')
         except KeyboardInterrupt:
             sys.exit('User terminated retrieval')
         except:
             trace_back = format_exc()
-            _email(f'Exception: {exoplanet_list}', trace_back)
+            _email(f'Exception: {exoplanet}', trace_back)
             pass
 
 def _iterable_target_nasa(exoplanet_list):
@@ -562,15 +562,15 @@ def _iterable_target_nasa(exoplanet_list):
             # Printing suppressed within scope
             with suppress_print():
                 _retrieval(exoplanet, archive='nasa')
-            _email(f'Success: {exoplanet_list}', 
-                  f'Exoplanet: {exoplanet_list} \n\n'
+            _email(f'Success: {exoplanet}', 
+                  f'Exoplanet: {exoplanet} \n\n'
                   'A new target has been fully retrieved across ' +\
                   'all available TESS Sectors.')
         except KeyboardInterrupt:
             sys.exit('User terminated retrieval')
         except:
             trace_back = format_exc()
-            _email(f'Exception: {exoplanet_list}', trace_back)
+            _email(f'Exception: {exoplanet}', trace_back)
             pass    
 
 def auto_retrieval(exoplanet_list, processes=len(os.sched_getaffinity(0)),
