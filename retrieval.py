@@ -9,6 +9,7 @@ from pandas import DataFrame, read_csv
 from shutil import rmtree, move, make_archive
 from multiprocessing import Pool, cpu_count
 import sys, os
+from functools import partial
 
 
 class suppress_print():
@@ -293,7 +294,7 @@ def _fits(exoplanet, sector_folder):
         writer.writerows(write_dict)
     return fitsfile
 
-def retrieval(exoplanet, archive='eu', nlive=1000, detrending_list=[['nth order', 2]],
+def retrieval(exoplanet, archive='eu', nlive=1000, detrending_list = [['nth order', 2]],
                dynesty_sample='rslice', fitting_mode='folded', fit_ttv=False):
     '''
     A target data retriever for confirmed/candidate TESS exoplanets.
@@ -459,8 +460,9 @@ def retrieval(exoplanet, archive='eu', nlive=1000, detrending_list=[['nth order'
                  base_dir=f'{exoplanet}')
     rmtree(f'Exoplanet/{exoplanet}')
 
-def _retrieval(exoplanet, archive='eu', nlive=1000, detrending_list=[['nth order', 2]],
-               dynesty_sample='rslice', fitting_mode='folded', fit_ttv=False):
+def _retrieval(exoplanet, archive='eu', nlive=1000, fit_ttv=False, 
+               detrending_list = [['nth order', 2]],
+               dynesty_sample='rslice', fitting_mode='folded'):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Filter Setup
     _TESS_filter()
@@ -550,12 +552,17 @@ def _retrieval(exoplanet, archive='eu', nlive=1000, detrending_list=[['nth order
                  base_dir=f'{exoplanet}')
     rmtree(f'Exoplanet/{exoplanet}')
  
-def _iterable_target_eu(exoplanet_list):
+def _iterable_target(exoplanet_list, archive='eu', nlive=1000, 
+                        detrending_list=[['nth order', 2]],
+               dynesty_sample='rslice', fitting_mode='folded', fit_ttv=False):
     for i, exoplanet in enumerate(exoplanet_list):
         try:
             # Printing suppressed within scope
             with suppress_print():
-                _retrieval(exoplanet, archive='eu')
+                _retrieval(exoplanet, archive=archive, nlive=nlive, 
+                           detrending_list=detrending_list,
+                           dynesty_sample=dynesty_sample, 
+                           fitting_mode=fitting_mode, fit_ttv=fit_ttv)
             _email(f'Success: {exoplanet}', 
                   f'Exoplanet: {exoplanet} \n\n'
                   'A new target has been fully retrieved across ' +\
@@ -567,24 +574,9 @@ def _iterable_target_eu(exoplanet_list):
             _email(f'Exception: {exoplanet}', trace_back)
             pass
 
-def _iterable_target_nasa(exoplanet_list):
-    for i, exoplanet in enumerate(exoplanet_list):
-        try:
-            # Printing suppressed within scope
-            with suppress_print():
-                _retrieval(exoplanet, archive='nasa')
-            _email(f'Success: {exoplanet}', 
-                  f'Exoplanet: {exoplanet} \n\n'
-                  'A new target has been fully retrieved across ' +\
-                  'all available TESS Sectors.')
-        except KeyboardInterrupt:
-            sys.exit('User terminated retrieval')
-        except:
-            trace_back = format_exc()
-            _email(f'Exception: {exoplanet}', trace_back)
-            pass    
-
-def auto_retrieval(file, processes=len(os.sched_getaffinity(0)), archive='eu'):
+def auto_retrieval(file, processes=len(os.sched_getaffinity(0))//4, archive='eu', 
+                   nlive=1000, detrending_list=[['nth order', 2]],
+               dynesty_sample='rslice', fitting_mode='folded', fit_ttv=False):
     '''
     Automated version of retrieval. Sends an email to transitfit.server@gmail.com 
     upon an error or full completion of a target. Iteratively takes targets and 
@@ -605,15 +597,23 @@ def auto_retrieval(file, processes=len(os.sched_getaffinity(0)), archive='eu'):
     ----------
     exoplanet_list : str
         A list of exoplanet targets.
-    archive: str, optional
-        The exoplanet archive to use for priors. Supports 'eu' and 'nasa'.
-        The default is 'eu'.
     processes : int, optional
         The number of processes to run in parallel. For UNIX, this default 
         is the maximum available for the current process.
         The default is maximum available cores for the current process.
-    chunksize : int, optional
-        How many targets to assign to each process. The default is 1.
+    archive: str, optional
+        The exoplanet archive to use for priors. Supports 'eu' and 'nasa'.
+        The default is 'eu'.
+    nlive : int, optional
+        The number of live points. The default is 1000.
+    detrending :  optional
+        Detrending. The default is [['nth order', 2]].
+    dynesty_sample : str, optional
+        Sampling method. The default is 'rslice'.
+    fitting_mode : str, optional
+        Fitting mode. The default is 'folded'.
+    fit_ttv : boolean, optional
+        Fit TTV. The default is False.
     
     Returns
     -------
@@ -623,12 +623,13 @@ def auto_retrieval(file, processes=len(os.sched_getaffinity(0)), archive='eu'):
     exoplanet_list = []
     for i, exoplanet in enumerate(file):
         exoplanet_list.append([exoplanet])
+    func = partial(_iterable_target, archive=archive, nlive=nlive, 
+                   detrending_list=detrending_list, 
+                   dynesty_sample=dynesty_sample, fitting_mode=fitting_mode, 
+                   fit_ttv=fit_ttv)
     with Pool(processes=processes) as pool:
-        if archive == 'eu':
-            pool.map(_iterable_target_eu, exoplanet_list, chunksize=1)
-        elif archive == 'nasa':
-            pool.map(_iterable_target_nasa, exoplanet_list, chunksize=1)
-
+        pool.map(func, exoplanet_list, chunksize=1)
+        
 # Example use
 if __name__ == '__main__':
     # query('WASP-43 b')
@@ -638,3 +639,5 @@ if __name__ == '__main__':
     auto_retrieval(file)
 else:
     pass
+
+    
