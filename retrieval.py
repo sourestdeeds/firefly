@@ -8,7 +8,8 @@ from csv import DictWriter
 from pandas import DataFrame, read_csv
 from shutil import rmtree, move, make_archive
 from multiprocessing import Pool, cpu_count
-import sys, os
+import sys
+import os
 from functools import partial
 
 
@@ -16,10 +17,11 @@ class suppress_print():
     def __enter__(self):
         self.original_stdout = sys.stdout
         sys.stdout = open(os.devnull, 'w')
-    
+
     def __exit__(self, exc_type, exc_val, exc_tb):
         sys.stdout.close()
         sys.stdout = self.original_stdout
+
 
 def _email(subject, body):
     username = 'transitfit.server@gmail.com'
@@ -33,9 +35,10 @@ def _email(subject, body):
         server.login(username, password)
         server.sendmail(sent_from, to, message)
         server.close()
-    except:
+    except BaseException:
         # Continue on conn failure
         pass
+
 
 def _TESS_filter():
     tess_filter_path = '/data/TESS_filter_path.csv'
@@ -48,6 +51,7 @@ def _TESS_filter():
         df.to_csv(r'data/TESS_filter_path.csv', index=False, header=True)
     else:
         pass
+
 
 def _eu(exoplanet):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -77,7 +81,7 @@ def _eu(exoplanet):
                      'star_mass', 'star_mass_error_max',
                      'star_metallicity', 'star_metallicity_error_max']
     exo_archive = read_csv('data/eu.csv', index_col='# name',
-                            usecols=col_subset_eu)
+                           usecols=col_subset_eu)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Pick Out Chosen Exoplanet Priors
     df = DataFrame(exo_archive).loc[[exoplanet]]
@@ -109,7 +113,7 @@ def _eu(exoplanet):
              0.5 * radius_const * s.loc['radius'] / s.loc['star_radius'],
              2 * radius_const * s.loc['radius'] / s.loc['star_radius'], 0]]
     priors_csv = DataFrame(cols, columns=['Parameter', 'Distribution',
-                          'Input_A', 'Input_B', 'Filter'])
+                                          'Input_A', 'Input_B', 'Filter'])
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Save the priors
     priors = f'Exoplanet/{exoplanet}/{exoplanet} Priors.csv'
@@ -120,26 +124,27 @@ def _eu(exoplanet):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # For printing variables only
     cols = [['P', 'gaussian', s.loc['orbital_period'],
-                 s.loc['orbital_period_error_max'], ''],
-                ['t0', 'gaussian', s.loc['tzero_tr'],
-                 s.loc['tzero_tr_error_max'], ''],
-                ['a', 'gaussian', s.loc['semi_major_axis'],
-                 s.loc['semi_major_axis_error_max'], ''],
-                ['inc', 'gaussian', s.loc['inclination'],
-                 s.loc['inclination_error_max'], ''],
-                ['rp', 'uniform',
-                 0.8 * radius_const * s.loc['radius'] / s.loc['star_radius'],
-                 1.2 * radius_const * s.loc['radius'] / s.loc['star_radius'], 0],
-                ['host_T', 'fixed', host_T[0], host_T[1], ''],
-                ['host_z', 'fixed', host_z[0], host_z[1], ''],
-                ['host_r', 'fixed', host_r[0], host_r[1], ''],
-                ['host_logg', 'fixed', host_logg[0], host_logg[1], '']]
+             s.loc['orbital_period_error_max'], ''],
+            ['t0', 'gaussian', s.loc['tzero_tr'],
+             s.loc['tzero_tr_error_max'], ''],
+            ['a', 'gaussian', s.loc['semi_major_axis'],
+             s.loc['semi_major_axis_error_max'], ''],
+            ['inc', 'gaussian', s.loc['inclination'],
+             s.loc['inclination_error_max'], ''],
+            ['rp', 'uniform',
+             0.8 * radius_const * s.loc['radius'] / s.loc['star_radius'],
+             1.2 * radius_const * s.loc['radius'] / s.loc['star_radius'], 0],
+            ['host_T', 'fixed', host_T[0], host_T[1], ''],
+            ['host_z', 'fixed', host_z[0], host_z[1], ''],
+            ['host_r', 'fixed', host_r[0], host_r[1], ''],
+            ['host_logg', 'fixed', host_logg[0], host_logg[1], '']]
     repack = DataFrame(cols, columns=['Parameter', 'Distribution',
                                       'Input_A', 'Input_B', 'Filter'])
     repack = repack.to_string(index=False)
     print(f'\nPriors generated from the EU Archive for {exoplanet}.\n')
     print(repack)
     return host_T, host_z, host_r, host_logg, t0, P
+
 
 def _nasa(exoplanet):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -173,10 +178,10 @@ def _nasa(exoplanet):
     df = DataFrame(exo_archive).loc[[exoplanet]]
     s = df.mean()
     t0, P, t14 = s.loc['pl_tranmid'], s.loc['pl_orbper'], \
-            s.loc['pl_trandur'] * 24 * 60
+        s.loc['pl_trandur'] * 24 * 60
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Assign Host data to Transitfit
-    logg, err_logg = calculate_logg((s.loc['st_mass'], 
+    logg, err_logg = calculate_logg((s.loc['st_mass'],
                                      s.loc['st_masserr1']),
                                     (s.loc['st_rad'],
                                      s.loc['st_raderr1']))
@@ -188,9 +193,9 @@ def _nasa(exoplanet):
     # Assign Exoplanet Priors to TransitFit
     radius_const = 0.1027626851
     cols = [['P', 'gaussian', s.loc['pl_orbper'],
-             s.loc['pl_orbpererr1']*1e5, ''],
+             s.loc['pl_orbpererr1'] * 1e5, ''],
             ['t0', 'gaussian', s.loc['pl_tranmid'],
-             s.loc['pl_tranmiderr1']*100, ''],
+             s.loc['pl_tranmiderr1'] * 100, ''],
             ['a', 'gaussian', s.loc['pl_orbsmax'],
              s.loc['pl_orbsmaxerr1'], ''],
             ['inc', 'gaussian', s.loc['pl_orbincl'],
@@ -199,9 +204,9 @@ def _nasa(exoplanet):
              0.5 * radius_const * s.loc['pl_radj'] / s.loc['st_rad'],
              2 * radius_const * s.loc['pl_radj'] / s.loc['st_rad'], 0]]
     priors_csv = DataFrame(cols, columns=['Parameter', 'Distribution',
-                                      'Input_A', 'Input_B', 'Filter'])
+                                          'Input_A', 'Input_B', 'Filter'])
     priors_csv = DataFrame(cols, columns=['Parameter', 'Distribution',
-                          'Input_A', 'Input_B', 'Filter'])
+                                          'Input_A', 'Input_B', 'Filter'])
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Save the priors
     priors = f'Exoplanet/{exoplanet}/{exoplanet} Priors.csv'
@@ -212,20 +217,20 @@ def _nasa(exoplanet):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # For printing variables only
     cols = [['P', 'gaussian', s.loc['pl_orbper'],
-                 s.loc['pl_orbpererr1'], ''],
-                ['t0', 'gaussian', s.loc['pl_tranmid'],
-                 s.loc['pl_tranmiderr1'], ''],
-                ['a', 'gaussian', s.loc['pl_orbsmax'],
-                 s.loc['pl_orbsmaxerr1'], ''],
-                ['inc', 'gaussian', s.loc['pl_orbincl'],
-                 s.loc['pl_orbinclerr1'], ''],
-                ['rp', 'uniform',
-                 0.8 * radius_const * s.loc['pl_radj'] / s.loc['st_rad'],
-                 1.2 * radius_const * s.loc['pl_radj'] / s.loc['st_rad'], 0],
-                ['host_T', 'fixed', host_T[0], host_T[1], ''],
-                ['host_z', 'fixed', host_z[0], host_z[1], ''],
-                ['host_r', 'fixed', host_r[0], host_r[1], ''],
-                ['host_logg', 'fixed', host_logg[0], host_logg[1], '']]
+             s.loc['pl_orbpererr1'], ''],
+            ['t0', 'gaussian', s.loc['pl_tranmid'],
+             s.loc['pl_tranmiderr1'], ''],
+            ['a', 'gaussian', s.loc['pl_orbsmax'],
+             s.loc['pl_orbsmaxerr1'], ''],
+            ['inc', 'gaussian', s.loc['pl_orbincl'],
+             s.loc['pl_orbinclerr1'], ''],
+            ['rp', 'uniform',
+             0.8 * radius_const * s.loc['pl_radj'] / s.loc['st_rad'],
+             1.2 * radius_const * s.loc['pl_radj'] / s.loc['st_rad'], 0],
+            ['host_T', 'fixed', host_T[0], host_T[1], ''],
+            ['host_z', 'fixed', host_z[0], host_z[1], ''],
+            ['host_r', 'fixed', host_r[0], host_r[1], ''],
+            ['host_logg', 'fixed', host_logg[0], host_logg[1], '']]
     repack = DataFrame(cols, columns=['Parameter', 'Distribution',
                                       'Input_A', 'Input_B', 'Filter'])
     repack = repack.to_string(index=False)
@@ -233,7 +238,8 @@ def _nasa(exoplanet):
     print(repack)
     return host_T, host_z, host_r, host_logg, t0, P, t14
 
-def query(exoplanet, archive = 'eu'):
+
+def query(exoplanet, archive='eu'):
     '''
     Performs a query for prior information and data products from MAST
 
@@ -258,6 +264,7 @@ def query(exoplanet, archive = 'eu'):
     elif archive == 'nasa':
         _nasa(exoplanet)
     rmtree(temp)
+
 
 def _fits(exoplanet, sector_folder):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -294,8 +301,9 @@ def _fits(exoplanet, sector_folder):
         writer.writerows(write_dict)
     return fitsfile
 
-def retrieval(exoplanet, archive='eu', nlive=1000, detrending_list = [['nth order', 2]],
-               dynesty_sample='rslice', fitting_mode='folded', fit_ttv=False):
+
+def retrieval(exoplanet, archive='eu', nlive=1000, detrending_list=[['nth order', 2]],
+              dynesty_sample='rslice', fitting_mode='folded', fit_ttv=False):
     '''
     A target data retriever for confirmed/candidate TESS exoplanets.
     Generates the priors and host star variables for a chosen target.
@@ -336,19 +344,19 @@ def retrieval(exoplanet, archive='eu', nlive=1000, detrending_list = [['nth orde
 
         NASA : Data downloaded and stored in 'data/nasa_data.csv'.
         https://exoplanetarchive.ipac.caltech.edu/index.html
-        
+
     nlive : int, optional
         The number of live points. The default is 1000.
-        
+
     detrending :  optional
         Detrending. The default is [['nth order', 2]].
-        
+
     dynesty_sample : str, optional
         Sampling method. The default is 'rslice'.
-        
+
     fitting_mode : str, optional
         Fitting mode. The default is 'folded'.
-        
+
     fit_ttv : boolean, optional
         Fit TTV. The default is False.
 
@@ -390,7 +398,7 @@ def retrieval(exoplanet, archive='eu', nlive=1000, detrending_list = [['nth orde
     sector_folder = f'Exoplanet/{exoplanet}/TESS Sector {str(sector)}'
     os.makedirs(sector_folder, exist_ok=True)
     lc = search_lightcurvefile(exoplanet, mission='TESS',
-                                 sector=sector)
+                               sector=sector)
     print(f'\nDownloading MAST Lightcurve for TESS Sector {str(sector)}.')
     lc.download_all(download_dir=sector_folder)
 
@@ -415,7 +423,7 @@ def retrieval(exoplanet, archive='eu', nlive=1000, detrending_list = [['nth orde
     curves = int(input('Enter how many lightcurves you wish to fit: '))
     print()
     for i in range(curves):
-        df = df.append([{'Path': f'{os.getcwd()}/{sector_folder}' +\
+        df = df.append([{'Path': f'{os.getcwd()}/{sector_folder}' +
                          f'/split_curve_{str(i)}.csv'}],
                        ignore_index=True)
         df['Telescope'], df['Filter'], df['Detrending'] = 0, 0, 0
@@ -433,18 +441,18 @@ def retrieval(exoplanet, archive='eu', nlive=1000, detrending_list = [['nth orde
     plot_folder = f'{sector_folder}/plots'
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Run the retrieval
-    run_retrieval(data, priors, filters, detrending_list=detrending_list, 
-                    host_T=host_T, host_logg=host_logg, host_z=host_z, 
-                    host_r=host_r, dynesty_sample=dynesty_sample,
-                    fitting_mode=fitting_mode, fit_ttv=fit_ttv,
-                    results_output_folder=results_output_folder,
-                    final_lightcurve_folder=fitted_lightcurve_folder,
-                    plot_folder=plot_folder, nlive=nlive)
+    run_retrieval(data, priors, filters, detrending_list=detrending_list,
+                  host_T=host_T, host_logg=host_logg, host_z=host_z,
+                  host_r=host_r, dynesty_sample=dynesty_sample,
+                  fitting_mode=fitting_mode, fit_ttv=fit_ttv,
+                  results_output_folder=results_output_folder,
+                  final_lightcurve_folder=fitted_lightcurve_folder,
+                  plot_folder=plot_folder, nlive=nlive)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Cleanup
     try:
         rmtree(f'{sector_folder}/mastDownload')
-        move(fitsfile,f'Exoplanet/{exoplanet}.fits')
+        move(fitsfile, f'Exoplanet/{exoplanet}.fits')
         os.remove(f'Exoplanet/{exoplanet}.fits')
         os.remove(csvfile)
         os.remove(priors)
@@ -455,13 +463,14 @@ def retrieval(exoplanet, archive='eu', nlive=1000, detrending_list = [['nth orde
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Archive and sort
     now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
-    make_archive(f'Exoplanet/{exoplanet} {now}', format='gztar', 
+    make_archive(f'Exoplanet/{exoplanet} {now}', format='gztar',
                  root_dir=f'{os.getcwd()}/Exoplanet/',
                  base_dir=f'{exoplanet}')
     rmtree(f'Exoplanet/{exoplanet}')
 
-def _retrieval(exoplanet, archive='eu', nlive=1000, fit_ttv=False, 
-               detrending_list = [['nth order', 2]],
+
+def _retrieval(exoplanet, archive='eu', nlive=1000, fit_ttv=False,
+               detrending_list=[['nth order', 2]],
                dynesty_sample='rslice', fitting_mode='folded'):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Filter Setup
@@ -507,7 +516,7 @@ def _retrieval(exoplanet, archive='eu', nlive=1000, fit_ttv=False,
         cols = ['Path', 'Telescope', 'Filter', 'Epochs', 'Detrending']
         df = DataFrame(columns=cols)
         for i in range(curves):
-            df = df.append([{'Path': f'{os.getcwd()}/{sector_folder}' +\
+            df = df.append([{'Path': f'{os.getcwd()}/{sector_folder}' +
                              f'/split_curve_{str(i)}.csv'}],
                            ignore_index=True)
             df['Telescope'], df['Filter'], df['Detrending'] = 0, 0, 0
@@ -525,18 +534,18 @@ def _retrieval(exoplanet, archive='eu', nlive=1000, fit_ttv=False,
         plot_folder = f'{sector_folder}/plots'
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # Run the retrieval
-        run_retrieval(data, priors, filters, detrending_list=detrending_list, 
-                    host_T=host_T, host_logg=host_logg, host_z=host_z, 
-                    host_r=host_r, dynesty_sample=dynesty_sample,
-                    fitting_mode=fitting_mode, fit_ttv=fit_ttv,
-                    results_output_folder=results_output_folder,
-                    final_lightcurve_folder=fitted_lightcurve_folder,
-                    plot_folder=plot_folder, nlive=nlive)
+        run_retrieval(data, priors, filters, detrending_list=detrending_list,
+                      host_T=host_T, host_logg=host_logg, host_z=host_z,
+                      host_r=host_r, dynesty_sample=dynesty_sample,
+                      fitting_mode=fitting_mode, fit_ttv=fit_ttv,
+                      results_output_folder=results_output_folder,
+                      final_lightcurve_folder=fitted_lightcurve_folder,
+                      plot_folder=plot_folder, nlive=nlive)
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # Cleanup
         try:
             rmtree(f'{sector_folder}/mastDownload')
-            move(fitsfile,f'Exoplanet/{exoplanet}.fits')
+            move(fitsfile, f'Exoplanet/{exoplanet}.fits')
             os.remove(f'Exoplanet/{exoplanet}.fits')
             os.remove(csvfile)
             os.remove(priors)
@@ -547,50 +556,52 @@ def _retrieval(exoplanet, archive='eu', nlive=1000, fit_ttv=False,
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Archive and sort
     now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
-    make_archive(f'Exoplanet/{exoplanet} {now}', format='gztar', 
+    make_archive(f'Exoplanet/{exoplanet} {now}', format='gztar',
                  root_dir=f'{os.getcwd()}/Exoplanet/',
                  base_dir=f'{exoplanet}')
     rmtree(f'Exoplanet/{exoplanet}')
- 
-def _iterable_target(exoplanet_list, archive='eu', nlive=1000, 
-                        detrending_list=[['nth order', 2]],
-               dynesty_sample='rslice', fitting_mode='folded', fit_ttv=False):
+
+
+def _iterable_target(exoplanet_list, archive='eu', nlive=1000,
+                     detrending_list=[['nth order', 2]],
+                     dynesty_sample='rslice', fitting_mode='folded', fit_ttv=False):
     for i, exoplanet in enumerate(exoplanet_list):
         try:
             # Printing suppressed within scope
             with suppress_print():
-                _retrieval(exoplanet, archive=archive, nlive=nlive, 
+                _retrieval(exoplanet, archive=archive, nlive=nlive,
                            detrending_list=detrending_list,
-                           dynesty_sample=dynesty_sample, 
+                           dynesty_sample=dynesty_sample,
                            fitting_mode=fitting_mode, fit_ttv=fit_ttv)
-            _email(f'Success: {exoplanet}', 
-                  f'Exoplanet: {exoplanet} \n\n'
-                  'A new target has been fully retrieved across ' +\
-                  'all available TESS Sectors.')
+            _email(f'Success: {exoplanet}',
+                   f'Exoplanet: {exoplanet} \n\n'
+                   'A new target has been fully retrieved across ' +
+                   'all available TESS Sectors.')
         except KeyboardInterrupt:
             sys.exit('User terminated retrieval')
-        except:
+        except BaseException:
             trace_back = format_exc()
             _email(f'Exception: {exoplanet}', trace_back)
             pass
 
-def auto_retrieval(file, processes=len(os.sched_getaffinity(0))//4, archive='eu', 
-                   nlive=1000, detrending_list=[['nth order', 2]],
-               dynesty_sample='rslice', fitting_mode='folded', fit_ttv=False):
+
+def auto_retrieval(file, processes=len(os.sched_getaffinity(0)) // 4,
+                   archive='eu', nlive=1000, detrending_list=[['nth order', 2]],
+                   dynesty_sample='rslice', fitting_mode='folded', fit_ttv=False):
     '''
-    Automated version of retrieval. Sends an email to transitfit.server@gmail.com 
-    upon an error or full completion of a target. Iteratively takes targets and 
-    employs TransitFit across each TESS sector for every exoplanet in the list given. 
+    Automated version of retrieval. Sends an email to transitfit.server@gmail.com
+    upon an error or full completion of a target. Iteratively takes targets and
+    employs TransitFit across each TESS sector for every exoplanet in the list given.
     Runs TransitFit for all available split curves with the following options set:
-        
+
         detrending = [['nth order', 2]]
-        
+
         fitting_mode = 'folded'
-        
+
         dynesty_sample = 'rslice'
-        
+
         nlive = 1000
-        
+
         fit_ttv = False
 
     Parameters
@@ -598,7 +609,7 @@ def auto_retrieval(file, processes=len(os.sched_getaffinity(0))//4, archive='eu'
     exoplanet_list : str
         A list of exoplanet targets.
     processes : int, optional
-        The number of processes to run in parallel. For UNIX, this default 
+        The number of processes to run in parallel. For UNIX, this default
         is the maximum available for the current process.
         The default is maximum available cores for the current process.
     archive: str, optional
@@ -614,7 +625,7 @@ def auto_retrieval(file, processes=len(os.sched_getaffinity(0))//4, archive='eu'
         Fitting mode. The default is 'folded'.
     fit_ttv : boolean, optional
         Fit TTV. The default is False.
-    
+
     Returns
     -------
     A whole lot of data to science!
@@ -623,21 +634,20 @@ def auto_retrieval(file, processes=len(os.sched_getaffinity(0))//4, archive='eu'
     exoplanet_list = []
     for i, exoplanet in enumerate(file):
         exoplanet_list.append([exoplanet])
-    func = partial(_iterable_target, archive=archive, nlive=nlive, 
-                   detrending_list=detrending_list, 
-                   dynesty_sample=dynesty_sample, fitting_mode=fitting_mode, 
+    func = partial(_iterable_target, archive=archive, nlive=nlive,
+                   detrending_list=detrending_list,
+                   dynesty_sample=dynesty_sample, fitting_mode=fitting_mode,
                    fit_ttv=fit_ttv)
     with Pool(processes=processes) as pool:
         pool.map(func, exoplanet_list, chunksize=1)
-        
+
+
 # Example use
 if __name__ == '__main__':
     # query('WASP-43 b')
     # retrieval('WASP-43 b')
     file = ('WASP-43 b', 'WASP-18 b', 'WASP-91 b', 'WASP-12 b',
-                      'WASP-126 b', 'LHS 3844 b', 'GJ 1252 b', 'TOI-270 b')
+            'WASP-126 b', 'LHS 3844 b', 'GJ 1252 b', 'TOI-270 b')
     auto_retrieval(file)
 else:
     pass
-
-    
