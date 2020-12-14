@@ -481,7 +481,7 @@ def retrieval(exoplanet, archive='eu', nlive=300, fit_ttv=False,
     rmtree(f'Exoplanet/{exoplanet}')
 
 
-def _retrieval(exoplanet, archive='eu', nlive=1000, fit_ttv=False,
+def _retrieval(exoplanet, archive='eu', nlive=300, fit_ttv=False,
                detrending_list=[['nth order', 2]],
                dynesty_sample='rslice', fitting_mode='folded',
                limb_darkening_model='quadratic', ld_fit_method='independent',
@@ -585,7 +585,7 @@ def _retrieval(exoplanet, archive='eu', nlive=1000, fit_ttv=False,
     rmtree(f'Exoplanet/{exoplanet}')
 
 
-def _iterable_target(exoplanet_list, archive='eu', nlive=1000,
+def _iterable_target(exoplanet_list, archive='eu', nlive=300,
                      detrending_list=[['nth order', 2]],
                      dynesty_sample='rslice', fitting_mode='folded', fit_ttv=False,
                      limb_darkening_model='quadratic', ld_fit_method='independent',
@@ -600,10 +600,13 @@ def _iterable_target(exoplanet_list, archive='eu', nlive=1000,
                            detrending_list=detrending_list,
                            dynesty_sample=dynesty_sample,
                            fitting_mode=fitting_mode, fit_ttv=fit_ttv,
-                           limb_darkening_model='quadratic', ld_fit_method='independent',
-                           max_batch_parameters=25, batch_overlap=2, dlogz=None, 
-                           maxiter=None, maxcall=None, dynesty_bounding='multi', 
-                           normalise=True, detrend=True)
+                           limb_darkening_model=limb_darkening_model, 
+                           ld_fit_method=ld_fit_method,
+                           max_batch_parameters=max_batch_parameters, 
+                           batch_overlap=batch_overlap, dlogz=dlogz, 
+                           maxiter=maxiter, maxcall=maxcall, 
+                           dynesty_bounding=dynesty_bounding, 
+                           normalise=normalise, detrend=detrend)
             _email(f'Success: {exoplanet}',
                    f'Exoplanet: {exoplanet} \n\n'
                    'A new target has been fully retrieved across ' +
