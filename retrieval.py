@@ -136,7 +136,7 @@ def _eu(exoplanet):
     repack = DataFrame(cols, columns=['Parameter', 'Distribution',
                                       'Input_A', 'Input_B', 'Filter'])
     repack = repack.to_string(index=False)
-    print(f'\n Priors generated from the EU Archive for {exoplanet}.')
+    print(f'\nPriors generated from the EU Archive for {exoplanet}.\n')
     print(repack)
     return host_T, host_z, host_r, host_logg, t0, P
 
@@ -228,9 +228,35 @@ def _nasa(exoplanet):
     repack = DataFrame(cols, columns=['Parameter', 'Distribution',
                                       'Input_A', 'Input_B', 'Filter'])
     repack = repack.to_string(index=False)
-    print(f'\n Priors generated from the NASA Archive for {exoplanet}.')
+    print(f'\nPriors generated from the NASA Archive for {exoplanet}.\n')
     print(repack)
     return host_T, host_z, host_r, host_logg, t0, P, t14
+
+def query(exoplanet, archive = 'eu'):
+    '''
+    Performs a query for prior information and data products from MAST
+
+    Parameters
+    ----------
+    exoplanet : str
+        The exoplanet target to retreive information for.
+    archive : str, optional
+        The exoplanet archive to use for priors. The default is 'eu'.
+
+    Returns
+    -------
+    Data printed to console.
+
+    '''
+    temp = f'Exoplanet/{exoplanet}'
+    os.makedirs(temp, exist_ok=True)
+    lc = search_lightcurvefile(exoplanet, mission='TESS')
+    print(lc)
+    if archive == 'eu':
+        _eu(exoplanet)
+    elif archive == 'nasa':
+        _nasa(exoplanet)
+    rmtree(temp)
 
 def _fits(exoplanet, sector_folder):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -281,7 +307,7 @@ def retrieval(exoplanet, archive='eu'):
     Host Info
         exoplanet = 'WASP-43 b'
 
-        host_T, host_z, host_r, host_logg  = target(exoplanet)
+        retrieval(exoplanet)
 
     Paths to data, priors, and filter info:
         data = 'data/data_paths.csv'
@@ -300,7 +326,7 @@ def retrieval(exoplanet, archive='eu'):
     exoplanet : string, example: 'WASP-43 b'
         The target exoplanet.
 
-    dtype : string, optional
+    archive : string, optional
         Allows for inputs 'nasa' or 'eu'. The default is 'nasa'.
 
         EU : Data downloaded and stored in 'data/eu_data.csv'.
@@ -311,15 +337,6 @@ def retrieval(exoplanet, archive='eu'):
 
     Returns
     -------
-    host_T : tuple or None
-        The effective temperature of the host star, in Kelvin.
-    host_z : tuple or None
-        The log_10 of the surface gravity of the host star,
-        with gravity measured in cm/s2.
-    host_r : tuple or None
-        The metalicity of the host, given as a (value, uncertainty) pair.
-    host_logg : tuple or None
-        The host radius in Solar radii.
     data/data_paths.csv : file
         The locations of the light curves to fit.
     data/priors.csv : file
@@ -563,11 +580,10 @@ def _iterable_target_nasa(exoplanet_list):
 def auto_retrieval(exoplanet_list, processes=len(os.sched_getaffinity(0)),
                    archive='eu'):
     '''
-    Automated version of target which inherits from auto_target. Sends an 
-    email to transitfit.server@gmail.com upon an error or full completion of
-    a target. Iteratively takes targets and employs TransitFit across each 
-    sector for every exoplanet in the list given. Runs TransitFit for all 
-    available split curves with the following options set:
+    Automated version of retrieval. Sends an email to transitfit.server@gmail.com 
+    upon an error or full completion of a target. Iteratively takes targets and 
+    employs TransitFit across each TESS sector for every exoplanet in the list given. 
+    Runs TransitFit for all available split curves with the following options set:
         
         detrending = [['nth order', 2]]
         
@@ -583,14 +599,14 @@ def auto_retrieval(exoplanet_list, processes=len(os.sched_getaffinity(0)),
     ----------
     exoplanet_list : str
         A list of exoplanet targets.
-    archive: str
+    archive: str, optional
         The exoplanet archive to use for priors. Supports 'eu' and 'nasa'.
         The default is 'eu'.
-    processes : int
+    processes : int, optional
         The number of processes to run in parallel. For UNIX, this default 
         is the maximum available for the current process.
         The default is maximum available cores for the current process.
-    chunksize : int
+    chunksize : int, optional
         How many targets to assign to each process. The default is 1.
     
     Returns
@@ -606,6 +622,8 @@ def auto_retrieval(exoplanet_list, processes=len(os.sched_getaffinity(0)),
 
 # Example use
 '''
+query('WASP_43 b')
+
 retrieval('WASP-43 b')
 
 exoplanet_list = (
