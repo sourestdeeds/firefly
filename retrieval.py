@@ -622,8 +622,8 @@ query('WASP_43 b')
 
 retrieval('WASP-43 b')
 
-exoplanet_list = ('WASP-43 b', 'WASP-18 b', 'WASP-91 b', 'WASP-12 b',
-                  'WASP-126 b', 'LHS 3844 b', 'GJ 1252 b', 'TOI-270 b')
+exoplanet_list = (['WASP-43 b'], ['WASP-18 b'], ['WASP-91 b'], ['WASP-12 b'],
+                  ['WASP-126 b'], ['LHS 3844 b'], ['GJ 1252 b'], ['TOI-270 b'])
 
 auto_retrieval(exoplanet_list)
 
