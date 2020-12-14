@@ -459,14 +459,12 @@ def _retrieval(exoplanet, archive='eu'):
                          .drop_duplicates() .tolist()
     except Exception:
         sys.exit(f'Search result contains no data products for {exoplanet}.')
-    sector = sector_list
     # Clear up previous sessions
     try:
         rmtree(f'Exoplanet/{exoplanet}')
     except Exception:
         pass
-    for i in sector:
-        sector = i
+    for i, sector in enumerate(sector_list):
         sector_folder = f'Exoplanet/{exoplanet}/TESS Sector {str(sector)}'
         os.makedirs(sector_folder, exist_ok=True)
         lc = search_lightcurvefile(exoplanet, mission='TESS',
@@ -542,8 +540,7 @@ def _retrieval(exoplanet, archive='eu'):
     rmtree(f'Exoplanet/{exoplanet}')
  
 def _iterable_target_eu(exoplanet_list):
-    for i in exoplanet_list:
-        exoplanet_list = i
+    for exoplanet in enumerate(exoplanet_list):
         try:
             # Printing suppressed within scope
             with suppress_print():
@@ -560,8 +557,7 @@ def _iterable_target_eu(exoplanet_list):
             pass
 
 def _iterable_target_nasa(exoplanet_list):
-    for i in exoplanet_list:
-        exoplanet_list = i
+    for exoplanet in enumerate(exoplanet_list):
         try:
             # Printing suppressed within scope
             with suppress_print():
@@ -626,10 +622,8 @@ query('WASP_43 b')
 
 retrieval('WASP-43 b')
 
-exoplanet_list = (
-['WASP-91 b'], ['WASP-18 b'], ['WASP-43 b'], ['WASP-12 b'],
-['WASP-126 b'], ['LHS 3844 b'], ['GJ 1252 b'], ['TOI-270 b']           
-                  )
+exoplanet_list = ('WASP-43 b', 'WASP-18 b', 'WASP-91 b', 'WASP-12 b',
+                  'WASP-126 b', 'LHS 3844 b', 'GJ 1252 b', 'TOI-270 b')
 
 auto_retrieval(exoplanet_list)
 
