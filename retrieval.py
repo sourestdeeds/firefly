@@ -411,11 +411,9 @@ def retrieval(exoplanet, archive='eu'):
     filters = 'data/TESS_filter_path.csv'
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Output folders
-    results_output_folder = f'Exoplanet/{exoplanet}' +\
-        f'/TESS Sector {str(sector)}/output_parameters'
-    fitted_lightcurve_folder = f'Exoplanet/{exoplanet}' +\
-        f'/TESS Sector {str(sector)}/fitted_lightcurves'
-    plot_folder = f'Exoplanet/{exoplanet}/TESS Sector {str(sector)}/plots'
+    results_output_folder = f'{sector_folder}/output_parameters'
+    fitted_lightcurve_folder = f'{sector_folder}/fitted_lightcurves'
+    plot_folder = f'{sector_folder}/plots'
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Run the retrieval
     detrending = [['nth order', 2]]
@@ -504,11 +502,9 @@ def _retrieval(exoplanet, archive='eu'):
         filters = 'data/TESS_filter_path.csv'
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # Output folders
-        results_output_folder = f'Exoplanet/{exoplanet}' +\
-            f'/TESS Sector {str(sector)}/output_parameters'
-        fitted_lightcurve_folder = f'Exoplanet/{exoplanet}' +\
-            f'/TESS Sector {str(sector)}/fitted_lightcurves'
-        plot_folder = f'Exoplanet/{exoplanet}/TESS Sector {str(sector)}/plots'
+        results_output_folder = f'{sector_folder}/output_parameters'
+        fitted_lightcurve_folder = f'{sector_folder}/fitted_lightcurves'
+        plot_folder = f'{sector_folder}/plots'
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # Run the retrieval
         detrending = [['nth order', 2]]
