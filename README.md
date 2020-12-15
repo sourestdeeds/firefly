@@ -6,11 +6,6 @@ Downloads exoplanet archives every 10 days and stores in /data.
 Target lightcurve files are downloaded from MAST, fits file is
 stored in Planet/exoplanet/exoplanet.fits.
 
-## Dependancies
-```
-lightkurve
-transitfit
-```
 An example use with TransitFit is the following:
 ```
 exoplanet = 'WASP-43 b'
@@ -28,6 +23,11 @@ An example use with TransitFit is the following:
 file = ('WASP-43 b', 'WASP-18 b', 'WASP-91 b', 'WASP-12 b',
             'WASP-126 b', 'LHS 3844 b', 'GJ 1252 b', 'TOI-270 b')
 auto_retrieval(file)
+```
+### Dependancies
+```
+lightkurve
+transitfit
 ```
 
     Parameters
