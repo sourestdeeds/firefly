@@ -261,7 +261,7 @@ def query(exoplanet, archive='eu'):
     temp = f'Exoplanet/{exoplanet}'
     os.makedirs(temp, exist_ok=True)
     lc = search_lightcurvefile(exoplanet, mission='TESS')
-    print(lc)
+    print(f'\n{lc}')
     if archive == 'eu':
         _eu(exoplanet)
     elif archive == 'nasa':
