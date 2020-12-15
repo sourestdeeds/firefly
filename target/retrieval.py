@@ -43,17 +43,15 @@ def _email(subject, body):
 
 
 def _TESS_filter():
-    here = pathlib.Path(__file__).parent.resolve()
-    tess_filter_path = '/data/TESS_filter_path.csv'
-    tess_filter = f'{os.getcwd()}/data/Filters/TESS_filter.csv'
-    # tess_filter = f'{os.path.dirname(os.path.abspath(__file__))}' +\
-    #               '/data/Filters/TESS_filter.csv'
+    here = os.path.dirname(os.path.abspath(__file__))
+    tess_filter_path = f'{here}/data/TESS_filter_path.csv'
+    tess_filter = f'{here}/data/Filters/TESS_filter.csv'
     if not os.path.exists(tess_filter_path):
         cols = ['filter_idx', 'low_wl', 'high_wl']
         df = DataFrame(columns=cols)
         df = df.append([{'filter_idx': 0,
                          'low_wl': tess_filter}], ignore_index=True)
-        df.to_csv(r'data/TESS_filter_path.csv', index=False, header=True)
+        df.to_csv(tess_filter_path, index=False, header=True)
     else:
         pass
 
@@ -443,7 +441,8 @@ def retrieval(exoplanet, archive='eu', nlive=1000, fit_ttv=False,
     # Paths to data, priors, and filter info:
     data = 'data/data_paths.csv'
     priors = f'Exoplanet/{exoplanet}/{exoplanet} Priors.csv'
-    filters = 'data/TESS_filter_path.csv'
+    here = os.path.dirname(os.path.abspath(__file__))
+    filters = f'{here}/data/TESS_filter_path.csv'
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Output folders
     results_output_folder = f'{sector_folder}/output_parameters'
@@ -547,7 +546,8 @@ def _retrieval(exoplanet, archive='eu', nlive=1000, fit_ttv=False,
         # Paths to data, priors, and filter info:
         data = 'data/data_paths.csv'
         priors = f'Exoplanet/{exoplanet}/{exoplanet} Priors.csv'
-        filters = 'data/TESS_filter_path.csv'
+        here = os.path.dirname(os.path.abspath(__file__))
+        filters = f'{here}/data/TESS_filter_path.csv'
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # Output folders
         results_output_folder = f'{sector_folder}/output_parameters'
