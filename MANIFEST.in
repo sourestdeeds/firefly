@@ -1,3 +1,3 @@
 include *.md
 include LICENCE.txt
-recursive-include data/Filters *
+recursive-include retrieval/data/Filters *
