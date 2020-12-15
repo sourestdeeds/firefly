@@ -11,7 +11,6 @@ from multiprocessing import Pool, cpu_count
 from functools import partial
 import sys
 import os
-import pathlib
 
 
 
@@ -261,6 +260,11 @@ def query(exoplanet, archive='eu'):
     temp = f'Exoplanet/{exoplanet}'
     os.makedirs(temp, exist_ok=True)
     lc = search_lightcurvefile(exoplanet, mission='TESS')
+    try:
+        sector_list = lc .table .to_pandas()['sequence_number'] \
+                         .drop_duplicates() .tolist()
+    except KeyError:
+        sys.exit(f'Search result contains no data products for {exoplanet}.')
     print(f'\n{lc}')
     if archive == 'eu':
         _eu(exoplanet)
@@ -305,7 +309,7 @@ def _fits(exoplanet, sector_folder):
     return fitsfile
 
 
-def retrieval(exoplanet, archive='eu', nlive=1000, fit_ttv=False,
+def retrieval(exoplanet, archive='eu', nlive=300, fit_ttv=False,
                detrending_list=[['nth order', 2]],
                dynesty_sample='rslice', fitting_mode='folded',
                limb_darkening_model='quadratic', ld_fit_method='independent',
@@ -485,7 +489,7 @@ def retrieval(exoplanet, archive='eu', nlive=1000, fit_ttv=False,
     rmtree(f'Exoplanet/{exoplanet}')
 
 
-def _retrieval(exoplanet, archive='eu', nlive=1000, fit_ttv=False,
+def _retrieval(exoplanet, archive='eu', nlive=300, fit_ttv=False,
                detrending_list=[['nth order', 2]],
                dynesty_sample='rslice', fitting_mode='folded',
                limb_darkening_model='quadratic', ld_fit_method='independent',
@@ -530,7 +534,7 @@ def _retrieval(exoplanet, archive='eu', nlive=1000, fit_ttv=False,
         csvfile = f'{sector_folder}/{exoplanet}.csv'
         split_curves = split_lightcurve_file(csvfile, t0=t0, P=P)
         curves = len(split_curves)
-        print(f'\nA total of {str(curves)} lightcurves were created.')
+        print(f'\nA total of {str(curves)} lightcurves were created.\n')
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # Set the Data Paths
         cols = ['Path', 'Telescope', 'Filter', 'Epochs', 'Detrending']
@@ -590,17 +594,31 @@ def _retrieval(exoplanet, archive='eu', nlive=1000, fit_ttv=False,
     rmtree(f'Exoplanet/{exoplanet}')
 
 
-def _iterable_target(exoplanet_list, archive='eu', nlive=1000,
+def _iterable_target(exoplanet_list, archive='eu', nlive=300,
                      detrending_list=[['nth order', 2]],
                      dynesty_sample='rslice', fitting_mode='folded', fit_ttv=False,
                      limb_darkening_model='quadratic', ld_fit_method='independent',
                      max_batch_parameters=25, batch_overlap=2, dlogz=None, 
                      maxiter=None, maxcall=None, dynesty_bounding='multi', 
-                     normalise=True, detrend=True, email=False):
+                     normalise=True, detrend=True, email=False,
+                     printing=False):
     for i, exoplanet in enumerate(exoplanet_list):
         try:
             # Printing suppressed within scope
-            with suppress_print():
+            if printing == False:
+                with suppress_print():
+                    _retrieval(exoplanet, archive=archive, nlive=nlive,
+                               detrending_list=detrending_list,
+                               dynesty_sample=dynesty_sample,
+                               fitting_mode=fitting_mode, fit_ttv=fit_ttv,
+                               limb_darkening_model=limb_darkening_model, 
+                               ld_fit_method=ld_fit_method,
+                               max_batch_parameters=max_batch_parameters, 
+                               batch_overlap=batch_overlap, dlogz=dlogz, 
+                               maxiter=maxiter, maxcall=maxcall, 
+                               dynesty_bounding=dynesty_bounding, 
+                               normalise=normalise, detrend=detrend)
+            elif printing == True:
                 _retrieval(exoplanet, archive=archive, nlive=nlive,
                            detrending_list=detrending_list,
                            dynesty_sample=dynesty_sample,
@@ -629,12 +647,12 @@ def _iterable_target(exoplanet_list, archive='eu', nlive=1000,
 
 
 def auto_retrieval(file, processes=len(os.sched_getaffinity(0)) // 4,
-                   archive='eu', nlive=1000, detrending_list=[['nth order', 2]],
+                   archive='eu', nlive=300, detrending_list=[['nth order', 2]],
                    dynesty_sample='rslice', fitting_mode='folded', fit_ttv=False,
                    limb_darkening_model='quadratic', ld_fit_method='independent',
                    max_batch_parameters=25, batch_overlap=2, dlogz=None, 
                    maxiter=None, maxcall=None, dynesty_bounding='multi', 
-                   normalise=True, detrend=True, email=False):
+                   normalise=True, detrend=True, email=False, printing=False):
     '''
     Automated version of retrieval. Sends an email to transitfit.server@gmail.com
     upon an error or full completion of a target. Iteratively takes targets and
@@ -776,6 +794,10 @@ def auto_retrieval(file, processes=len(os.sched_getaffinity(0)) // 4,
         flux values for a given light curve. Default is True.
     detrend : bool, optional
         If True, will initialise detrending fitting. Default is True.
+    email : bool, optional
+        If True will send status emails. The default is False.
+    printing : bool, optional
+        If True will print outputs. The default is False.
 
     Returns
     -------
@@ -794,17 +816,7 @@ def auto_retrieval(file, processes=len(os.sched_getaffinity(0)) // 4,
                    batch_overlap=batch_overlap, dlogz=dlogz, 
                    maxiter=maxiter, maxcall=maxcall, 
                    dynesty_bounding=dynesty_bounding, 
-                   normalise=normalise, detrend=detrend, email=email)
+                   normalise=normalise, detrend=detrend, email=email,
+                   printing=printing)
     with Pool(processes=processes) as pool:
         pool.map(func, exoplanet_list, chunksize=1)
-
-
-# Example use
-if __name__ == '__main__':
-    # query('WASP-43 b')
-    # retrieval('WASP-43 b')
-    file = ('WASP-43 b', 'WASP-18 b', 'WASP-91 b', 'WASP-12 b',
-            'WASP-126 b', 'LHS 3844 b', 'GJ 1252 b', 'TOI-270 b')
-    auto_retrieval(file)
-else:
-    pass
