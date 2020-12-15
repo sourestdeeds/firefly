@@ -10,8 +10,8 @@ An example use with TransitFit is the following:
 ```
 from target import retrieval
 
-exoplanet = 'WASP-43 b'
-retrieval(exoplanet)
+target = 'WASP-43 b'
+retrieval(target)
 ```
 # auto_retrieval
 
@@ -25,13 +25,13 @@ An example use with TransitFit is the following:
 from target import auto_retrieval
 
 # For a single target
-file = ('WASP-43 b',)
-auto_retrieval(file)
+target = ('WASP-43 b',)
+auto_retrieval(targets)
 
 # For a list of targets
-file = ('WASP-43 b', 'WASP-18 b', 'WASP-91 b', 'WASP-12 b',
+targets = ('WASP-43 b', 'WASP-18 b', 'WASP-91 b', 'WASP-12 b',
             'WASP-126 b', 'LHS 3844 b', 'GJ 1252 b', 'TOI-270 b')
-auto_retrieval(file)
+auto_retrieval(targets)
 ```
 ### Dependancies
 ```
