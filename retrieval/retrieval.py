@@ -11,6 +11,7 @@ from multiprocessing import Pool, cpu_count
 from functools import partial
 import sys
 import os
+import pathlib
 
 
 
@@ -42,6 +43,7 @@ def _email(subject, body):
 
 
 def _TESS_filter():
+    here = pathlib.Path(__file__).parent.resolve()
     tess_filter_path = '/data/TESS_filter_path.csv'
     tess_filter = f'{os.getcwd()}/data/Filters/TESS_filter.csv'
     # tess_filter = f'{os.path.dirname(os.path.abspath(__file__))}' +\
