@@ -148,6 +148,22 @@ def _eu(exoplanet):
     return host_T, host_z, host_r, host_logg, t0, P
 
 
+def nasa_full():
+    '''
+    Downloads the entire NASA Exoplanet Archive
+
+    Returns
+    -------
+    data/nasa_full.csv
+
+    '''
+    download_link =  \
+    'https://exoplanetarchive.ipac.caltech.edu/' +\
+    'TAP/sync?query=select+*+from+ps&format=csv' 
+    df = read_csv(download_link)
+    df.to_csv('data/nasa_full.csv', index=False)
+        
+    
 def _nasa(exoplanet):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Download NASA archive
@@ -646,7 +662,7 @@ def _iterable_target(exoplanet_list, archive='eu', nlive=300,
             pass
 
 
-def auto_retrieval(file, processes=len(os.sched_getaffinity(0)) // 4,
+def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
                    archive='eu', nlive=300, detrending_list=[['nth order', 2]],
                    dynesty_sample='rslice', fitting_mode='folded', fit_ttv=False,
                    limb_darkening_model='quadratic', ld_fit_method='independent',
@@ -661,7 +677,7 @@ def auto_retrieval(file, processes=len(os.sched_getaffinity(0)) // 4,
     
     Parameters
     ----------
-    file : str
+    targets : str
         A list of exoplanet targets.
     processes : int, optional
         The number of processes to run in parallel. For UNIX, this default
@@ -805,7 +821,7 @@ def auto_retrieval(file, processes=len(os.sched_getaffinity(0)) // 4,
 
     '''
     exoplanet_list = []
-    for i, exoplanet in enumerate(file):
+    for i, exoplanet in enumerate(targets):
         exoplanet_list.append([exoplanet])
     func = partial(_iterable_target, 
                    archive=archive, nlive=nlive,
