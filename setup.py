@@ -2,7 +2,7 @@
 
 import os
 import pathlib
-from setuptools import setup
+from setuptools import setup, find_packages
 
 here = pathlib.Path(__file__).parent.resolve()
 
@@ -17,7 +17,7 @@ setup(name='retrieval',
       license='MIT',
       long_description=long_description,
       long_description_content_type='text/markdown',
-      packages=setuptools.find_packages(),
+      packages=find_packages(),
       classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License"
