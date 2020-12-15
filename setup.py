@@ -25,7 +25,4 @@ setup(name='retrieval',
       install_requires=['batman-package', 'dynesty', 'numpy', 'matplotlib',
                       'pandas', 'ldtk', 'lightkurve', 'transitfit'],
       python_requires='>=3.6',
-      package_data={  
-        'data/Filters': ['TESS_filter.csv'],
-                    },
       include_package_data=True)
