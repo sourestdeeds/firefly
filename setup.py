@@ -22,7 +22,8 @@ setup(name='retrieval',
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License"
       ],
-      install_requires=['batman-package', 'dynesty', 'numpy', 'matplotlib',
-                      'pandas', 'ldtk', 'lightkurve', 'transitfit'],
+      install_requires=['numpy',
+                        'pandas', 
+                        'lightkurve'],
       python_requires='>=3.6',
       include_package_data=True)
