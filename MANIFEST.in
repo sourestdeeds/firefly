@@ -1,0 +1,3 @@
+include *.md
+include LICENCE.txt
+recursive-include data *
