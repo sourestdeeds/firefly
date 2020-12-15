@@ -594,7 +594,7 @@ def _iterable_target(exoplanet_list, archive='eu', nlive=1000,
                      limb_darkening_model='quadratic', ld_fit_method='independent',
                      max_batch_parameters=25, batch_overlap=2, dlogz=None, 
                      maxiter=None, maxcall=None, dynesty_bounding='multi', 
-                     normalise=True, detrend=True):
+                     normalise=True, detrend=True, email=False):
     for i, exoplanet in enumerate(exoplanet_list):
         try:
             # Printing suppressed within scope
@@ -610,15 +610,19 @@ def _iterable_target(exoplanet_list, archive='eu', nlive=1000,
                            maxiter=maxiter, maxcall=maxcall, 
                            dynesty_bounding=dynesty_bounding, 
                            normalise=normalise, detrend=detrend)
-            _email(f'Success: {exoplanet}',
-                   f'Exoplanet: {exoplanet} \n\n'
-                   'A new target has been fully retrieved across ' +
-                   'all available TESS Sectors.')
+            if email == True:
+                _email(f'Success: {exoplanet}',
+                       f'Exoplanet: {exoplanet} \n\n'
+                       'A new target has been fully retrieved across ' +
+                       'all available TESS Sectors.')
         except KeyboardInterrupt:
             sys.exit('User terminated retrieval')
         except BaseException:
             trace_back = format_exc()
-            _email(f'Exception: {exoplanet}', trace_back)
+            if email == True:
+                _email(f'Exception: {exoplanet}', trace_back)
+            else:
+                print(trace_back)
             pass
 
 
@@ -628,7 +632,7 @@ def auto_retrieval(file, processes=len(os.sched_getaffinity(0)) // 4,
                    limb_darkening_model='quadratic', ld_fit_method='independent',
                    max_batch_parameters=25, batch_overlap=2, dlogz=None, 
                    maxiter=None, maxcall=None, dynesty_bounding='multi', 
-                   normalise=True, detrend=True):
+                   normalise=True, detrend=True, email=False):
     '''
     Automated version of retrieval. Sends an email to transitfit.server@gmail.com
     upon an error or full completion of a target. Iteratively takes targets and
@@ -788,7 +792,7 @@ def auto_retrieval(file, processes=len(os.sched_getaffinity(0)) // 4,
                    batch_overlap=batch_overlap, dlogz=dlogz, 
                    maxiter=maxiter, maxcall=maxcall, 
                    dynesty_bounding=dynesty_bounding, 
-                   normalise=normalise, detrend=detrend)
+                   normalise=normalise, detrend=detrend, email=email)
     with Pool(processes=processes) as pool:
         pool.map(func, exoplanet_list, chunksize=1)
 
