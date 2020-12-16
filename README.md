@@ -3,8 +3,10 @@
 A target data retriever for confirmed/candidate TESS exoplanets.
 Generates the priors and host star variables for a chosen target.
 Downloads exoplanet archives every 10 days and stores in /data.
-Target lightcurve files are downloaded from MAST, fits file is
-stored in Planet/exoplanet/exoplanet.fits.
+Target lightcurve files are downloaded from MAST, then split into 
+separate epochs. Upon user entry of the amount of epochs to fit,
+TransitFit will fit the curves and return the results. The results
+are then zipped up and time stamped.
 
 An example use with TransitFit is the following:
 ```
@@ -15,10 +17,14 @@ retrieval(target)
 ```
 # auto_retrieval
 
-Automated version of retrieval. Sends an email to transitfit.server@gmail.com
-upon an error or full completion of a target. Iteratively takes targets and
-employs TransitFit across each TESS sector for every exoplanet in the list given.
-Runs TransitFit for all available split curves.
+Automated version of retrieval. Optionally sends an email upon an error or 
+full completion of a target. Iteratively takes targets given and employs 
+TransitFit across each TESS sector for every exoplanet in the list given.
+If more than one target is given in a list, multiple cpu's will handle the extra
+targets in seperate threads. The default for this behaviour is set to a
+quarter of the maximum cores available to the current process.
+All available split curves are fitted with TransitFit, then the results
+are then zipped up and time stamped.
 
 An example use with TransitFit is the following:
 ```
