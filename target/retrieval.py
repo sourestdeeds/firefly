@@ -149,7 +149,7 @@ def _eu(exoplanet):
     return host_T, host_z, host_r, host_logg, t0, P, nan
 
 
-def nasa_full():
+def _nasa_full():
     '''
     Downloads the entire NASA Exoplanet Archive
 
@@ -291,7 +291,7 @@ def query(exoplanet, archive='eu'):
     rmtree(temp)
 
 
-def check_nan(exoplanet, archive='eu'):
+def _check_nan(exoplanet, archive='eu', printing=False):
     '''
     Checks if the priors generated have values for each entry.
 
@@ -314,16 +314,22 @@ def check_nan(exoplanet, archive='eu'):
     temp = f'Exoplanet/{exoplanet}'
     os.makedirs(temp, exist_ok=True)
     if archive == 'eu':
-        with suppress_print():
+        if printing == False:
+            with suppress_print():
+                nan = _eu(exoplanet)
+                nan = nan[6]
+        elif printing == True:
             nan = _eu(exoplanet)
             nan = nan[6]
     elif archive == 'nasa':
-        with suppress_print():
+        if printing == False:
+            with suppress_print():
+                nan = _nasa(exoplanet)
+                nan = nan[6]
+        elif printing == True:
             nan = _nasa(exoplanet)
             nan = nan[6]
     rmtree(temp)
-    if nan == True:
-        print(f'\n{exoplanet} has missing prior data.\n')
     return nan
 
 
@@ -457,10 +463,14 @@ def retrieval(exoplanet, archive='eu', nlive=300, fit_ttv=False,
     try:
         sector_list = lc .table .to_pandas()['sequence_number'] \
                          .drop_duplicates() .tolist()
-    except Exception:
+    except BaseException:
         sys.exit(f'Search result contains no data products for {exoplanet}.')
-    sector = int(input('Enter which TESS Sector you' +
+    sector = 0
+    while sector not in sector_list:
+        sector = int(input('Enter which TESS Sector you' +
                        ' would like to download: '))
+    if sector in sector_list:
+        pass
     sector_folder = f'Exoplanet/{exoplanet}/TESS Sector {str(sector)}'
     os.makedirs(sector_folder, exist_ok=True)
     lc = search_lightcurvefile(exoplanet, mission='TESS',
@@ -486,7 +496,11 @@ def retrieval(exoplanet, archive='eu', nlive=300, fit_ttv=False,
     # Set the Data Paths
     cols = ['Path', 'Telescope', 'Filter', 'Epochs', 'Detrending']
     df = DataFrame(columns=cols)
-    curves = int(input('Enter how many lightcurves you wish to fit: '))
+    curves = 500
+    while (curves > len(split_curves) or curves <= 0):
+        curves = int(input('Enter how many lightcurves you wish to fit: '))
+    if (curves <= len(split_curves)):
+        pass
     print()
     for i in range(curves):
         df = df.append([{'Path': f'{os.getcwd()}/{sector_folder}' +
@@ -532,7 +546,7 @@ def retrieval(exoplanet, archive='eu', nlive=300, fit_ttv=False,
         os.remove(priors)
         for i in range(len(split_curves)):
             os.remove(f'{sector_folder}/split_curve_{str(i)}.csv')
-    except Exception:
+    except BaseException:
         pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Archive and sort
@@ -560,12 +574,12 @@ def _retrieval(exoplanet, archive='eu', nlive=300, fit_ttv=False,
     try:
         sector_list = lc .table .to_pandas()['sequence_number'] \
                          .drop_duplicates() .tolist()
-    except Exception:
+    except KeyError:
         sys.exit(f'Search result contains no data products for {exoplanet}.')
     # Clear up previous sessions
     try:
         rmtree(f'Exoplanet/{exoplanet}')
-    except Exception:
+    except BaseException:
         pass
     for i, sector in enumerate(sector_list):
         sector_folder = f'Exoplanet/{exoplanet}/TESS Sector {str(sector)}'
@@ -637,7 +651,7 @@ def _retrieval(exoplanet, archive='eu', nlive=300, fit_ttv=False,
             os.remove(priors)
             for i in range(len(split_curves)):
                 os.remove(f'{sector_folder}/split_curve_{str(i)}.csv')
-        except Exception:
+        except BaseException:
             pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Archive and sort
@@ -886,9 +900,17 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
     exoplanet_list = []
     for i, exoplanet in enumerate(targets):
         with suppress_print():  
-            nan = check_nan(exoplanet, archive=archive)
+            nan = _check_nan(exoplanet, archive=archive)
         if nan == True:
-            print(f'\nWARNING: {exoplanet} has missing prior entries.\n')
+            _check_nan(exoplanet, archive=archive, printing=True)
+            verify = ''
+            while (verify!="y" and verify!="n"):
+                verify = str(input(f'\nWARNING: {exoplanet} has missing '
+                                   'prior entries. Continue? [y] [n]\n'))
+            if verify == "n":
+                sys.exit()
+            elif verify == "y":
+                pass
         exoplanet_list.append([exoplanet])
     func = partial(_iterable_target, 
                    archive=archive, email=email, printing=printing, nlive=nlive,
