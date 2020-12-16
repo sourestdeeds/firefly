@@ -11,7 +11,7 @@ with open(os.path.join(directory, 'README.md'), encoding='utf-8') as f:
   long_description = f.read()
 
 setup(name='target',
-      version='1.0.0',
+      version='0.5.9',
       description='For use with TransitFit',
       author='Steven Charles-Mindoza',
       license='MIT',
@@ -24,6 +24,7 @@ setup(name='target',
       ],
       install_requires=['numpy',
                         'pandas', 
-                        'lightkurve'],
+                        'lightkurve',
+                        'transitfit'],
       python_requires='>=3.6',
       include_package_data=True)
