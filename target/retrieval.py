@@ -142,10 +142,11 @@ def _eu(exoplanet):
             ['host_logg', 'fixed', host_logg[0], host_logg[1], '']]
     repack = DataFrame(cols, columns=['Parameter', 'Distribution',
                                       'Input_A', 'Input_B', 'Filter'])
+    nan = repack.isnull().values.any()
     repack = repack.to_string(index=False)
     print(f'\nPriors generated from the EU Archive for {exoplanet}.\n')
     print(repack)
-    return host_T, host_z, host_r, host_logg, t0, P
+    return host_T, host_z, host_r, host_logg, t0, P, nan
 
 
 def nasa_full():
@@ -251,10 +252,11 @@ def _nasa(exoplanet):
             ['host_logg', 'fixed', host_logg[0], host_logg[1], '']]
     repack = DataFrame(cols, columns=['Parameter', 'Distribution',
                                       'Input_A', 'Input_B', 'Filter'])
+    nan = repack.isnull().values.any()
     repack = repack.to_string(index=False)
     print(f'\nPriors generated from the NASA Archive for {exoplanet}.\n')
     print(repack)
-    return host_T, host_z, host_r, host_logg, t0, P, t14
+    return host_T, host_z, host_r, host_logg, t0, P, t14, nan
 
 
 def query(exoplanet, archive='eu'):
@@ -287,6 +289,42 @@ def query(exoplanet, archive='eu'):
     elif archive == 'nasa':
         _nasa(exoplanet)
     rmtree(temp)
+
+
+def check_nan(exoplanet, archive='eu'):
+    '''
+    Checks if the priors generated have values for each entry.
+
+    Parameters
+    ----------
+    exoplanet : str
+        The chosen target.
+    archive : str, optional
+        The exoplanet archive to pull data from. Options are:
+        
+        - 'eu'
+        - 'nasa'
+        The default is 'eu'.
+
+    Returns
+    -------
+    None.
+
+    '''
+    temp = f'Exoplanet/{exoplanet}'
+    os.makedirs(temp, exist_ok=True)
+    if archive == 'eu':
+        with suppress_print():
+            nan = _eu(exoplanet)
+            nan = nan[6]
+    elif archive == 'nasa':
+        with suppress_print():
+            nan = _nasa(exoplanet)
+            nan = nan[6]
+    rmtree(temp)
+    if nan == True:
+        print(f'\n{exoplanet} has missing prior data.\n')
+    return nan
 
 
 def _fits(exoplanet, sector_folder):
@@ -436,9 +474,9 @@ def retrieval(exoplanet, archive='eu', nlive=300, fit_ttv=False,
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Download Archive
     if archive == 'eu':
-        host_T, host_z, host_r, host_logg, t0, P = _eu(exoplanet)
+        host_T, host_z, host_r, host_logg, t0, P, nan = _eu(exoplanet)
     elif archive == 'nasa':
-        host_T, host_z, host_r, host_logg, t0, P, t14 = _nasa(exoplanet)
+        host_T, host_z, host_r, host_logg, t0, P, t14, nan = _nasa(exoplanet)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Split the Light curves
     csvfile = f'{sector_folder}/{exoplanet}.csv'
@@ -542,9 +580,9 @@ def _retrieval(exoplanet, archive='eu', nlive=300, fit_ttv=False,
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # Download Archive
         if archive == 'eu':
-            host_T, host_z, host_r, host_logg, t0, P = _eu(exoplanet)
+            host_T, host_z, host_r, host_logg, t0, P, nan = _eu(exoplanet)
         elif archive == 'nasa':
-            host_T, host_z, host_r, host_logg, t0, P, t14 = _nasa(exoplanet)
+            host_T, host_z, host_r, host_logg, t0, P, t14, nan = _nasa(exoplanet)
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # Split the Light curves
         csvfile = f'{sector_folder}/{exoplanet}.csv'
@@ -693,24 +731,34 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
     ----------
     targets : str, list
         A list of exoplanet targets.
+        Input is a list tuple of strings:
+            ('WASP-43 b', 'WASP-18 b', 'WASP-91 b')
     processes : int, optional
         The number of processes to run in parallel. For UNIX, this default
         is the maximum available for the current process.
         The default is maximum available cores for the current process.
     archive: str, optional
-        The exoplanet archive to use for priors. Supports 'eu' and 'nasa'.
+        The exoplanet archive to use for priors. Supports:
+        
+        - 'eu'
+        - 'nasa'
         The default is 'eu'.
+    email : bool, optional
+        If True will send status emails. The default is False.
+    printing : bool, optional
+        If True will print outputs. The default is False.
     nlive : int, optional
         The number of live points to use in the nested sampling retrieval.
         Default is 1000.
     detrending_list : array_like, shape (n_detrending_models, 2)
         A list of different detrending models. Each entry should consist
         of a method and a second parameter dependent on the method.
-        Accepted methods are
+        Accepted methods are:
+            
         - ['nth order', order]
         - ['custom', function, [global fit indices, filter fit indices, epoch fit indices]]
         - ['off', ]
-        function here is a custom detrending function. TransitFit assumes
+        Function here is a custom detrending function. TransitFit assumes
         that the first argument to this function is times and that all
         other arguments are single-valued - TransitFit cannot fit
         list/array variables. If 'off' is used, no detrending will be
@@ -722,15 +770,18 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
         of the detrending function should be given as a list. If there are
         no indices to be given, then use an empty list: []
         e.g. if the detrending function is given by
-            ```
+            
             foo(times, a, b, c):
                 # do something
-            ```
+           
         and a should be fitted globally, then the entry in the method_list
-        would be ['custom', foo, [1], [], []].
+        would be 
+        
+            ['custom', foo, [1], [], []].
     dynesty_sample : str, optional
         Method used to sample uniformly within the likelihood constraint,
         conditioned on the provided bounds. Unique methods available are:
+            
         - uniform sampling within the bounds('unif') 
         - random walks with fixed proposals ('rwalk') 
         - random walks with variable ("staggering") proposals ('rstagger') 
@@ -748,6 +799,7 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
     fitting_mode : {`'auto'`, `'all'`, `'folded'`, `'batched'`}, optional
         The approach TransitFit takes towards limiting the number of parameters
         being simultaneously fitted. The available modes are:
+            
         - `'auto'` : Will calculate the number of parameters required to fit
           all the data simulataneously. If this is less than max_parameters,
           will set to `'all'` mode, else will set to `'folded'` if at least one
@@ -825,10 +877,6 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
         flux values for a given light curve. Default is True.
     detrend : bool, optional
         If True, will initialise detrending fitting. Default is True.
-    email : bool, optional
-        If True will send status emails. The default is False.
-    printing : bool, optional
-        If True will print outputs. The default is False.
 
     Returns
     -------
@@ -837,9 +885,13 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
     '''
     exoplanet_list = []
     for i, exoplanet in enumerate(targets):
+        with suppress_print():  
+            nan = check_nan(exoplanet, archive=archive)
+        if nan == True:
+            print(f'\nWARNING: {exoplanet} has missing prior entries.\n')
         exoplanet_list.append([exoplanet])
     func = partial(_iterable_target, 
-                   archive=archive, nlive=nlive,
+                   archive=archive, email=email, printing=printing, nlive=nlive,
                    detrending_list=detrending_list, ld_fit_method=ld_fit_method,
                    dynesty_sample=dynesty_sample, fitting_mode=fitting_mode,
                    fit_ttv=fit_ttv, limb_darkening_model=limb_darkening_model, 
@@ -847,7 +899,6 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
                    batch_overlap=batch_overlap, dlogz=dlogz, 
                    maxiter=maxiter, maxcall=maxcall, 
                    dynesty_bounding=dynesty_bounding, 
-                   normalise=normalise, detrend=detrend, email=email,
-                   printing=printing)
+                   normalise=normalise, detrend=detrend)
     with Pool(processes=processes) as pool:
         pool.map(func, exoplanet_list, chunksize=1)
