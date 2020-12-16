@@ -47,26 +47,36 @@ transitfit
 
     Parameters
     ----------
-    file : str
+    targets : str, list
         A list of exoplanet targets.
+        Input is a list tuple of strings:
+            ('WASP-43 b', 'WASP-18 b', 'WASP-91 b')
     processes : int, optional
         The number of processes to run in parallel. For UNIX, this default
         is the maximum available for the current process.
         The default is maximum available cores for the current process.
     archive: str, optional
-        The exoplanet archive to use for priors. Supports 'eu' and 'nasa'.
+        The exoplanet archive to use for priors. Supports:
+        
+        - 'eu'
+        - 'nasa'
         The default is 'eu'.
+    email : bool, optional
+        If True will send status emails. The default is False.
+    printing : bool, optional
+        If True will print outputs. The default is False.
     nlive : int, optional
         The number of live points to use in the nested sampling retrieval.
         Default is 1000.
     detrending_list : array_like, shape (n_detrending_models, 2)
         A list of different detrending models. Each entry should consist
         of a method and a second parameter dependent on the method.
-        Accepted methods are
-            ['nth order', order]
-            ['custom', function, [global fit indices, filter fit indices, epoch fit indices]]
-            ['off', ]
-        function here is a custom detrending function. TransitFit assumes
+        Accepted methods are:
+            
+        - ['nth order', order]
+        - ['custom', function, [global fit indices, filter fit indices, epoch fit indices]]
+        - ['off', ]
+        Function here is a custom detrending function. TransitFit assumes
         that the first argument to this function is times and that all
         other arguments are single-valued - TransitFit cannot fit
         list/array variables. If 'off' is used, no detrending will be
@@ -78,21 +88,25 @@ transitfit
         of the detrending function should be given as a list. If there are
         no indices to be given, then use an empty list: []
         e.g. if the detrending function is given by
-            ```
+            
             foo(times, a, b, c):
                 # do something
-            ```
+           
         and a should be fitted globally, then the entry in the method_list
-        would be ['custom', foo, [1], [], []].
+        would be 
+        
+            ['custom', foo, [1], [], []].
     dynesty_sample : str, optional
         Method used to sample uniformly within the likelihood constraint,
         conditioned on the provided bounds. Unique methods available are:
-        uniform sampling within the bounds('unif'), random walks with fixed
-        proposals ('rwalk'), random walks with variable ("staggering")
-        proposals ('rstagger'), multivariate slice sampling along preferred
-        orientations ('slice'), "random" slice sampling along all
-        orientations ('rslice'), "Hamiltonian" slices along random
-        trajectories ('hslice'), and any callable function which follows
+            
+        - uniform sampling within the bounds('unif') 
+        - random walks with fixed proposals ('rwalk') 
+        - random walks with variable ("staggering") proposals ('rstagger') 
+        - multivariate slice sampling along preferred orientations ('slice') 
+        - "random" slice sampling along all orientations ('rslice') 
+        - "Hamiltonian" slices along random trajectories ('hslice') 
+        and any callable function which follows
         the pattern of the sample methods defined in dynesty.sampling.
         'auto' selects the sampling method based on the dimensionality of
         the problem (from ndim). When ndim < 10, this defaults to 'unif'.
@@ -103,6 +117,7 @@ transitfit
     fitting_mode : {`'auto'`, `'all'`, `'folded'`, `'batched'`}, optional
         The approach TransitFit takes towards limiting the number of parameters
         being simultaneously fitted. The available modes are:
+            
         - `'auto'` : Will calculate the number of parameters required to fit
           all the data simulataneously. If this is less than max_parameters,
           will set to `'all'` mode, else will set to `'folded'` if at least one
