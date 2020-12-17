@@ -1,5 +1,6 @@
 from ._utils import suppress_print, _check_nan, _fits, _TESS_filter, \
                     _eu, _nasa, _iterable_target
+from ._search import _input_checker
 from transitfit import split_lightcurve_file, run_retrieval
 from lightkurve import search_lightcurvefile
 from datetime import datetime
@@ -235,6 +236,7 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
         sys.exit('Archive data options for dtype are: \'eu\' or \'nasa\'')
     else:
         pass
+    target = _input_checker(target)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Filter Setup
     _TESS_filter()
@@ -544,6 +546,7 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
     '''
     exoplanet_list = []
     for i, exoplanet in enumerate(targets):
+        exoplanet = _input_checker(exoplanet)
         with suppress_print():  
             nan = _check_nan(exoplanet, archive=archive)
         if nan == True:
