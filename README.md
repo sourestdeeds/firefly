@@ -13,7 +13,7 @@ from firefly import query
 target = 'WASP-43 b'
 query(target)
 ```
-```bash
+```
 SearchResult containing 1 data products.
 
  observation  target_name                     productFilename                    
