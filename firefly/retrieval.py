@@ -63,7 +63,7 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
 
     An example use with TransitFit is the following:
 
-        >>> from target import retrieval
+        >>> from firefly import retrieval
         >>> exoplanet = 'WASP-43 b'
         >>> retrieval(target)
         
@@ -383,13 +383,13 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
 
     For a single target:
         
-        >>> from target import auto_retrieval
+        >>> from firefly import auto_retrieval
         >>> target = ('WASP-43 b',)
         >>> auto_retrieval(target)
 
     For a list of targets:
         
-        >>> from target import auto_retrieval
+        >>> from firefly import auto_retrieval
         >>> targets = ('WASP-43 b', 'WASP-18 b', 'WASP-91 b')
         >>> auto_retrieval(targets)
         
