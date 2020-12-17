@@ -1,4 +1,4 @@
 name = 'target'
-__version__ = '0.5.9'
+__version__ = '0.6.0'
 
 from .retrieval import query, retrieval, auto_retrieval
