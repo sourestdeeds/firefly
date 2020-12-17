@@ -41,6 +41,7 @@ def _email(subject, body):
 
 def _TESS_filter():
     here = os.path.dirname(os.path.abspath(__file__))
+    os.makedirs('data', exist_ok=True)
     tess_filter_path = f'{os.getcwd()}/data/TESS_filter_path.csv'
     tess_filter = f'{here}/data/Filters/TESS_filter.csv'
     if not os.path.exists(tess_filter_path):
@@ -396,8 +397,7 @@ def _retrieval(exoplanet, archive='eu', nlive=300, fit_ttv=False,
         # Paths to data, priors, and filter info:
         data = 'data/data_paths.csv'
         priors = f'Exoplanet/{exoplanet}/{exoplanet} Priors.csv'
-        here = os.path.dirname(os.path.abspath(__file__))
-        filters = f'{here}/data/TESS_filter_path.csv'
+        filters = '/data/TESS_filter_path.csv'
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # Output folders
         results_output_folder = f'{sector_folder}/output_parameters'
