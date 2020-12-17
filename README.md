@@ -9,9 +9,8 @@ TransitFit will fit the curves and return the results. The results
 are then zipped up and time stamped.
 
 An example use with TransitFit is the following:
-```
+```python
 from target import retrieval
-
 target = 'WASP-43 b'
 retrieval(target)
 ```
@@ -27,7 +26,7 @@ All available split curves are fitted with TransitFit, then the results
 are then zipped up and time stamped.
 
 An example use with TransitFit is the following:
-```
+```python
 from target import auto_retrieval
 
 # For a single target
@@ -40,11 +39,31 @@ targets = ('WASP-43 b', 'WASP-18 b', 'WASP-91 b', 'WASP-12 b',
 auto_retrieval(targets)
 ```
 ### Dependancies
-```
+```python
 lightkurve
 transitfit
 ```
+```
+    For a single target:
+        
+        >>> from target import auto_retrieval
+        >>> target = ('WASP-43 b',)
+        >>> auto_retrieval(target)
 
+    For a list of targets:
+        
+        >>> from target import auto_retrieval
+        >>> targets = ('WASP-43 b', 'WASP-18 b', 'WASP-91 b')
+        >>> auto_retrieval(targets)
+        
+    Input is capable of handling :
+    
+        >>> ('wasp43b', 'WASp18b', 'wasP91--b') etc
+        
+    Forces corrections based on classifier: 
+    
+        >>> 'WASP', 'LTT', 'GJ' etc
+    
     Parameters
     ----------
     targets : str, list
@@ -139,11 +158,12 @@ transitfit
         DESCRIPTION. The default is False.
     limb_darkening_model : str, optional
         The limb darkening model to use. Allowed models are
-            - 'linear'
-            - 'quadratic'
-            - 'squareroot'
-            - 'power2'
-            - 'nonlinear'
+            
+        - 'linear'
+        - 'quadratic'
+        - 'squareroot'
+        - 'power2'
+        - 'nonlinear'
         With the exception of the non-linear model, all models are constrained
         by the method in Kipping (2013), which can be found at
         https://arxiv.org/abs/1308.0009. Use `ldc_low_lim` and `ldc_high_lim`
@@ -152,18 +172,19 @@ transitfit
     ld_fit_method : {`'coupled'`, `'single'`, `'independent'`, `'off'`}, optional
         Determines the mode of fitting of limb darkening parameters. The
         available modes are:
-            - `'coupled'` : all limb darkening parameters are fitted
+            
+        - `'coupled'` : all limb darkening parameters are fitted
               independently, but are coupled to a wavelength dependent
               model based on the host parameters through `ldkt`
-            - `'single'` : LD parameters are still tied to a model, but
+        - `'single'` : LD parameters are still tied to a model, but
               only the first filter is actively fitted. The remaining
               filters are estimated based off the ratios given by ldtk for
               a host with the given parameters. This mode is useful for a
               large number of filters, as `'coupled'` or `'independent'`
               fitting will lead to much higher computation times.
-            - `'independent'` : Each LD coefficient is fitted separately for
+        - `'independent'` : Each LD coefficient is fitted separately for
               each filter, with no coupling to the ldtk models.
-            - `'off'` : Will use the fixed value provided in the input file
+        - `'off'` : Will use the fixed value provided in the input file
         Default is `'independent'`
     max_batch_parameters : int, optional
         The maximum number of parameters to use in a single retrieval.
@@ -199,3 +220,4 @@ transitfit
     Returns
     -------
     A whole lot of data to science!
+```
