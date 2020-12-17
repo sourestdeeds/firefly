@@ -61,21 +61,19 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
     TransitFit will fit the curves and return the results. The results
     are then zipped up and time stamped.
 
-
     An example use with TransitFit is the following:
 
-    Host Info
-        exoplanet = 'WASP-43 b'
-
-        retrieval(target)
+        >>> from target import retrieval
+        >>> exoplanet = 'WASP-43 b'
+        >>> retrieval(target)
         
     Input is capable of handling:
     
-        'wasp43b', 'WASp43b' etc
+        >>> 'wasp43b', 'WASp43b' etc
         
     Forces corrections based on classifier: 
     
-        'WASP', 'LTT', 'GJ' etc
+        >>> 'WASP', 'LTT', 'GJ' etc
 
     Parameters
     ----------
@@ -166,11 +164,12 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
         DESCRIPTION. The default is False.
     limb_darkening_model : str, optional
         The limb darkening model to use. Allowed models are
-            - 'linear'
-            - 'quadratic'
-            - 'squareroot'
-            - 'power2'
-            - 'nonlinear'
+        
+        - 'linear'
+        - 'quadratic'
+        - 'squareroot'
+        - 'power2'
+        - 'nonlinear'
         With the exception of the non-linear model, all models are constrained
         by the method in Kipping (2013), which can be found at
         https://arxiv.org/abs/1308.0009. Use `ldc_low_lim` and `ldc_high_lim`
@@ -179,18 +178,19 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
     ld_fit_method : {`'coupled'`, `'single'`, `'independent'`, `'off'`}, optional
         Determines the mode of fitting of limb darkening parameters. The
         available modes are:
-            - `'coupled'` : all limb darkening parameters are fitted
+            
+        - `'coupled'` : all limb darkening parameters are fitted
               independently, but are coupled to a wavelength dependent
               model based on the host parameters through `ldkt`
-            - `'single'` : LD parameters are still tied to a model, but
+        - `'single'` : LD parameters are still tied to a model, but
               only the first filter is actively fitted. The remaining
               filters are estimated based off the ratios given by ldtk for
               a host with the given parameters. This mode is useful for a
               large number of filters, as `'coupled'` or `'independent'`
               fitting will lead to much higher computation times.
-            - `'independent'` : Each LD coefficient is fitted separately for
+        - `'independent'` : Each LD coefficient is fitted separately for
               each filter, with no coupling to the ldtk models.
-            - `'off'` : Will use the fixed value provided in the input file
+        - `'off'` : Will use the fixed value provided in the input file
         Default is `'independent'`
     max_batch_parameters : int, optional
         The maximum number of parameters to use in a single retrieval.
@@ -380,28 +380,26 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
     quarter of the maximum cores available to the current process.
     All available split curves are fitted with TransitFit, then the results
     are then zipped up and time stamped.
-    
-    Example:
 
-    - For a single target
+    For a single target:
         
-        target = ('WASP-43 b',)
-        
-        auto_retrieval(target)
+        >>> from target import auto_retrieval
+        >>> target = ('WASP-43 b',)
+        >>> auto_retrieval(target)
 
-    - For a list of targets
+    For a list of targets:
         
-        targets = ('WASP-43 b', 'WASP-18 b', 'WASP-91 b')
-        
-        auto_retrieval(targets)
+        >>> from target import auto_retrieval
+        >>> targets = ('WASP-43 b', 'WASP-18 b', 'WASP-91 b')
+        >>> auto_retrieval(targets)
         
     Input is capable of handling :
     
-        ('wasp43b', 'WASp18b', 'wasP91--b') etc
+        >>> ('wasp43b', 'WASp18b', 'wasP91--b') etc
         
     Forces corrections based on classifier: 
     
-        'WASP', 'LTT', 'GJ' etc
+        >>> 'WASP', 'LTT', 'GJ' etc
     
     Parameters
     ----------
@@ -497,11 +495,12 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
         DESCRIPTION. The default is False.
     limb_darkening_model : str, optional
         The limb darkening model to use. Allowed models are
-            - 'linear'
-            - 'quadratic'
-            - 'squareroot'
-            - 'power2'
-            - 'nonlinear'
+            
+        - 'linear'
+        - 'quadratic'
+        - 'squareroot'
+        - 'power2'
+        - 'nonlinear'
         With the exception of the non-linear model, all models are constrained
         by the method in Kipping (2013), which can be found at
         https://arxiv.org/abs/1308.0009. Use `ldc_low_lim` and `ldc_high_lim`
@@ -510,18 +509,19 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
     ld_fit_method : {`'coupled'`, `'single'`, `'independent'`, `'off'`}, optional
         Determines the mode of fitting of limb darkening parameters. The
         available modes are:
-            - `'coupled'` : all limb darkening parameters are fitted
+            
+        - `'coupled'` : all limb darkening parameters are fitted
               independently, but are coupled to a wavelength dependent
               model based on the host parameters through `ldkt`
-            - `'single'` : LD parameters are still tied to a model, but
+        - `'single'` : LD parameters are still tied to a model, but
               only the first filter is actively fitted. The remaining
               filters are estimated based off the ratios given by ldtk for
               a host with the given parameters. This mode is useful for a
               large number of filters, as `'coupled'` or `'independent'`
               fitting will lead to much higher computation times.
-            - `'independent'` : Each LD coefficient is fitted separately for
+        - `'independent'` : Each LD coefficient is fitted separately for
               each filter, with no coupling to the ldtk models.
-            - `'off'` : Will use the fixed value provided in the input file
+        - `'off'` : Will use the fixed value provided in the input file
         Default is `'independent'`
     max_batch_parameters : int, optional
         The maximum number of parameters to use in a single retrieval.
