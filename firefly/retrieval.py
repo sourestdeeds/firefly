@@ -13,7 +13,7 @@ import os
 
 
 
-def query(exoplanet, archive='eu'):
+def query(target, archive='eu'):
     '''
     Performs a query for prior information and data products from MAST
 
@@ -29,6 +29,7 @@ def query(exoplanet, archive='eu'):
     Data printed to console.
 
     '''
+    exoplanet = _input_checker(target)
     temp = f'Exoplanet/{exoplanet}'
     os.makedirs(temp, exist_ok=True)
     lc = search_lightcurvefile(exoplanet, mission='TESS')
