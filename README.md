@@ -1,7 +1,7 @@
 # firefly
 
 A collection of tools to aid the user experience in the use of
-TransitFit.
+TransitFit for confirmed TESS targets.
 
 #### Installation (add later)
 ```bash
