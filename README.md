@@ -3,7 +3,7 @@
 A collection of tools to aid the user experience in the use of
 TransitFit.
 
-#### Installation 
+#### Installation (add later)
 ```bash
 pip install firefly
 ```
