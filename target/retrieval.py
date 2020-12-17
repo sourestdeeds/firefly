@@ -68,6 +68,14 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
         exoplanet = 'WASP-43 b'
 
         retrieval(target)
+        
+    Input is capable of handling:
+    
+        'wasp43b', 'WASp43b' etc
+        
+    Forces corrections based on classifier: 
+    
+        'WASP', 'LTT', 'GJ' etc
 
     Parameters
     ----------
@@ -252,11 +260,11 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
         sys.exit(f'Search result contains no data products for {target}.')
     sector = '0'
     while (sector not in sector_list and sector != 'q'):
+        print('\nAvailable TESS Sectors are:', *sector_list)
         sector = input('Enter which TESS Sector you would like to download: ')
         while (sector not in sector_list and sector != 'q'):
-            print('\nPlease choose an integer from the list' +\
-                  f' {[int(sector) for sector in sector_list]}' +\
-                  ' or type q to quit.')
+            print('\nPlease choose an integer from the list: \n', *sector_list,
+                  '\nor type q to quit.')
             sector = input('Enter which TESS Sector you' +
                                ' would like to download: ')
         if sector == 'q':
@@ -387,6 +395,14 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
         targets = ('WASP-43 b', 'WASP-18 b', 'WASP-91 b')
         
         auto_retrieval(targets)
+        
+    Input is capable of handling :
+    
+        ('wasp43b', 'WASp18b', 'wasP91--b') etc
+        
+    Forces corrections based on classifier: 
+    
+        'WASP', 'LTT', 'GJ' etc
     
     Parameters
     ----------
@@ -554,7 +570,7 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
             verify = ''
             while (verify!="y" and verify!="n"):
                 verify = input(f'\nWARNING: {exoplanet} has missing '
-                                   'prior entries. Continue? ([y] n)\n')
+                                   'prior entries. Proceed ([y]/n)?\n')
             if verify == "n":
                 sys.exit()
             elif verify == "y":
