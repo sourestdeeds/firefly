@@ -391,7 +391,7 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
     For a list of targets:
         
         >>> from firefly import auto_retrieval
-        >>> targets = ('WASP-43 b', 'WASP-18 b', 'WASP-91 b')
+        >>> targets = ('WASP-43 b', 'WASP-18 b')
         >>> auto_retrieval(targets)
         
     Input is capable of handling :
