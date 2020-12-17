@@ -41,7 +41,7 @@ def _email(subject, body):
 
 def _TESS_filter():
     here = os.path.dirname(os.path.abspath(__file__))
-    tess_filter_path = f'{here}/data/TESS_filter_path.csv'
+    tess_filter_path = f'{os.getcwd()}/data/TESS_filter_path.csv'
     tess_filter = f'{here}/data/Filters/TESS_filter.csv'
     if not os.path.exists(tess_filter_path):
         cols = ['filter_idx', 'low_wl', 'high_wl']
