@@ -11,7 +11,7 @@ with open(os.path.join(directory, 'README.md'), encoding='utf-8') as f:
   long_description = f.read()
 
 setup(name='target',
-      version='0.5.9',
+      version='0.6.0',
       description='For use with TransitFit',
       author='Steven Charles-Mindoza',
       license='MIT',
