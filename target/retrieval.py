@@ -245,20 +245,23 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
     try:
         sector_list = lc .table .to_pandas()['sequence_number'] \
                          .drop_duplicates() .tolist()
+        sector_list = [str(sector) for sector in sector_list]
     except BaseException:
         sys.exit(f'Search result contains no data products for {target}.')
-    sector = 0
-    try:
-        while sector not in sector_list:
-            sector = int(input('Enter which TESS Sector you' +
-                           ' would like to download: '))
-    except ValueError:
-        print('\nEnter integers only.')
-        while sector not in sector_list:
-            sector = int(input('Enter which TESS Sector you' +
-                           ' would like to download: '))
-    if sector in sector_list:
-        pass
+    sector = '0'
+    while (sector not in sector_list and sector != 'q'):
+        sector = input('Enter which TESS Sector you would like to download: ')
+        while (sector not in sector_list and sector != 'q'):
+            print('\nPlease choose an integer from the list' +\
+                  f' {[int(sector) for sector in sector_list]}' +\
+                  ' or type q to quit.')
+            sector = input('Enter which TESS Sector you' +
+                               ' would like to download: ')
+        if sector == 'q':
+            sys.exit('You chose to quit.')
+        elif sector in sector_list:
+            pass
+    sector = int(sector)
     sector_folder = f'Exoplanet/{target}/TESS Sector {str(sector)}'
     os.makedirs(sector_folder, exist_ok=True)
     lc = search_lightcurvefile(target, mission='TESS',
@@ -284,18 +287,20 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
     # Set the Data Paths
     cols = ['Path', 'Telescope', 'Filter', 'Epochs', 'Detrending']
     df = DataFrame(columns=cols)
-    curves = 500
-    try:
-        while (curves > len(split_curves) or curves <= 0):
-            curves = int(input('Enter how many lightcurves you wish to fit: '))
-    except ValueError:
-        print('\nEnter integers only.')
-        while (curves > len(split_curves) or curves <= 0):
-            curves = int(input('Enter how many lightcurves you wish to fit: '))
-    if (curves <= len(split_curves)):
-        pass
+    curves = '0'
+    curve_list = [str(curve) for curve in range(1,len(split_curves)+1)]
+    while (curves not in curve_list and curves != 'q'):
+        curves = input('Enter how many lightcurves you wish to fit: ')
+        while (curves not in curve_list and curves != 'q'):
+            print('\nPlease enter an integer between 1 and' +\
+                  f' {len(split_curves)} or type q to quit.')
+            curves = input('Enter how many lightcurves you wish to fit: ')
+        if curves == 'q':
+            sys.exit('You chose to quit.')
+        elif (curves in curve_list):
+            pass
     print()
-    for i in range(curves):
+    for i in range(int(curves)):
         df = df.append([{'Path': f'{os.getcwd()}/{sector_folder}' +
                          f'/split_curve_{str(i)}.csv'}],
                        ignore_index=True)
@@ -545,8 +550,13 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
             _check_nan(exoplanet, archive=archive, printing=True)
             verify = ''
             while (verify!="y" and verify!="n"):
-                verify = str(input(f'\nWARNING: {exoplanet} has missing '
-                                   'prior entries. Continue? [y] [n]\n'))
+                try:
+                    verify = str(input(f'\nWARNING: {exoplanet} has missing '
+                                       'prior entries. Continue? ([y] n)\n'))
+                except ValueError:
+                    print('\nEnter the character y for yes, and n for no.')
+                    verify = str(input(f'\nWARNING: {exoplanet} has missing '
+                                       'prior entries. Continue? ([y] n)\n'))
             if verify == "n":
                 sys.exit()
             elif verify == "y":
