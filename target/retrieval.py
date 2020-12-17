@@ -550,13 +550,8 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
             _check_nan(exoplanet, archive=archive, printing=True)
             verify = ''
             while (verify!="y" and verify!="n"):
-                try:
-                    verify = str(input(f'\nWARNING: {exoplanet} has missing '
-                                       'prior entries. Continue? ([y] n)\n'))
-                except ValueError:
-                    print('\nEnter the character y for yes, and n for no.')
-                    verify = str(input(f'\nWARNING: {exoplanet} has missing '
-                                       'prior entries. Continue? ([y] n)\n'))
+                verify = input(f'\nWARNING: {exoplanet} has missing '
+                                   'prior entries. Continue? ([y] n)\n')
             if verify == "n":
                 sys.exit()
             elif verify == "y":
