@@ -263,16 +263,16 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
         elif sector in sector_list:
             pass
     sector = int(sector)
-    sector_folder = f'Exoplanet/{target}/TESS Sector {str(sector)}'
-    os.makedirs(sector_folder, exist_ok=True)
+    exo_folder = f'firefly/{target}/TESS Sector {str(sector)}'
+    os.makedirs(exo_folder, exist_ok=True)
     lc = search_lightcurvefile(target, mission='TESS',
                                sector=sector)
     print(f'\nDownloading MAST Lightcurve for TESS Sector {str(sector)}.')
-    lc.download_all(download_dir=sector_folder)
+    lc.download_all(download_dir=exo_folder)
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Extract all light curves to a single csv file
-    fitsfile = _fits(target, sector_folder)
+    fitsfile = _fits(target, exo_folder)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Download Archive
     if archive == 'eu':
@@ -281,7 +281,7 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
         host_T, host_z, host_r, host_logg, t0, P, t14, nan = _nasa(target)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Split the Light curves
-    csvfile = f'{sector_folder}/{target}.csv'
+    csvfile = f'{exo_folder}/{target}.csv'
     split_curves = split_lightcurve_file(csvfile, t0=t0, P=P)
     print(f'\nA total of {str(len(split_curves))} lightcurves were created.')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -302,22 +302,22 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
             pass
     print()
     for i in range(int(curves)):
-        df = df.append([{'Path': f'{os.getcwd()}/{sector_folder}' +
+        df = df.append([{'Path': f'{os.getcwd()}/{exo_folder}' +
                          f'/split_curve_{str(i)}.csv'}],
                        ignore_index=True)
         df['Telescope'], df['Filter'], df['Detrending'] = 0, 0, 0
         df['Epochs'] = range(0, len(df))
-    df.to_csv(r'data/data_paths.csv', index=False, header=True)
+    df.to_csv(r'firefly/data/data_paths.csv', index=False, header=True)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Paths to data, priors, and filter info:
-    data = 'data/data_paths.csv'
-    priors = f'Exoplanet/{target}/{target} Priors.csv'
-    filters = 'data/TESS_filter_path.csv'
+    data = 'firefly/data/data_paths.csv'
+    priors = f'firefly/{target}/{target} Priors.csv'
+    filters = 'firefly/data/TESS_filter_path.csv'
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Output folders
-    results_output_folder = f'{sector_folder}/output_parameters'
-    fitted_lightcurve_folder = f'{sector_folder}/fitted_lightcurves'
-    plot_folder = f'{sector_folder}/plots'
+    results_output_folder = f'{exo_folder}/output_parameters'
+    fitted_lightcurve_folder = f'{exo_folder}/fitted_lightcurves'
+    plot_folder = f'{exo_folder}/plots'
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Run the retrieval
     run_retrieval(data, priors, filters, detrending_list=detrending_list,
@@ -337,22 +337,22 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Cleanup
     try:
-        rmtree(f'{sector_folder}/mastDownload')
-        move(fitsfile, f'Exoplanet/{target}.fits')
-        os.remove(f'Exoplanet/{target}.fits')
+        rmtree(f'{exo_folder}/mastDownload')
+        move(fitsfile, f'{exo_folder}.fits')
+        os.remove(f'{exo_folder}.fits')
         os.remove(csvfile)
         os.remove(priors)
         for i in range(len(split_curves)):
-            os.remove(f'{sector_folder}/split_curve_{str(i)}.csv')
+            os.remove(f'{exo_folder}/split_curve_{str(i)}.csv')
     except BaseException:
         pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Archive and sort
     now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
-    make_archive(f'Exoplanet/{target} {now}', format='gztar',
-                 root_dir=f'{os.getcwd()}/Exoplanet/',
+    make_archive(f'{exo_folder} {now}', format='gztar',
+                 root_dir=f'{os.getcwd()}/firefly/',
                  base_dir=f'{target}')
-    rmtree(f'Exoplanet/{target}')
+    rmtree(f'{exo_folder}')
 
 
 def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
