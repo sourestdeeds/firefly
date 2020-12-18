@@ -462,7 +462,8 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
             
         >>> curve_sample = 9999
         
-        will fit using only 1 lightcurve. The default is all lightcurves.
+        will fit using only 1 lightcurvefrom each sector. 
+        The default is all lightcurves.
     email : bool, optional
         If True will send status emails. The default is False.
     printing : bool, optional
