@@ -599,6 +599,9 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
     >>> Exoplanet/WASP-43 b timestamp.gz.tar
 
     '''
+    if len(targets) == 1:
+        processes = 1
+        printing = True
     if not (0 < curve_sample <= 1):
         sys.exit('The curve sample must be in the range 0 < curve_sample <= 1.')
     exoplanet_list = []
@@ -627,5 +630,8 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
                    maxiter=maxiter, maxcall=maxcall, curve_sample=curve_sample,
                    dynesty_bounding=dynesty_bounding, 
                    normalise=normalise, detrend=detrend)
-    with Pool(processes=processes) as pool:
-        pool.map(func, exoplanet_list, chunksize=1)
+    try:
+        with Pool(processes=processes) as pool:
+            pool.map(func, exoplanet_list, chunksize=1)
+    except KeyboardInterrupt:
+            sys.exit('User terminated retrieval')
