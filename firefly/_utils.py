@@ -449,10 +449,10 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False
         os.remove(data)
         os.remove(csvfile)
         os.remove(priors)
-        for i, sector in enumerate(sector_list):
-            for j, curves in enumerate(curves_split):
+        for sector, curves_split in sector_curves.items():
+            for i in range(curves_split):
                 os.remove(f'{sector_folder}/sector_{sector}' +
-                          f'_split_curve_{str(j)}.csv')
+                          f'_split_curve_{str(i)}.csv')
     except BaseException:
         pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
