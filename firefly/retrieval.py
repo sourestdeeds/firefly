@@ -226,19 +226,9 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
 
     Returns
     -------
-    data/data_paths.csv : file
-        The locations of the light curves to fit.
-    data/priors.csv : file
-        The priors for the chosen target.
-    data/eu.csv : file
-        EU : Data downloaded and stored in 'data/eu_data.csv'.
-        http://exoplanet.eu/catalog/#
-    data/nasa.csv : file
-        NASA : Data downloaded and stored in 'data/nasa_data.csv'.
-        https://exoplanetarchive.ipac.caltech.edu/index.html
-    Planet/exoplanet/exoplanet.fits : file
-        MAST : Data downloaded and stored in 'Planet/exoplanet/exoplanet.fits'.
-        https://mast.stsci.edu/portal/Mashup/Clients/Mast/Portal.html
+    Zipped files are found in :
+    
+    >>> Exoplanet/WASP-43 b timestamp.gz.tar
     '''
     # Check inputs are sensible
     if not archive == 'eu' or archive == 'nasa':
@@ -604,6 +594,9 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
     Returns
     -------
     A whole lot of data to science!
+    Zipped files are found in :
+    
+    >>> Exoplanet/WASP-43 b timestamp.gz.tar
 
     '''
     exoplanet_list = []
