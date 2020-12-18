@@ -395,7 +395,7 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False
         new_base_fname = f'sector_{sector}_split_curve'
         split_curves = split_lightcurve_file(csvfile, t0=t0, P=P, 
                                              new_base_fname=new_base_fname)
-        curves = len(split_curves)//curve_sample
+        curves = int(curve_sample * len(split_curves))
         if curves == 0:
             curves = 1
         curves_split.append(curves)
@@ -511,6 +511,12 @@ def _iterable_target(exoplanet_list, archive='eu', curve_sample=1, nlive=300,
                        'all available TESS Sectors.')
         except KeyboardInterrupt:
             sys.exit('User terminated retrieval')
+        except TypeError:
+            trace_back = format_exc()
+            if email == True:
+                _email(f'Exception TypeError: {exoplanet}', trace_back)
+            else:
+                print(trace_back)
         except BaseException:
             trace_back = format_exc()
             if email == True:
