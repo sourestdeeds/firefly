@@ -353,6 +353,10 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
                  root_dir=f'{os.getcwd()}/firefly/',
                  base_dir=f'{target}')
     rmtree(f'{exo_folder}')
+    success = f'{exo_folder} {now}.gz.tar'
+    print(f'\nData location: {success}\n'
+                       'A new target has been fully retrieved across ' +
+                       'all available TESS Sectors.')
 
 
 def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
