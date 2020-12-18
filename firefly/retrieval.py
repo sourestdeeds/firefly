@@ -442,7 +442,7 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
         The number of processes to run in parallel. For UNIX, this default
         is the maximum available for the current process.
         The default is maximum available cores for the current process.
-    archive: str, optional
+    archive : str, optional
         The exoplanet archive to use for priors. Supports:
         
         - 'eu'
@@ -542,16 +542,16 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
         available modes are:
             
         - `'coupled'` : all limb darkening parameters are fitted
-              independently, but are coupled to a wavelength dependent
-              model based on the host parameters through `ldkt`
+          independently, but are coupled to a wavelength dependent
+          model based on the host parameters through `ldkt`
         - `'single'` : LD parameters are still tied to a model, but
-              only the first filter is actively fitted. The remaining
-              filters are estimated based off the ratios given by ldtk for
-              a host with the given parameters. This mode is useful for a
-              large number of filters, as `'coupled'` or `'independent'`
-              fitting will lead to much higher computation times.
+          only the first filter is actively fitted. The remaining
+          filters are estimated based off the ratios given by ldtk for
+          a host with the given parameters. This mode is useful for a
+          large number of filters, as `'coupled'` or `'independent'`
+          fitting will lead to much higher computation times.
         - `'independent'` : Each LD coefficient is fitted separately for
-              each filter, with no coupling to the ldtk models.
+          each filter, with no coupling to the ldtk models.
         - `'off'` : Will use the fixed value provided in the input file
         Default is `'independent'`
     max_batch_parameters : int, optional
