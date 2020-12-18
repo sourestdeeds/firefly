@@ -466,6 +466,7 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False
                  root_dir=f'{os.getcwd()}/firefly/',
                  base_dir=f'{exoplanet}')
     rmtree(f'{exo_folder}')
+    return f'{exo_folder} {now}.gz.tar'
 
 
 def _iterable_target(exoplanet_list, archive='eu', curve_sample=1, nlive=300,
@@ -481,34 +482,37 @@ def _iterable_target(exoplanet_list, archive='eu', curve_sample=1, nlive=300,
             # Printing suppressed within scope
             if printing == False:
                 with suppress_print():
-                    _retrieval(exoplanet, archive=archive, nlive=nlive,
-                               detrending_list=detrending_list,
-                               dynesty_sample=dynesty_sample,
-                               fitting_mode=fitting_mode, fit_ttv=fit_ttv,
-                               limb_darkening_model=limb_darkening_model, 
-                               ld_fit_method=ld_fit_method,
-                               max_batch_parameters=max_batch_parameters, 
-                               batch_overlap=batch_overlap, dlogz=dlogz, 
-                               maxiter=maxiter, maxcall=maxcall, 
-                               dynesty_bounding=dynesty_bounding, 
-                               normalise=normalise, detrend=detrend,
-                               curve_sample=curve_sample)
+                    success = _retrieval(exoplanet, archive=archive, nlive=nlive,
+                                         detrending_list=detrending_list,
+                                         dynesty_sample=dynesty_sample,
+                                         fitting_mode=fitting_mode, fit_ttv=fit_ttv,
+                                         limb_darkening_model=limb_darkening_model, 
+                                         ld_fit_method=ld_fit_method,
+                                         max_batch_parameters=max_batch_parameters, 
+                                         batch_overlap=batch_overlap, dlogz=dlogz, 
+                                         maxiter=maxiter, maxcall=maxcall, 
+                                         dynesty_bounding=dynesty_bounding, 
+                                         normalise=normalise, detrend=detrend,
+                                         curve_sample=curve_sample)
             elif printing == True:
-                _retrieval(exoplanet, archive=archive, nlive=nlive,
-                           detrending_list=detrending_list,
-                           dynesty_sample=dynesty_sample,
-                           fitting_mode=fitting_mode, fit_ttv=fit_ttv,
-                           limb_darkening_model=limb_darkening_model, 
-                           ld_fit_method=ld_fit_method,
-                           max_batch_parameters=max_batch_parameters, 
-                           batch_overlap=batch_overlap, dlogz=dlogz, 
-                           maxiter=maxiter, maxcall=maxcall, 
-                           dynesty_bounding=dynesty_bounding, 
-                           normalise=normalise, detrend=detrend,
-                           curve_sample=curve_sample)
+                success = _retrieval(exoplanet, archive=archive, nlive=nlive,
+                                     detrending_list=detrending_list,
+                                     dynesty_sample=dynesty_sample,
+                                     fitting_mode=fitting_mode, fit_ttv=fit_ttv,
+                                     limb_darkening_model=limb_darkening_model, 
+                                     ld_fit_method=ld_fit_method,
+                                     max_batch_parameters=max_batch_parameters, 
+                                     batch_overlap=batch_overlap, dlogz=dlogz, 
+                                     maxiter=maxiter, maxcall=maxcall, 
+                                     dynesty_bounding=dynesty_bounding, 
+                                     normalise=normalise, detrend=detrend,
+                                     curve_sample=curve_sample)
+                print(f'\nData location: {success}\n'
+                       'A new target has been fully retrieved across ' +
+                       'all available TESS Sectors.')
             if email == True:
                 _email(f'Success: {exoplanet}',
-                       f'Exoplanet: {exoplanet} \n\n'
+                       f'Data location: {success} \n\n'
                        'A new target has been fully retrieved across ' +
                        'all available TESS Sectors.')
         except KeyboardInterrupt:
