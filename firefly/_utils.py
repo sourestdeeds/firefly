@@ -368,7 +368,7 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False
         rmtree(f'Exoplanet/{exoplanet}')
     except BaseException:
         pass
-    curves_split = []
+    curves_split, curves_delete = [], []
     for i, sector in enumerate(sector_list):
         sector_folder = f'Exoplanet/{exoplanet}'
         os.makedirs(sector_folder, exist_ok=True)
@@ -399,6 +399,7 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False
         if curves == 0:
             curves = 1
         curves_split.append(curves)
+        curves_delete.append(len(split_curves))
         print(f'\nA total of {str(curves)} lightcurves were created.')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Set the Data Paths
@@ -406,8 +407,8 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False
     cols = ['Path', 'Telescope', 'Filter', 'Epochs', 'Detrending']
     df = DataFrame(columns=cols)
     sector_curves = dict(zip(sector_list, curves_split))
-    for sector, curves_split in sector_curves.items():
-        for i in range(curves_split):
+    for sector, curves in sector_curves.items():
+        for i in range(curves):
             df = df.append([{'Path': f'{os.getcwd()}/{sector_folder}' +
                              f'/sector_{sector}_split_curve_{i}.csv'}],
                            ignore_index=True)
@@ -449,8 +450,9 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False
         os.remove(data)
         os.remove(csvfile)
         os.remove(priors)
-        for sector, curves_split in sector_curves.items():
-            for i in range(curves_split):
+        sector_curves = dict(zip(sector_list, curves_delete))
+        for sector, curves in sector_curves.items():
+            for i in range(curves):
                 os.remove(f'{sector_folder}/sector_{sector}' +
                           f'_split_curve_{str(i)}.csv')
     except BaseException:
