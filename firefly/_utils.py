@@ -41,8 +41,8 @@ def _email(subject, body):
 
 def _TESS_filter():
     here = os.path.dirname(os.path.abspath(__file__))
-    os.makedirs('data', exist_ok=True)
-    tess_filter_path = 'data/TESS_filter_path.csv'
+    os.makedirs('firefly/data', exist_ok=True)
+    tess_filter_path = 'firefly/data/TESS_filter_path.csv'
     tess_filter = f'{here}/data/Filters/TESS_filter.csv'
     if not os.path.exists(tess_filter_path):
         cols = ['filter_idx', 'low_wl', 'high_wl']
@@ -57,18 +57,19 @@ def _TESS_filter():
 def _eu(exoplanet):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Download EU archive
-    os.makedirs('data', exist_ok=True)
+    os.makedirs('firefly/data', exist_ok=True)
+    eu_csv = 'firefly/data/eu.csv'
     download_link = 'http://exoplanet.eu/catalog/csv'
-    if not os.path.exists('data/eu.csv'):
+    if not os.path.exists(eu_csv):
         print('eu.csv does not exist, downloading.')
         df = read_csv(download_link)
-        df.to_csv('data/eu.csv', index=False)
+        df.to_csv(eu_csv, index=False)
     ten_days_ago = datetime.now() - timedelta(days=10)
-    filetime = datetime.fromtimestamp(os.path.getctime('data/eu.csv'))
+    filetime = datetime.fromtimestamp(os.path.getctime(eu_csv))
     if filetime < ten_days_ago:
         print('eu.csv is 10 days old, updating.')
         df = read_csv(download_link)
-        df.to_csv('data/eu.csv', index=False)
+        df.to_csv(eu_csv, index=False)
     else:
         pass
     col_subset_eu = ['# name', 'orbital_period', 'orbital_period_error_max',
@@ -81,7 +82,7 @@ def _eu(exoplanet):
                      'star_radius', 'star_radius_error_max',
                      'star_mass', 'star_mass_error_max',
                      'star_metallicity', 'star_metallicity_error_max']
-    exo_archive = read_csv('data/eu.csv', index_col='# name',
+    exo_archive = read_csv(eu_csv, index_col='# name',
                            usecols=col_subset_eu)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Pick Out Chosen Exoplanet Priors
@@ -121,7 +122,7 @@ def _eu(exoplanet):
                                           'Input_A', 'Input_B', 'Filter'])
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Save the priors
-    priors = f'Exoplanet/{exoplanet}/{exoplanet} Priors.csv'
+    priors = f'firefly/{exoplanet}/{exoplanet} Priors.csv'
     if not os.path.exists(priors):
         priors_csv.to_csv(priors, index=False, header=True)
     else:
@@ -165,7 +166,7 @@ def _nasa_full():
     'https://exoplanetarchive.ipac.caltech.edu/' +\
     'TAP/sync?query=select+*+from+ps&format=csv' 
     df = read_csv(download_link)
-    df.to_csv('data/nasa_full.csv', index=False)
+    df.to_csv('firefly/data/nasa_full.csv', index=False)
         
     
 def _nasa(exoplanet):
@@ -180,21 +181,22 @@ def _nasa(exoplanet):
         'st_met,st_meterr1,pl_tranmid,pl_tranmiderr1,pl_trandur,' +\
         'pl_orbincl,pl_orbinclerr1,pl_orblper,pl_orblpererr1,rowupdate' +\
         '+from+ps&format=csv'
-    if not os.path.exists('data/nasa.csv'):
+    nasa_csv = 'firefly/data/nasa.csv'
+    if not os.path.exists(nasa_csv):
         print('nasa.csv does not exist, downloading.')
         df = read_csv(download_link)
-        df.to_csv('data/nasa.csv', index=False)
+        df.to_csv(nasa_csv, index=False)
     ten_days_ago = datetime.now() - timedelta(days=10)
-    filetime = datetime.fromtimestamp(os.path.getctime('data/nasa.csv'))
+    filetime = datetime.fromtimestamp(os.path.getctime(nasa_csv))
     if filetime < ten_days_ago:
         print('nasa.csv is 10 days old, updating.')
         df = read_csv(download_link)
-        df.to_csv('data/nasa.csv', index=False)
+        df.to_csv(nasa_csv, index=False)
     else:
         pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Read in nasa.csv
-    exo_archive = read_csv('data/nasa.csv', index_col='pl_name')
+    exo_archive = read_csv(nasa_csv, index_col='pl_name')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Pick Out Chosen Exoplanet Priors
     try:
@@ -235,7 +237,7 @@ def _nasa(exoplanet):
                                           'Input_A', 'Input_B', 'Filter'])
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Save the priors
-    priors = f'Exoplanet/{exoplanet}/{exoplanet} Priors.csv'
+    priors = f'firefly/{exoplanet}/{exoplanet} Priors.csv'
     if not os.path.exists(priors):
         priors_csv.to_csv(priors, index=False, header=True)
     else:
@@ -286,7 +288,7 @@ def _check_nan(exoplanet, archive='eu', printing=False):
     None.
 
     '''
-    temp = f'Exoplanet/{exoplanet}'
+    temp = f'firefly/{exoplanet}'
     os.makedirs(temp, exist_ok=True)
     if archive == 'eu':
         if printing == False:
@@ -308,16 +310,16 @@ def _check_nan(exoplanet, archive='eu', printing=False):
     return nan
 
 
-def _fits(exoplanet, sector_folder):
+def _fits(exoplanet, exo_folder):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Root, Directories, Files
     files_in_dir = []
-    source = f'{sector_folder}/mastDownload/TESS/'
+    source = f'{exo_folder}/mastDownload/TESS/'
     for r, d, f in os.walk(source):
         for item in f:
             if '.fits' in item:
                 files_in_dir.append(os.path.join(r, item))
-    destination = f'{sector_folder}/{exoplanet}.fits'
+    destination = f'{exo_folder}/{exoplanet}.fits'
     for files in files_in_dir:
         if files.endswith(".fits"):
             move(files, destination)
@@ -365,21 +367,21 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False
         sys.exit(f'Search result contains no data products for {exoplanet}.')
     # Clear up previous sessions
     try:
-        rmtree(f'Exoplanet/{exoplanet}')
+        rmtree(f'firefly/{exoplanet}')
     except BaseException:
         pass
     curves_split, curves_delete = [], []
     for i, sector in enumerate(sector_list):
-        sector_folder = f'Exoplanet/{exoplanet}'
-        os.makedirs(sector_folder, exist_ok=True)
+        exo_folder = f'firefly/{exoplanet}'
+        os.makedirs(exo_folder, exist_ok=True)
         lc = search_lightcurvefile(exoplanet, mission='TESS',
                                    sector=sector)
         print(f'\nDownloading MAST Lightcurve for {exoplanet} -' +
               f' TESS Sector {str(sector)}.')
-        lc.download_all(download_dir=sector_folder)
+        lc.download_all(download_dir=exo_folder)
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # Extract all light curves to a single csv file
-        fitsfile = _fits(exoplanet, sector_folder)
+        fitsfile = _fits(exoplanet, exo_folder)
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # Download Archive
         with suppress_print():
@@ -391,7 +393,7 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False
                                                     _nasa(exoplanet)
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # Split the Light curves
-        csvfile = f'{sector_folder}/{exoplanet}.csv'
+        csvfile = f'{exo_folder}/{exoplanet}.csv'
         new_base_fname = f'sector_{sector}_split_curve'
         split_curves = split_lightcurve_file(csvfile, t0=t0, P=P, 
                                              new_base_fname=new_base_fname)
@@ -403,13 +405,13 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False
         print(f'\nA total of {str(curves)} lightcurves were created.')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Set the Data Paths
-    data_path = f'{sector_folder}/data_paths.csv'
+    data_path = f'{exo_folder}/data_paths.csv'
     cols = ['Path', 'Telescope', 'Filter', 'Epochs', 'Detrending']
     df = DataFrame(columns=cols)
     sector_curves = dict(zip(sector_list, curves_split))
     for sector, curves in sector_curves.items():
         for i in range(curves):
-            df = df.append([{'Path': f'{os.getcwd()}/{sector_folder}' +
+            df = df.append([{'Path': f'{os.getcwd()}/{exo_folder}' +
                              f'/sector_{sector}_split_curve_{i}.csv'}],
                            ignore_index=True)
             df['Telescope'], df['Filter'], df['Detrending'] = 0, 0, 0
@@ -418,13 +420,13 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Paths to data, priors, and filter info:
     data = data_path
-    priors = f'Exoplanet/{exoplanet}/{exoplanet} Priors.csv'
-    filters = 'data/TESS_filter_path.csv'
+    priors = f'{exo_folder}/{exoplanet} Priors.csv'
+    filters = 'firefly/data/TESS_filter_path.csv'
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Output folders
-    results_output_folder = f'{sector_folder}/output_parameters'
-    fitted_lightcurve_folder = f'{sector_folder}/fitted_lightcurves'
-    plot_folder = f'{sector_folder}/plots'
+    results_output_folder = f'{exo_folder}/output_parameters'
+    fitted_lightcurve_folder = f'{exo_folder}/fitted_lightcurves'
+    plot_folder = f'{exo_folder}/plots'
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Run the retrieval
     run_retrieval(data, priors, filters, detrending_list=detrending_list,
@@ -444,26 +446,26 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Cleanup
     try:
-        rmtree(f'{sector_folder}/mastDownload')
-        move(fitsfile, f'Exoplanet/{exoplanet}.fits')
-        os.remove(f'Exoplanet/{exoplanet}.fits')
+        rmtree(f'{exo_folder}/mastDownload')
+        move(fitsfile, f'{exo_folder}.fits')
+        os.remove(f'{exo_folder}.fits')
         os.remove(data)
         os.remove(csvfile)
         os.remove(priors)
         sector_curves = dict(zip(sector_list, curves_delete))
         for sector, curves in sector_curves.items():
             for i in range(curves):
-                os.remove(f'{sector_folder}/sector_{sector}' +
+                os.remove(f'{exo_folder}/sector_{sector}' +
                           f'_split_curve_{str(i)}.csv')
     except BaseException:
         pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Archive and sort
     now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
-    make_archive(f'Exoplanet/{exoplanet} {now}', format='gztar',
-                 root_dir=f'{os.getcwd()}/Exoplanet/',
+    make_archive(f'{exo_folder} {now}', format='gztar',
+                 root_dir=f'{os.getcwd()}/firefly/',
                  base_dir=f'{exoplanet}')
-    rmtree(f'Exoplanet/{exoplanet}')
+    rmtree(f'{exo_folder}')
 
 
 def _iterable_target(exoplanet_list, archive='eu', curve_sample=1, nlive=300,
