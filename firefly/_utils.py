@@ -336,7 +336,7 @@ def _fits(exoplanet, sector_folder):
     return fitsfile
 
 
-def _retrieval(exoplanet, archive='eu', nlive=300, fit_ttv=False,
+def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False,
                detrending_list=[['nth order', 2]],
                dynesty_sample='rslice', fitting_mode='folded',
                limb_darkening_model='quadratic', ld_fit_method='independent',
@@ -387,7 +387,7 @@ def _retrieval(exoplanet, archive='eu', nlive=300, fit_ttv=False,
         new_base_fname = f'sector_{sector}_split_curve'
         split_curves = split_lightcurve_file(csvfile, t0=t0, P=P, 
                                              new_base_fname=new_base_fname)
-        curves = len(split_curves)
+        curves = len(split_curves)//curve_sample
         curves_split.append(curves)
         print(f'\nA total of {str(curves)} lightcurves were created.')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -454,7 +454,7 @@ def _retrieval(exoplanet, archive='eu', nlive=300, fit_ttv=False,
     rmtree(f'Exoplanet/{exoplanet}')
 
 
-def _iterable_target(exoplanet_list, archive='eu', nlive=300,
+def _iterable_target(exoplanet_list, archive='eu', curve_sample=1, nlive=300,
                      detrending_list=[['nth order', 2]],
                      dynesty_sample='rslice', fitting_mode='folded', fit_ttv=False,
                      limb_darkening_model='quadratic', ld_fit_method='independent',
@@ -477,7 +477,8 @@ def _iterable_target(exoplanet_list, archive='eu', nlive=300,
                                batch_overlap=batch_overlap, dlogz=dlogz, 
                                maxiter=maxiter, maxcall=maxcall, 
                                dynesty_bounding=dynesty_bounding, 
-                               normalise=normalise, detrend=detrend)
+                               normalise=normalise, detrend=detrend,
+                               curve_sample=curve_sample)
             elif printing == True:
                 _retrieval(exoplanet, archive=archive, nlive=nlive,
                            detrending_list=detrending_list,
@@ -489,7 +490,8 @@ def _iterable_target(exoplanet_list, archive='eu', nlive=300,
                            batch_overlap=batch_overlap, dlogz=dlogz, 
                            maxiter=maxiter, maxcall=maxcall, 
                            dynesty_bounding=dynesty_bounding, 
-                           normalise=normalise, detrend=detrend)
+                           normalise=normalise, detrend=detrend,
+                           curve_sample=curve_sample)
             if email == True:
                 _email(f'Success: {exoplanet}',
                        f'Exoplanet: {exoplanet} \n\n'
