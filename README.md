@@ -5,7 +5,7 @@ TransitFit for confirmed TESS targets.
 
 #### Installation (add later)
 ```bash
-conda install firefly
+python setup.py install
 ```
 
 #### Dependancies
