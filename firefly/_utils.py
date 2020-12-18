@@ -360,77 +360,91 @@ def _retrieval(exoplanet, archive='eu', nlive=300, fit_ttv=False,
         rmtree(f'Exoplanet/{exoplanet}')
     except BaseException:
         pass
+    curves_split = []
     for i, sector in enumerate(sector_list):
-        sector_folder = f'Exoplanet/{exoplanet}/TESS Sector {str(sector)}'
+        sector_folder = f'Exoplanet/{exoplanet}'
         os.makedirs(sector_folder, exist_ok=True)
         lc = search_lightcurvefile(exoplanet, mission='TESS',
                                    sector=sector)
-        print(f'\nDownloading MAST Lightcurve for TESS Sector {str(sector)}.')
+        print(f'\nDownloading MAST Lightcurve for {exoplanet} -' +
+              f' TESS Sector {str(sector)}.')
         lc.download_all(download_dir=sector_folder)
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # Extract all light curves to a single csv file
         fitsfile = _fits(exoplanet, sector_folder)
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # Download Archive
-        if archive == 'eu':
-            host_T, host_z, host_r, host_logg, t0, P, nan = _eu(exoplanet)
-        elif archive == 'nasa':
-            host_T, host_z, host_r, host_logg, t0, P, t14, nan = _nasa(exoplanet)
+        with suppress_print():
+            if archive == 'eu':
+                host_T, host_z, host_r, host_logg, t0, P, nan = \
+                                                    _eu(exoplanet)
+            elif archive == 'nasa':
+                host_T, host_z, host_r, host_logg, t0, P, t14, nan = \
+                                                    _nasa(exoplanet)
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # Split the Light curves
         csvfile = f'{sector_folder}/{exoplanet}.csv'
-        split_curves = split_lightcurve_file(csvfile, t0=t0, P=P)
+        new_base_fname = f'sector_{sector}_split_curve'
+        split_curves = split_lightcurve_file(csvfile, t0=t0, P=P, 
+                                             new_base_fname=new_base_fname)
         curves = len(split_curves)
-        print(f'\nA total of {str(curves)} lightcurves were created.\n')
-        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-        # Set the Data Paths
-        cols = ['Path', 'Telescope', 'Filter', 'Epochs', 'Detrending']
-        df = DataFrame(columns=cols)
-        for i in range(curves):
+        curves_split.append(curves)
+        print(f'\nA total of {str(curves)} lightcurves were created.')
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Set the Data Paths
+    data_path = f'{sector_folder}/data_paths.csv'
+    cols = ['Path', 'Telescope', 'Filter', 'Epochs', 'Detrending']
+    df = DataFrame(columns=cols)
+    sector_curves = dict(zip(sector_list, curves_split))
+    for sector, curves_split in sector_curves.items():
+        for i in range(curves_split):
             df = df.append([{'Path': f'{os.getcwd()}/{sector_folder}' +
-                             f'/split_curve_{str(i)}.csv'}],
+                             f'/sector_{sector}_split_curve_{i}.csv'}],
                            ignore_index=True)
             df['Telescope'], df['Filter'], df['Detrending'] = 0, 0, 0
             df['Epochs'] = range(0, len(df))
-        df.to_csv(r'data/data_paths.csv', index=False, header=True)
-        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-        # Paths to data, priors, and filter info:
-        data = 'data/data_paths.csv'
-        priors = f'Exoplanet/{exoplanet}/{exoplanet} Priors.csv'
-        filters = 'data/TESS_filter_path.csv'
-        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-        # Output folders
-        results_output_folder = f'{sector_folder}/output_parameters'
-        fitted_lightcurve_folder = f'{sector_folder}/fitted_lightcurves'
-        plot_folder = f'{sector_folder}/plots'
-        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-        # Run the retrieval
-        run_retrieval(data, priors, filters, detrending_list=detrending_list,
-                      host_T=host_T, host_logg=host_logg, host_z=host_z,
-                      host_r=host_r, dynesty_sample=dynesty_sample,
-                      fitting_mode=fitting_mode, fit_ttv=fit_ttv,
-                      results_output_folder=results_output_folder,
-                      final_lightcurve_folder=fitted_lightcurve_folder,
-                      plot_folder=plot_folder, nlive=nlive,
-                      limb_darkening_model=limb_darkening_model, 
-                      ld_fit_method=ld_fit_method,
-                      max_batch_parameters=max_batch_parameters, 
-                      batch_overlap=batch_overlap, dlogz=dlogz, 
-                      maxiter=maxiter, maxcall=maxcall, 
-                      dynesty_bounding=dynesty_bounding, 
-                      normalise=normalise, detrend=detrend)
-        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-        # Cleanup
-        try:
-            rmtree(f'{sector_folder}/mastDownload')
-            move(fitsfile, f'Exoplanet/{exoplanet}.fits')
-            os.remove(f'Exoplanet/{exoplanet}.fits')
-            os.remove(csvfile)
-            os.remove(priors)
-            for i in range(len(split_curves)):
-                os.remove(f'{sector_folder}/split_curve_{str(i)}.csv')
-        except BaseException:
-            pass
+    df.to_csv(data_path, index=False, header=True)
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Paths to data, priors, and filter info:
+    data = data_path
+    priors = f'Exoplanet/{exoplanet}/{exoplanet} Priors.csv'
+    filters = 'data/TESS_filter_path.csv'
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Output folders
+    results_output_folder = f'{sector_folder}/output_parameters'
+    fitted_lightcurve_folder = f'{sector_folder}/fitted_lightcurves'
+    plot_folder = f'{sector_folder}/plots'
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Run the retrieval
+    run_retrieval(data, priors, filters, detrending_list=detrending_list,
+                  host_T=host_T, host_logg=host_logg, host_z=host_z,
+                  host_r=host_r, dynesty_sample=dynesty_sample,
+                  fitting_mode=fitting_mode, fit_ttv=fit_ttv,
+                  results_output_folder=results_output_folder,
+                  final_lightcurve_folder=fitted_lightcurve_folder,
+                  plot_folder=plot_folder, nlive=nlive,
+                  limb_darkening_model=limb_darkening_model, 
+                  ld_fit_method=ld_fit_method,
+                  max_batch_parameters=max_batch_parameters, 
+                  batch_overlap=batch_overlap, dlogz=dlogz, 
+                  maxiter=maxiter, maxcall=maxcall, 
+                  dynesty_bounding=dynesty_bounding, 
+                  normalise=normalise, detrend=detrend)
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Cleanup
+    try:
+        rmtree(f'{sector_folder}/mastDownload')
+        move(fitsfile, f'Exoplanet/{exoplanet}.fits')
+        os.remove(f'Exoplanet/{exoplanet}.fits')
+        os.remove(data)
+        os.remove(csvfile)
+        os.remove(priors)
+        for i, sector in enumerate(sector_list):
+            for j, curves in enumerate(curves_split):
+                os.remove(f'{sector_folder}/sector_{sector}' +
+                          f'_split_curve_{str(j)}.csv')
+    except BaseException:
+        pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Archive and sort
     now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
