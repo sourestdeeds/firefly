@@ -628,7 +628,7 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
                    fit_ttv=fit_ttv, limb_darkening_model=limb_darkening_model, 
                    max_batch_parameters=max_batch_parameters, 
                    batch_overlap=batch_overlap, dlogz=dlogz, 
-                   maxiter=maxiter, maxcall=maxcall, 
+                   maxiter=maxiter, maxcall=maxcall, curve_sample=curve_sample,
                    dynesty_bounding=dynesty_bounding, 
                    normalise=normalise, detrend=detrend)
     with Pool(processes=processes) as pool:
