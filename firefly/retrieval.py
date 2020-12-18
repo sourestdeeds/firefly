@@ -30,7 +30,7 @@ def query(target, archive='eu'):
 
     '''
     exoplanet = _input_checker(target)
-    temp = f'Exoplanet/{exoplanet}'
+    temp = f'firefly/{exoplanet}'
     os.makedirs(temp, exist_ok=True)
     lc = search_lightcurvefile(exoplanet, mission='TESS')
     try:
@@ -228,7 +228,7 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
     -------
     Zipped files are found in :
     
-    >>> Exoplanet/WASP-43 b timestamp.gz.tar
+    >>> firefly/WASP-43 b timestamp.gz.tar
     '''
     # Check inputs are sensible
     if not archive == 'eu' or archive == 'nasa':
@@ -596,7 +596,7 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
     A whole lot of data to science!
     Zipped files are found in :
     
-    >>> Exoplanet/WASP-43 b timestamp.gz.tar
+    >>> firefly/WASP-43 b timestamp.gz.tar
 
     '''
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
