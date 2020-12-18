@@ -366,7 +366,7 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
 
 
 def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
-                   archive='eu', nlive=300, detrending_list=[['nth order', 2]],
+                   archive='eu', curve_sample=1, nlive=300, detrending_list=[['nth order', 2]],
                    dynesty_sample='rslice', fitting_mode='folded', fit_ttv=False,
                    limb_darkening_model='quadratic', ld_fit_method='independent',
                    max_batch_parameters=25, batch_overlap=2, dlogz=None, 
@@ -406,7 +406,7 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
          >>> from firefly import auto_retrieval
          >>> target = ('WASP-43 b', 'WASP-12 b')
          >>> auto_retrieval(target, processes=1, 
-         >>>                      printing=True)
+                                  printing=True)
      
     - It is advised that you only set the variable printing 
       to True when fitting in this manner. Multiple cores give a chaotic output.
@@ -448,6 +448,21 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
         - 'eu'
         - 'nasa'
         The default is 'eu'.
+    curve_sample : int, optional
+        The fraction of curves generated to fit against. For example, setting
+        
+        >>> curve_sample = 2
+        
+        will fit half the curves extracted. The formula for this works as:
+            
+        >>> total_curves = 
+            curves_extracted//curve_sample
+        
+        Always returns an int. For example:
+            
+        >>> curve_sample = 9999
+        
+        will fit using only 1 lightcurve. The default is all lightcurves.
     email : bool, optional
         If True will send status emails. The default is False.
     printing : bool, optional
