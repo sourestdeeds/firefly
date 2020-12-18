@@ -85,7 +85,11 @@ def _eu(exoplanet):
                            usecols=col_subset_eu)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Pick Out Chosen Exoplanet Priors
-    df = DataFrame(exo_archive).loc[[exoplanet]]
+    try:
+        df = DataFrame(exo_archive).loc[[exoplanet]]
+    except KeyError:
+        sys.exit('The chosen target is either spelt incorrectly, or does not '
+                 'exist in the EU archive.')
     s = df.mean()
     t0, P = s.loc['tzero_tr'], s.loc['orbital_period']
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -193,7 +197,11 @@ def _nasa(exoplanet):
     exo_archive = read_csv('data/nasa.csv', index_col='pl_name')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Pick Out Chosen Exoplanet Priors
-    df = DataFrame(exo_archive).loc[[exoplanet]]
+    try:
+        df = DataFrame(exo_archive).loc[[exoplanet]]
+    except KeyError:
+        sys.exit('The chosen target is either spelt incorrectly, or does not '
+                 'exist in the NASA archive.')
     s = df.mean()
     t0, P, t14 = s.loc['pl_tranmid'], s.loc['pl_orbper'], \
         s.loc['pl_trandur'] * 24 * 60
