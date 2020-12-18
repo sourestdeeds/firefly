@@ -438,22 +438,22 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
         - 'eu'
         - 'nasa'
         The default is 'eu'.
-    curve_sample : int, optional
+    curve_sample : int {0 < curve_sample <= 1}, optional
         The fraction of curves generated to fit against. For example, setting
         
-        >>> curve_sample = 2
+        >>> curve_sample = 0.5
         
         will fit half the curves extracted. The formula for this works as:
             
         >>> total_curves = 
-            curves_extracted//curve_sample
+            curves_extracted * curve_sample
         
         Always returns an int. For example:
             
-        >>> curve_sample = 9999
+        >>> curve_sample = 0.001
         
         will fit using only 1 lightcurve from each sector. 
-        The default is all lightcurves.
+        The default is 1 to fit all lightcurves across all sectors.
     email : bool, optional
         If True will send status emails. The default is False.
     printing : bool, optional
@@ -599,6 +599,8 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
     >>> Exoplanet/WASP-43 b timestamp.gz.tar
 
     '''
+    if not (0 < curve_sample <= 1):
+        sys.exit('The curve sample must be in the range 0 < curve_sample <= 1.')
     exoplanet_list = []
     for i, exoplanet in enumerate(targets):
         exoplanet = _input_checker(exoplanet)
