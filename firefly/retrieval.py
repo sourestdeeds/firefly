@@ -270,21 +270,21 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
     print(f'\nDownloading MAST Lightcurve for TESS Sector {str(sector)}.')
     lc.download_all(download_dir=exo_folder)
 
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Extract all light curves to a single csv file
     fitsfile = _fits(target, exo_folder)
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Download Archive
     if archive == 'eu':
         host_T, host_z, host_r, host_logg, t0, P, nan = _eu(target)
     elif archive == 'nasa':
         host_T, host_z, host_r, host_logg, t0, P, t14, nan = _nasa(target)
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Split the Light curves
     csvfile = f'{exo_folder}/{target}.csv'
     split_curves = split_lightcurve_file(csvfile, t0=t0, P=P)
     print(f'\nA total of {str(len(split_curves))} lightcurves were created.')
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Set the Data Paths
     cols = ['Path', 'Telescope', 'Filter', 'Epochs', 'Detrending']
     df = DataFrame(columns=cols)
@@ -308,17 +308,17 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
         df['Telescope'], df['Filter'], df['Detrending'] = 0, 0, 0
         df['Epochs'] = range(0, len(df))
     df.to_csv(r'firefly/data/data_paths.csv', index=False, header=True)
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Paths to data, priors, and filter info:
     data = 'firefly/data/data_paths.csv'
     priors = f'firefly/{target}/{target} Priors.csv'
     filters = 'firefly/data/TESS_filter_path.csv'
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Output folders
     results_output_folder = f'{exo_folder}/output_parameters'
     fitted_lightcurve_folder = f'{exo_folder}/fitted_lightcurves'
     plot_folder = f'{exo_folder}/plots'
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Run the retrieval
     run_retrieval(data, priors, filters, detrending_list=detrending_list,
                   host_T=host_T, host_logg=host_logg, host_z=host_z,
@@ -334,7 +334,7 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
                   maxiter=maxiter, maxcall=maxcall, 
                   dynesty_bounding=dynesty_bounding, 
                   normalise=normalise, detrend=detrend)
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Cleanup
     try:
         rmtree(f'{exo_folder}/mastDownload')
@@ -599,9 +599,13 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
     >>> Exoplanet/WASP-43 b timestamp.gz.tar
 
     '''
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Input Checks
     if len(targets) == 1:
         processes = 1
         printing = True
+    if not archive == 'eu' or archive == 'nasa':
+        sys.exit('Archive data options for dtype are: \'eu\' or \'nasa\'')
     if not (0 < curve_sample <= 1):
         sys.exit('The curve sample must be in the range 0 < curve_sample <= 1.')
     exoplanet_list = []
@@ -619,7 +623,10 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
                 sys.exit()
             elif verify == "y":
                 pass
+        # If checks for nans are passed, continue
         exoplanet_list.append([exoplanet])
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Parallel Processing
     func = partial(_iterable_target, 
                    archive=archive, email=email, printing=printing, nlive=nlive,
                    detrending_list=detrending_list, ld_fit_method=ld_fit_method,
