@@ -402,7 +402,7 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False
         curves_delete.append(len(split_curves))
         print(f'\nA total of {len(split_curves)} lightcurves were created.')
         print(f'\nA sample of {str(curves)} lightcurves from '
-              f'TESS Sector {sector} will be used.\n')
+              f'TESS Sector {sector} will be used.')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Set the Data Paths
     data_path = f'{exo_folder}/data_paths.csv'
@@ -416,6 +416,8 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False
                            ignore_index=True)
             df['Telescope'], df['Filter'], df['Detrending'] = 0, 0, 0
             df['Epochs'] = range(0, len(df))
+    print(f'\nIn total, {len(df)} lightcurves were generated across all'
+          ' TESS Sectors.\n')
     df.to_csv(data_path, index=False, header=True)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Paths to data, priors, and filter info:
