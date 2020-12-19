@@ -1,14 +1,25 @@
 #!/usr/bin/env python3
 
 import os
+import codecs
 import pathlib
 import setuptools
 
-here = pathlib.Path(__file__).parent.resolve()
-
-directory = os.path.abspath(os.path.dirname(__file__))
-with open(os.path.join(directory, 'README.md'), encoding='utf-8') as f:
-    long_description = f.read()
+def read(rel_path):
+    here = os.path.abspath(os.path.dirname(__file__))
+    with codecs.open(os.path.join(here, rel_path), 'r') as fp:
+        return fp.read()
+        
+def get_version(rel_path):
+    for line in read(rel_path).splitlines():
+        if line.startswith('__version__'):
+            # __version__ = "0.9"
+            delim = '"' if '"' in line else "'"
+            return line.split(delim)[1]
+    raise RuntimeError("Unable to find version string.")
+    
+with open("README.md", "r") as fh:
+    long_description = fh.read()
 
 setuptools.setup( name='firefly',
                   version=get_version('firefly/__init__.py'),
@@ -17,7 +28,7 @@ setuptools.setup( name='firefly',
                   license='MIT',
                   long_description=long_description,
                   long_description_content_type='text/markdown',
-                  packages=find_packages(),
+                  packages=setuptools.find_packages(),
                   classifiers=[
                     "Programming Language :: Python :: 3",
                     "License :: OSI Approved :: MIT License"
