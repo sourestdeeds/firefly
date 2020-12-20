@@ -245,17 +245,19 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Download MAST lightcurves
     lc = search_lightcurve(target, mission='TESS')
-    try:
-        sector_list = lc .table .to_pandas()['sequence_number'] \
-                         .drop_duplicates() .tolist()
-        sector_list = [str(sector) for sector in sector_list]
-    except BaseException:
+    if len(lc) == 0:
         sys.exit(f'Search result contains no data products for {target}.')
+    sector_list = lc .table .to_pandas()['sequence_number'] \
+                     .drop_duplicates() .tolist()
+    sector_list = [str(sector) for sector in sector_list]
+    print(f'\nQuery from MAST returned {len(sector_list)} '
+          f'data products for {target}.\n')
     lc = lc .table .to_pandas()[['observation', 
                                  'productFilename', 'size']] \
             .rename(columns={'observation':'Observation'}) \
             .rename(columns={'productFilename':'Product'}) \
             .rename(columns={'size':'Size'})
+    lc = lc .drop_duplicates(subset='Observation', keep='last')
     print(tabulate(lc, tablefmt='psql', showindex=False, headers='keys'))
     sector = '0'
     while (sector not in sector_list and sector != 'q'):
