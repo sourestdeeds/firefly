@@ -3,6 +3,7 @@ from lightkurve import search_lightcurvefile
 from traceback import format_exc
 from datetime import datetime, timedelta
 from smtplib import SMTP_SSL
+from tabulate import tabulate
 from astropy.io import fits
 from csv import DictWriter
 from pandas import DataFrame, read_csv
@@ -147,9 +148,8 @@ def _eu(exoplanet):
     repack = DataFrame(cols, columns=['Parameter', 'Distribution',
                                       'Input_A', 'Input_B', 'Filter'])
     nan = repack.isnull().values.any()
-    repack = repack.to_string(index=False)
     print(f'\nPriors generated from the EU Archive for {exoplanet}.\n')
-    print(repack)
+    print(tabulate(repack, tablefmt='psql', showindex=False, headers='keys'))
     return host_T, host_z, host_r, host_logg, t0, P, nan
 
 
@@ -262,9 +262,8 @@ def _nasa(exoplanet):
     repack = DataFrame(cols, columns=['Parameter', 'Distribution',
                                       'Input_A', 'Input_B', 'Filter'])
     nan = repack.isnull().values.any()
-    repack = repack.to_string(index=False)
     print(f'\nPriors generated from the NASA Archive for {exoplanet}.\n')
-    print(repack)
+    print(tabulate(repack, tablefmt='psql', showindex=False, headers='keys'))
     return host_T, host_z, host_r, host_logg, t0, P, t14, nan
 
 
@@ -359,21 +358,27 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Download MAST lightcurves
     lc = search_lightcurvefile(exoplanet, mission='TESS')
-    print(lc)
     try:
         sector_list = lc .table .to_pandas()['sequence_number'] \
                          .drop_duplicates() .tolist()
     except KeyError:
         sys.exit(f'Search result contains no data products for {exoplanet}.')
-    # Clear up previous sessions
-    try:
-        rmtree(f'firefly/{exoplanet}')
-    except BaseException:
-        pass
+    lc = lc .table .to_pandas()[['observation', 
+                                 'productFilename', 'size']] \
+            .rename(columns={'observation':'Observation'}) \
+            .rename(columns={'productFilename':'Product'}) \
+            .rename(columns={'size':'Size'})
+    print(tabulate(lc, tablefmt='psql', showindex=False, headers='keys'))
+    exo_folder = f'firefly/{exoplanet}'
+    os.makedirs(exo_folder, exist_ok=True)
+    if archive == 'eu':
+        host_T, host_z, host_r, host_logg, t0, P, nan = \
+                                            _eu(exoplanet)
+    elif archive == 'nasa':
+        host_T, host_z, host_r, host_logg, t0, P, t14, nan = \
+                                            _nasa(exoplanet)
     curves_split, curves_delete = [], []
     for i, sector in enumerate(sector_list):
-        exo_folder = f'firefly/{exoplanet}'
-        os.makedirs(exo_folder, exist_ok=True)
         lc = search_lightcurvefile(exoplanet, mission='TESS',
                                    sector=sector)
         print(f'\nDownloading MAST Lightcurve for {exoplanet} -' +
@@ -402,9 +407,14 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False
             curves = 1
         curves_split.append(curves)
         curves_delete.append(len(split_curves))
-        print(f'\nA total of {len(split_curves)} lightcurves were created.')
-        print(f'\nA sample of {str(curves)} lightcurves from '
-              f'TESS Sector {sector} will be used.')
+        print(f'\nA total of {len(split_curves)} lightcurves from TESS '
+              f'Sector {sector} were created.')
+        if curves ==1:
+            print(f'\nA sample of {str(curves)} lightcurve from '
+                  f'TESS Sector {sector} will be used.')
+        else:
+            print(f'\nA sample of {str(curves)} lightcurves from '
+                  f'TESS Sector {sector} will be used.')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Set the Data Paths
     data_path = f'{exo_folder}/data_paths.csv'
