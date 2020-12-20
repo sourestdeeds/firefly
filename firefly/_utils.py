@@ -371,12 +371,16 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False
     print(tabulate(lc, tablefmt='psql', showindex=False, headers='keys'))
     exo_folder = f'firefly/{exoplanet}'
     os.makedirs(exo_folder, exist_ok=True)
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Download Archive
     if archive == 'eu':
         host_T, host_z, host_r, host_logg, t0, P, nan = \
                                             _eu(exoplanet)
     elif archive == 'nasa':
         host_T, host_z, host_r, host_logg, t0, P, t14, nan = \
                                             _nasa(exoplanet)
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Iterate over all sectors
     curves_split, curves_delete = [], []
     for i, sector in enumerate(sector_list):
         lc = search_lightcurve(exoplanet, mission='TESS',
@@ -387,15 +391,6 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # Extract all light curves to a single csv file
         fitsfile = _fits(exoplanet, exo_folder)
-        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-        # Download Archive
-        with suppress_print():
-            if archive == 'eu':
-                host_T, host_z, host_r, host_logg, t0, P, nan = \
-                                                    _eu(exoplanet)
-            elif archive == 'nasa':
-                host_T, host_z, host_r, host_logg, t0, P, t14, nan = \
-                                                    _nasa(exoplanet)
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # Split the Light curves
         csvfile = f'{exo_folder}/{exoplanet}.csv'
