@@ -37,10 +37,11 @@ def query(target, archive='eu'):
     if len(lc) == 0:
         sys.exit(f'Search result contains no data products for {exoplanet}.')
     lc = lc .table .to_pandas()[['observation', 
-                                 'productFilename', 'size']] \
+                                 'productFilename', 'size', 't_exptime']] \
             .rename(columns={'observation':'Observation'}) \
-            .rename(columns={'productFilename':'Product'}) \
-            .rename(columns={'size':'Size'})
+            .rename(columns={'size':'Size'}) \
+            .rename(columns={'productFilename':'Product'}) 
+    lc = lc[lc.t_exptime != 20].drop(['t_exptime'], axis=1)
     print(tabulate(lc, tablefmt='psql', showindex=False, headers='keys'))
     if archive == 'eu':
         _eu(exoplanet)
@@ -253,11 +254,11 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
     print(f'\nQuery from MAST returned {len(sector_list)} '
           f'data products for {target}.\n')
     lc = lc .table .to_pandas()[['observation', 
-                                 'productFilename', 'size']] \
+                                 'productFilename', 'size', 't_exptime']] \
             .rename(columns={'observation':'Observation'}) \
-            .rename(columns={'productFilename':'Product'}) \
-            .rename(columns={'size':'Size'})
-    lc = lc .drop_duplicates(subset='Observation', keep='last')
+            .rename(columns={'size':'Size'}) \
+            .rename(columns={'productFilename':'Product'}) 
+    lc = lc[lc.t_exptime != 20].drop(['t_exptime'], axis=1)
     print(tabulate(lc, tablefmt='psql', showindex=False, headers='keys'))
     sector = '0'
     while (sector not in sector_list and sector != 'q'):
