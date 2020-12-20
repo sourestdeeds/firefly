@@ -608,7 +608,7 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
     if len(targets) == 1:
         processes = 1
         printing = True
-    if not archive == 'eu' or archive == 'nasa':
+    if not (archive == 'eu' or archive == 'nasa'):
         sys.exit('Archive data options for dtype are: \'eu\' or \'nasa\'')
     if not (0 < curve_sample <= 1):
         sys.exit('The curve sample must be in the range 0 < curve_sample <= 1.')
