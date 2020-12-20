@@ -119,13 +119,13 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
         no indices to be given, then use an empty list: []
         e.g. if the detrending function is given by
             
-            foo(times, a, b, c):
+        >>> foo(times, a, b, c):
                 # do something
            
         and a should be fitted globally, then the entry in the method_list
         would be 
         
-            ['custom', foo, [1], [], []].
+        - ['custom', foo, [1], [], []].
     dynesty_sample : str, optional
         Method used to sample uniformly within the likelihood constraint,
         conditioned on the provided bounds. Unique methods available are:
@@ -207,9 +207,14 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
         Retrieval iteration will stop when the estimated contribution of
         the remaining prior volume to the total evidence falls below this
         threshold. Explicitly, the stopping criterion is
-        `ln(z + z_est) - ln(z) < dlogz`, where z is the current evidence
+        
+        >>> ln(z + z_est) - ln(z) < dlogz, 
+        
+        where z is the current evidence
         from all saved samples and z_est is the estimated contribution from
-        the remaining volume. The default is `1e-3 * (nlive - 1) + 0.01`.
+        the remaining volume. The default is 
+        
+        >>> 1e-3 * (nlive - 1) + 0.01.
     maxiter : int or `None`, optional
         The maximum number of iterations to run. If `None`, will
         continue until stopping criterion is reached. Default is `None`.
@@ -222,7 +227,9 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
         If True, will assume that the light curves have not been normalised and
         will fit normalisation constants within the retrieval. The range to
         fit normalisation constants c_n are automatically detected using
-            ``1/f_min <= c_n <= 1/f_max``
+            
+        >>> 1/f_min <= c_n <= 1/f_max
+        
         as the default range, where f_min and f_max are the minimum and maximum
         flux values for a given light curve. Default is True.
     detrend : bool, optional
@@ -381,16 +388,16 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
     Automated version of retrieval. For a single target the procedure is:
          
          >>> from firefly import auto_retrieval
-         >>> target = ('WASP-43 b',)
-         >>> if __name__ == '__main__':
-         >>>     auto_retrieval(target)
+             target = ('WASP-43 b',)
+             if __name__ == '__main__':
+                 auto_retrieval(target)
          
     For a list of targets:
          
          >>> from firefly import auto_retrieval
-         >>> targets = ('WASP-43 b', 'WASP-18 b')
-         >>> if __name__ == '__main__':
-         >>>     auto_retrieval(targets)
+             targets = ('WASP-43 b', 'WASP-18 b')
+             if __name__ == '__main__':
+                 auto_retrieval(targets)
      
     - Targets passed are corrected for basic user input. 'wasp43b' is
       interpreted as 'WASP-43 b'. List must be of the form given in the example below.
@@ -411,9 +418,9 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
       through one by one. 
      
          >>> from firefly import auto_retrieval
-         >>> target = ('WASP-43 b', 'WASP-12 b')
-         >>> if __name__ == '__main__':
-         >>>     auto_retrieval(target, processes=1, 
+             target = ('WASP-43 b', 'WASP-12 b')
+             if __name__ == '__main__':
+                 auto_retrieval(target, processes=1, 
                                       printing=True)
      
     - It is advised that you only set the variable printing 
@@ -445,7 +452,8 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
     targets : str, list
         A list of exoplanet targets.
         Input is a list tuple of strings:
-            ('WASP-43 b', 'WASP-18 b', 'WASP-91 b')
+            
+        >>> ('WASP-43 b', 'WASP-18 b', 'WASP-91 b')
     processes : int, optional
         The number of processes to run in parallel. For UNIX, this default
         is the maximum available for the current process.
@@ -500,13 +508,13 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
         no indices to be given, then use an empty list: []
         e.g. if the detrending function is given by
             
-            foo(times, a, b, c):
+        >>> foo(times, a, b, c):
                 # do something
            
         and a should be fitted globally, then the entry in the method_list
         would be 
         
-            ['custom', foo, [1], [], []].
+        - ['custom', foo, [1], [], []].
     dynesty_sample : str, optional
         Method used to sample uniformly within the likelihood constraint,
         conditioned on the provided bounds. Unique methods available are:
@@ -588,9 +596,14 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
         Retrieval iteration will stop when the estimated contribution of
         the remaining prior volume to the total evidence falls below this
         threshold. Explicitly, the stopping criterion is
-        `ln(z + z_est) - ln(z) < dlogz`, where z is the current evidence
+        
+        >>> ln(z + z_est) - ln(z) < dlogz,
+        
+        where z is the current evidence
         from all saved samples and z_est is the estimated contribution from
-        the remaining volume. The default is `1e-3 * (nlive - 1) + 0.01`.
+        the remaining volume. The default is 
+        
+        >>> 1e-3 * (nlive - 1) + 0.01.
     maxiter : int or `None`, optional
         The maximum number of iterations to run. If `None`, will
         continue until stopping criterion is reached. Default is `None`.
@@ -603,7 +616,9 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
         If True, will assume that the light curves have not been normalised and
         will fit normalisation constants within the retrieval. The range to
         fit normalisation constants c_n are automatically detected using
-            ``1/f_min <= c_n <= 1/f_max``
+        
+        >>> 1/f_min <= c_n <= 1/f_max
+        
         as the default range, where f_min and f_max are the minimum and maximum
         flux values for a given light curve. Default is True.
     detrend : bool, optional
