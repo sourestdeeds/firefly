@@ -412,7 +412,7 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False
         curves_delete.append(len(split_curves))
         print(f'\nA total of {len(split_curves)} lightcurves from TESS '
               f'Sector {sector} were created.')
-        if curves ==1:
+        if curves == 1:
             print(f'\nA sample of {str(curves)} lightcurve from '
                   f'TESS Sector {sector} will be used.')
         else:
