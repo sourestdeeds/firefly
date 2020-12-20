@@ -343,18 +343,7 @@ def _fits(exoplanet, exo_folder):
     return fitsfile
 
 
-def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False,
-               detrending_list=[['nth order', 2]],
-               dynesty_sample='rslice', fitting_mode='folded',
-               limb_darkening_model='quadratic', ld_fit_method='independent',
-               max_batch_parameters=25, batch_overlap=2, dlogz=None, 
-               maxiter=None, maxcall=None, dynesty_bounding='multi', 
-               normalise=True, detrend=True):
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # Filter Setup
-    _TESS_filter()
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # Download MAST lightcurves
+def _MAST_query(exoplanet):
     lc = search_lightcurve(exoplanet, mission='TESS')
     if len(lc) == 0:
         sys.exit(f'Search result contains no data products for {exoplanet}.')
@@ -369,8 +358,25 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False
             .rename(columns={'productFilename':'Product'}) 
     lc = lc[lc.t_exptime != 20].drop(['t_exptime'], axis=1)
     print(tabulate(lc, tablefmt='psql', showindex=False, headers='keys'))
+    return sector_list
+
+
+def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False,
+               detrending_list=[['nth order', 2]],
+               dynesty_sample='rslice', fitting_mode='folded',
+               limb_darkening_model='quadratic', ld_fit_method='independent',
+               max_batch_parameters=25, batch_overlap=2, dlogz=None, 
+               maxiter=None, maxcall=None, dynesty_bounding='multi', 
+               normalise=True, detrend=True):
+    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Filter Setup
     exo_folder = f'firefly/{exoplanet}'
     os.makedirs(exo_folder, exist_ok=True)
+    _TESS_filter()
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # MAST Query
+    sector_list = _MAST_query(exoplanet)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Download Archive
     if archive == 'eu':
@@ -383,6 +389,8 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False
     # Iterate over all sectors
     curves_split, curves_delete = [], []
     for i, sector in enumerate(sector_list):
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        # MAST Download
         lc = search_lightcurve(exoplanet, mission='TESS',
                                    sector=sector)
         print(f'\nDownloading MAST Lightcurve for {exoplanet} -' +
