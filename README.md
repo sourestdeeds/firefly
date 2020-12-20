@@ -21,7 +21,7 @@ archive and prints the results to the console.
 
 ```python
 from firefly import query
-target = 'WASP-43 b'
+target = 'WASP-18 b'
 query(target)
 ```
 ```
