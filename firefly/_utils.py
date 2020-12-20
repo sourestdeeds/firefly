@@ -470,7 +470,7 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False
                  root_dir=f'{os.getcwd()}/firefly/',
                  base_dir=f'{exoplanet}')
     rmtree(f'{exo_folder}')
-    return f'{exo_folder} {now}.gz.tar'
+    return f'{os.getcwd()}{exo_folder} {now}.gz.tar'
 
 
 def _iterable_target(exoplanet_list, archive='eu', curve_sample=1, nlive=300,
