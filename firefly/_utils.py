@@ -398,6 +398,8 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False
         split_curves = split_lightcurve_file(csvfile, t0=t0, P=P, 
                                              new_base_fname=new_base_fname)
         curves = int(curve_sample * len(split_curves))
+        if curves == 0:
+            curves = 1
         curves_split.append(curves)
         curves_delete.append(len(split_curves))
         print(f'\nA total of {len(split_curves)} lightcurves were created.')
