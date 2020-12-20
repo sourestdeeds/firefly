@@ -36,6 +36,7 @@ setuptools.setup( name='firefly',
                   install_requires=['numpy',
                                     'pandas', 
                                     'lightkurve',
+                                    'tabulate',
                                     'transitfit'],
                   python_requires='>=3.6',
                   include_package_data=True )
