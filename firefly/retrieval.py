@@ -2,7 +2,8 @@ from ._utils import suppress_print, _check_nan, _fits, _TESS_filter, \
                     _eu, _nasa, _iterable_target
 from ._search import _input_checker
 from transitfit import split_lightcurve_file, run_retrieval
-from lightkurve import search_lightcurvefile
+from lightkurve import search_lightcurve
+from tabulate import tabulate
 from datetime import datetime
 from pandas import DataFrame
 from shutil import rmtree, move, make_archive
@@ -32,13 +33,15 @@ def query(target, archive='eu'):
     exoplanet = _input_checker(target)
     temp = f'firefly/{exoplanet}'
     os.makedirs(temp, exist_ok=True)
-    lc = search_lightcurvefile(exoplanet, mission='TESS')
-    try:
-        sector_list = lc .table .to_pandas()['sequence_number'] \
-                         .drop_duplicates() .tolist()
-    except KeyError:
+    lc = search_lightcurve(exoplanet, mission='TESS')
+    if len(lc) == 0:
         sys.exit(f'Search result contains no data products for {exoplanet}.')
-    print(f'\n{lc}')
+    lc = lc .table .to_pandas()[['observation', 
+                                 'productFilename', 'size']] \
+            .rename(columns={'observation':'Observation'}) \
+            .rename(columns={'productFilename':'Product'}) \
+            .rename(columns={'size':'Size'})
+    print(tabulate(lc, tablefmt='psql', showindex=False, headers='keys'))
     if archive == 'eu':
         _eu(exoplanet)
     elif archive == 'nasa':
@@ -241,14 +244,19 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
     _TESS_filter()
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Download MAST lightcurves
-    lc = search_lightcurvefile(target, mission='TESS')
-    print(lc)
+    lc = search_lightcurve(target, mission='TESS')
     try:
         sector_list = lc .table .to_pandas()['sequence_number'] \
                          .drop_duplicates() .tolist()
         sector_list = [str(sector) for sector in sector_list]
     except BaseException:
         sys.exit(f'Search result contains no data products for {target}.')
+    lc = lc .table .to_pandas()[['observation', 
+                                 'productFilename', 'size']] \
+            .rename(columns={'observation':'Observation'}) \
+            .rename(columns={'productFilename':'Product'}) \
+            .rename(columns={'size':'Size'})
+    print(tabulate(lc, tablefmt='psql', showindex=False, headers='keys'))
     sector = '0'
     while (sector not in sector_list and sector != 'q'):
         print('\nAvailable TESS Sectors are:', *sector_list)
@@ -265,7 +273,7 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
     sector = int(sector)
     exo_folder = f'firefly/{target}/TESS Sector {str(sector)}'
     os.makedirs(exo_folder, exist_ok=True)
-    lc = search_lightcurvefile(target, mission='TESS',
+    lc = search_lightcurve(target, mission='TESS',
                                sector=sector)
     print(f'\nDownloading MAST Lightcurve for TESS Sector {str(sector)}.')
     lc.download_all(download_dir=exo_folder)
