@@ -1,5 +1,5 @@
 from transitfit import split_lightcurve_file, run_retrieval, calculate_logg
-from lightkurve import search_lightcurvefile
+from lightkurve import search_lightcurve
 from traceback import format_exc
 from datetime import datetime, timedelta
 from smtplib import SMTP_SSL
@@ -355,7 +355,7 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False
     _TESS_filter()
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Download MAST lightcurves
-    lc = search_lightcurvefile(exoplanet, mission='TESS')
+    lc = search_lightcurve(exoplanet, mission='TESS')
     try:
         sector_list = lc .table .to_pandas()['sequence_number'] \
                          .drop_duplicates() .tolist()
