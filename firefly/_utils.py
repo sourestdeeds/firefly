@@ -44,15 +44,13 @@ def _TESS_filter():
     here = os.path.dirname(os.path.abspath(__file__))
     os.makedirs('firefly/data', exist_ok=True)
     tess_filter_path = 'firefly/data/TESS_filter_path.csv'
+    os.remove(tess_filter_path)
     tess_filter = f'{here}/data/Filters/TESS_filter.csv'
-    if not os.path.exists(tess_filter_path):
-        cols = ['filter_idx', 'low_wl', 'high_wl']
-        df = DataFrame(columns=cols)
-        df = df.append([{'filter_idx': 0,
-                         'low_wl': tess_filter}], ignore_index=True)
-        df.to_csv(tess_filter_path, index=False, header=True)
-    else:
-        pass
+    cols = ['filter_idx', 'low_wl', 'high_wl']
+    df = DataFrame(columns=cols)
+    df = df.append([{'filter_idx': 0,
+                     'low_wl': tess_filter}], ignore_index=True)
+    df.to_csv(tess_filter_path, index=False, header=True)
 
 
 def _eu(exoplanet):
