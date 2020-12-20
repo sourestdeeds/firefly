@@ -418,7 +418,7 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False
                            ignore_index=True)
             df['Telescope'], df['Filter'], df['Detrending'] = 0, 0, 0
             df['Epochs'] = range(0, len(df))
-    print(f'\nIn total, {len(df)} lightcurves were generated across all'
+    print(f'\nIn total, {len(df)} lightcurves will be fitted across all'
           ' TESS Sectors.\n')
     df.to_csv(data_path, index=False, header=True)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
