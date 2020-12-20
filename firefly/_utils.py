@@ -363,11 +363,11 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False
     print(f'\nQuery from MAST returned {len(sector_list)} '
           f'data products for {exoplanet}.\n')
     lc = lc .table .to_pandas()[['observation', 
-                                 'productFilename', 'size']] \
+                                 'productFilename', 'size', 't_exptime']] \
             .rename(columns={'observation':'Observation'}) \
-            .rename(columns={'productFilename':'Product'}) \
-            .rename(columns={'size':'Size'})
-    lc = lc .drop_duplicates(subset='Observation', keep='last')
+            .rename(columns={'size':'Size'}) \
+            .rename(columns={'productFilename':'Product'}) 
+    lc = lc[lc.t_exptime != 20].drop(['t_exptime'], axis=1)
     print(tabulate(lc, tablefmt='psql', showindex=False, headers='keys'))
     exo_folder = f'firefly/{exoplanet}'
     os.makedirs(exo_folder, exist_ok=True)
