@@ -25,24 +25,32 @@ target = 'WASP-43 b'
 query(target)
 ```
 ```
-SearchResult containing 1 data products.
++----------------+--------------------------------------------------------------+----------+
+| Observation    | Product                                                      |     Size |
+|----------------+--------------------------------------------------------------+----------|
+| TESS Sector 2  | tess2018234235059-s0002-0000000100100827-0121-s_lc.fits      |  2004480 |
+| TESS Sector 3  | tess2018263035959-s0003-0000000100100827-0123-s_lc.fits      |  1998720 |
+| TESS Sector 29 | tess2020238165205-s0029-0000000100100827-0193-a_fast-lc.fits | 11350080 |
+| TESS Sector 29 | tess2020238165205-s0029-0000000100100827-0193-s_lc.fits      |  1915200 |
+| TESS Sector 30 | tess2020266004630-s0030-0000000100100827-0195-a_fast-lc.fits | 11842560 |
+| TESS Sector 30 | tess2020266004630-s0030-0000000100100827-0195-s_lc.fits      |  1998720 |
++----------------+--------------------------------------------------------------+----------+
 
- observation  target_name                     productFilename                    
-------------- ----------- -------------------------------------------------------
-TESS Sector 9    36734222 tess2019058134432-s0009-0000000036734222-0139-s_lc.fits
+Priors generated from the EU Archive for WASP-18 b.
 
-Priors generated from the EU Archive for WASP-43 b.
-
- Parameter Distribution       Input_A     Input_B Filter
-         P     gaussian  8.134775e-01    0.070000       
-        t0     gaussian  2.455727e+06    0.012000       
-         a     gaussian  1.526000e-02    0.000180       
-       inc     gaussian  8.233000e+01    0.200000       
-        rp      uniform  7.980670e-02    0.319227      0
-    host_T        fixed  4.520000e+03  120.000000       
-    host_z        fixed -1.000000e-02    0.012000       
-    host_r        fixed  6.670000e-01    0.010000       
- host_logg        fixed  4.645444e+00    0.019972       
++-------------+----------------+----------------+-------------+----------+
+| Parameter   | Distribution   |        Input_A |     Input_B | Filter   |
+|-------------+----------------+----------------+-------------+----------|
+| P           | gaussian       |    0.941452    |   0.04      |          |
+| t0          | gaussian       |    2.45422e+06 |   0.038     |          |
+| a           | gaussian       |    0.02047     |   0.00038   |          |
+| inc         | gaussian       |   86           |   2.5       |          |
+| rp          | uniform        |    0.0486661   |   0.194664  | 0        |
+| host_T      | fixed          | 6400           | 100         |          |
+| host_z      | fixed          |    0           |   0.09      |          |
+| host_r      | fixed          |    1.23        |   0.045     |          |
+| host_logg   | fixed          |    4.35179     |   0.0347287 |          |
++-------------+----------------+----------------+-------------+----------+
  ```
 
 ## retrieval
