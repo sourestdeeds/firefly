@@ -653,8 +653,7 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
                    dynesty_bounding=dynesty_bounding, 
                    normalise=normalise, detrend=detrend)
     try:
-        if __name__ == '__main__':
-            with Pool(processes=processes) as pool:
-                pool.map(func, exoplanet_list, chunksize=1)
+        with Pool(processes=processes) as pool:
+            pool.map(func, exoplanet_list, chunksize=1)
     except KeyboardInterrupt:
             sys.exit('User terminated retrieval')
