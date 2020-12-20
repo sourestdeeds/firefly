@@ -383,14 +383,14 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
          >>> from firefly import auto_retrieval
          >>> target = ('WASP-43 b',)
          >>> if __name__ == '__main__':
-         >>>    auto_retrieval(target)
+         >>>     auto_retrieval(target)
          
     For a list of targets:
          
          >>> from firefly import auto_retrieval
          >>> targets = ('WASP-43 b', 'WASP-18 b')
          >>> if __name__ == '__main__':
-         >>>    auto_retrieval(targets)
+         >>>     auto_retrieval(targets)
      
     - Targets passed are corrected for basic user input. 'wasp43b' is
       interpreted as 'WASP-43 b'. List must be of the form given in the example below.
@@ -413,7 +413,7 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
          >>> from firefly import auto_retrieval
          >>> target = ('WASP-43 b', 'WASP-12 b')
          >>> if __name__ == '__main__':
-         >>>    auto_retrieval(target, processes=1, 
+         >>>     auto_retrieval(target, processes=1, 
                                       printing=True)
      
     - It is advised that you only set the variable printing 
