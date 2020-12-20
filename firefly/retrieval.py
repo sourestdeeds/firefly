@@ -382,13 +382,15 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
          
          >>> from firefly import auto_retrieval
          >>> target = ('WASP-43 b',)
-         >>> auto_retrieval(target)
+         >>> if __name__ == '__main__':
+         >>>    auto_retrieval(target)
          
     For a list of targets:
          
          >>> from firefly import auto_retrieval
          >>> targets = ('WASP-43 b', 'WASP-18 b')
-         >>> auto_retrieval(targets)
+         >>> if __name__ == '__main__':
+         >>>    auto_retrieval(targets)
      
     - Targets passed are corrected for basic user input. 'wasp43b' is
       interpreted as 'WASP-43 b'. List must be of the form given in the example below.
@@ -410,8 +412,9 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
      
          >>> from firefly import auto_retrieval
          >>> target = ('WASP-43 b', 'WASP-12 b')
-         >>> auto_retrieval(target, processes=1, 
-                                  printing=True)
+         >>> if __name__ == '__main__':
+         >>>    auto_retrieval(target, processes=1, 
+                                      printing=True)
      
     - It is advised that you only set the variable printing 
       to True when fitting in this manner. Multiple cores give a chaotic output.
@@ -653,8 +656,7 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
                    dynesty_bounding=dynesty_bounding, 
                    normalise=normalise, detrend=detrend)
     try:
-        if __name__ == 'firefly.retrieval':
-            with Pool(processes=processes) as pool:
-                pool.map(func, exoplanet_list, chunksize=1)
+        with Pool(processes=processes) as pool:
+            pool.map(func, exoplanet_list, chunksize=1)
     except KeyboardInterrupt:
             sys.exit('User terminated retrieval')
