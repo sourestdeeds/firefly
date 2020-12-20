@@ -361,11 +361,13 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False
                          .drop_duplicates() .tolist()
     except KeyError:
         sys.exit(f'Search result contains no data products for {exoplanet}.')
+    print(f'\nPerforming a product query on MAST for {exoplanet}.\n')
     lc = lc .table .to_pandas()[['observation', 
                                  'productFilename', 'size']] \
             .rename(columns={'observation':'Observation'}) \
             .rename(columns={'productFilename':'Product'}) \
             .rename(columns={'size':'Size'})
+    lc = lc .drop_duplicates(subset='Observation', keep='last')
     print(tabulate(lc, tablefmt='psql', showindex=False, headers='keys'))
     exo_folder = f'firefly/{exoplanet}'
     os.makedirs(exo_folder, exist_ok=True)
@@ -377,7 +379,7 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False
                                             _nasa(exoplanet)
     curves_split, curves_delete = [], []
     for i, sector in enumerate(sector_list):
-        lc = search_lightcurvefile(exoplanet, mission='TESS',
+        lc = search_lightcurve(exoplanet, mission='TESS',
                                    sector=sector)
         print(f'\nDownloading MAST Lightcurve for {exoplanet} -' +
               f' TESS Sector {str(sector)}.')
