@@ -111,10 +111,13 @@ from firefly import auto_retrieval
 
 # For a single target
 target = ('WASP-43 b',)
-auto_retrieval(target)
+if __name__ == '__main__':
+    auto_retrieval(target)
 
 # For a list of targets
 targets = ('WASP-43 b', 'WASP-18 b', 'WASP-91 b', 'WASP-12 b',
-            'WASP-126 b', 'LHS 3844 b', 'GJ 1252 b', 'TOI-270 b')
-auto_retrieval(targets)
+           'WASP-126 b', 'LHS 3844 b', 'GJ 1252 b', 'TOI-270 b')
+if __name__ == '__main__':
+    auto_retrieval(target)
+
 ```
