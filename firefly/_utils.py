@@ -356,12 +356,12 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Download MAST lightcurves
     lc = search_lightcurve(exoplanet, mission='TESS')
-    try:
-        sector_list = lc .table .to_pandas()['sequence_number'] \
-                         .drop_duplicates() .tolist()
-    except KeyError:
+    if len(lc) == 0:
         sys.exit(f'Search result contains no data products for {exoplanet}.')
-    print(f'\nPerforming a product query on MAST for {exoplanet}.\n')
+    sector_list = lc .table .to_pandas()['sequence_number'] \
+                     .drop_duplicates() .tolist()
+    print(f'\nQuery from MAST returned {len(sector_list)} '
+          f'data products for {exoplanet}.\n')
     lc = lc .table .to_pandas()[['observation', 
                                  'productFilename', 'size']] \
             .rename(columns={'observation':'Observation'}) \
