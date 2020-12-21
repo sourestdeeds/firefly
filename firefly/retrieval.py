@@ -266,7 +266,7 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Download Archive
     if archive == 'eu':
-        host_T, host_z, host_r, host_logg, t0, P, nan = _eu(target)
+        host_T, host_z, host_r, host_logg, t0, P, t14, nan = _eu(target)
     elif archive == 'nasa':
         host_T, host_z, host_r, host_logg, t0, P, t14, nan = _nasa(target)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
