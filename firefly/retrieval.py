@@ -382,7 +382,8 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
                    limb_darkening_model='quadratic', ld_fit_method='independent',
                    max_batch_parameters=25, batch_overlap=2, dlogz=None, 
                    maxiter=None, maxcall=None, dynesty_bounding='multi', 
-                   normalise=True, detrend=True, email=False, printing=False):
+                   normalise=True, detrend=True, email=False, 
+                   to=['transitfit.server@gmail.com'], printing=False):
     '''
     Automated version of retrieval. For a single target the procedure is:
          
@@ -481,6 +482,10 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
         The default is 1 to fit all lightcurves across all sectors.
     email : bool, optional
         If True will send status emails. The default is False.
+    to : str, optional
+        The email address to send status updates to.
+        
+        >>> to=['transitfit.server@gmail.com']
     printing : bool, optional
         If True will print outputs. The default is False.
     nlive : int, optional
@@ -668,7 +673,7 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
                    batch_overlap=batch_overlap, dlogz=dlogz, 
                    maxiter=maxiter, maxcall=maxcall, curve_sample=curve_sample,
                    dynesty_bounding=dynesty_bounding, 
-                   normalise=normalise, detrend=detrend)
+                   normalise=normalise, detrend=detrend, to=to)
     try:
         with Pool(processes=processes) as pool:
             pool.map(func, exoplanet_list, chunksize=1)
