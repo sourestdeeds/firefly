@@ -1,3 +1,12 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Spelling checker for the search engine.
+
+@author: Steven Charles-Mindoza
+"""
+
+
 from ._archive import _download_eu, _download_nasa
 from ._utils import suppress_print
 
