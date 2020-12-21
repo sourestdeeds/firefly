@@ -37,6 +37,8 @@ setuptools.setup( name='firefly',
                                     'pandas', 
                                     'lightkurve',
                                     'tabulate',
+                                    'fuzzywuzzy',
+                                    'python-Levenshtein',
                                     'transitfit'],
                   python_requires='>=3.6',
                   include_package_data=True )
