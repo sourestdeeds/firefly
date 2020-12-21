@@ -220,15 +220,19 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
     >>> firefly/WASP-43 b timestamp.gz.tar
     '''
     # Check inputs are sensible
-    if not archive == 'eu' or archive == 'nasa':
-        sys.exit('Archive data options for dtype are: \'eu\' or \'nasa\'')
+    if not (archive == 'eu' or archive == 'nasa'):
+        sys.exit('Archive data options are: \'eu\' or \'nasa\'')
     else:
         pass
+    if archive == 'eu':
+        archive_data = 'EU archive'
+    elif archive == 'nasa':
+        archive_data = 'NASA archive'
     highest, ratios = _fuzzy_search(target, archive=archive)
     target = highest[0]
     verify = ''
     while (verify!="y" and verify!="n" and verify!='q'):
-        print(f'\nTarget search chose {target} from the list:\n')
+        print(f'\nTarget search chose {target} from the {archive_data}:\n')
         query(target, archive=archive)
         verify = input('Proceed ([y]/n)?\n')
         if (verify=='q'):
@@ -238,7 +242,8 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
             target = input('Please refine your search: ')
             highest, ratios = _fuzzy_search(target, archive=archive)
             target = highest[0]
-            print(f'\nTarget search chose {highest[0]} from the list:\n')
+            print(f'\nTarget search chose {highest[0]} from the '
+                  '{archive_data}:\n')
             query(target, archive=archive)
             verify = input('Proceed ([y]/n)? or type q to quit.\n')
         if (verify=='q'):
