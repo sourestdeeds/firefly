@@ -6,6 +6,7 @@ from smtplib import SMTP_SSL
 from tabulate import tabulate
 from astropy.io import fits
 from csv import DictWriter
+from fuzzywuzzy import fuzz, process
 from pandas import DataFrame, read_csv
 from shutil import rmtree, move, make_archive
 import sys
@@ -361,6 +362,18 @@ def _MAST_query(exoplanet):
     return sector_list
 
 
+def _fuzzy_search(exoplanet, archive='eu'):
+    if archive == 'eu':
+        eu_csv = 'firefly/data/eu.csv'
+        exo_list = read_csv(eu_csv, usecols=['# name']).values.tolist()
+    elif archive == 'nasa':
+        nasa_csv = 'firefly/data/nasa.csv'
+        exo_list = read_csv(nasa_csv, usecols=['pl_name']).values.tolist()
+    # Ratios = process.extract(exoplanet,exo_list)
+    highest = process.extractOne(exoplanet,exo_list)
+    return highest[0][0]
+    
+
 def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False,
                detrending_list=[['nth order', 2]],
                dynesty_sample='rslice', fitting_mode='folded',
@@ -547,4 +560,3 @@ def _iterable_target(exoplanet_list, archive='eu', curve_sample=1, nlive=300,
             else:
                 print(trace_back)
             pass
-           
