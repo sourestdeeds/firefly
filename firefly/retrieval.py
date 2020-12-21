@@ -1,6 +1,5 @@
 from ._utils import suppress_print, _check_nan, _fits, _TESS_filter, \
-                    _eu, _nasa, _iterable_target
-from ._search import _input_checker
+                    _eu, _nasa, _iterable_target, _fuzzy_search
 from transitfit import split_lightcurve_file, run_retrieval
 from lightkurve import search_lightcurve
 from tabulate import tabulate
@@ -30,7 +29,7 @@ def query(target, archive='eu'):
     Data printed to console.
 
     '''
-    exoplanet = _input_checker(target)
+    exoplanet = _fuzzy_search(target, archive='eu')
     temp = f'firefly/{exoplanet}'
     os.makedirs(temp, exist_ok=True)
     lc = search_lightcurve(exoplanet, mission='TESS')
@@ -246,7 +245,7 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
         sys.exit('Archive data options for dtype are: \'eu\' or \'nasa\'')
     else:
         pass
-    target = _input_checker(target)
+    target = _fuzzy_search(target, archive='eu')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Filter Setup
     _TESS_filter()
@@ -643,7 +642,7 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
         sys.exit('The curve sample must be in the range 0 < curve_sample <= 1.')
     exoplanet_list = []
     for i, exoplanet in enumerate(targets):
-        exoplanet = _input_checker(exoplanet)
+        exoplanet = _fuzzy_search(exoplanet, archive='eu')
         with suppress_print():  
             nan = _check_nan(exoplanet, archive=archive)
         if nan == True:
