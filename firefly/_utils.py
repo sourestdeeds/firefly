@@ -132,6 +132,11 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False
     elif archive == 'nasa':
         host_T, host_z, host_r, host_logg, t0, P, t14, nan = \
                                             _nasa(exoplanet)
+    cols = [['t0', t0], ['P', P], ['t14', t14]]
+    df = DataFrame(cols, columns=['Parameter', 'Value'])
+    print('\nSplitting the lightcurve into seperate epochs'
+          ' using the following parameters.\n')
+    print(tabulate(df, tablefmt='psql', showindex=False, headers='keys'))
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Iterate over all sectors
     curves_split, curves_delete = [], []
