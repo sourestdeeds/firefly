@@ -1,9 +1,9 @@
 from transitfit import split_lightcurve_file, run_retrieval, calculate_logg
 try:
-    from lightcurve import search_lightcurve
+    from lightkurve import search_lightcurve
 except:
     try:
-        from lightcurve import search_lightcurvefile as search_lightcurve
+        from lightkurve import search_lightcurvefile as search_lightcurve
     except:
         raise
 from traceback import format_exc
