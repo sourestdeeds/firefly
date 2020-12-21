@@ -27,6 +27,41 @@ import sys
 import os
 
 
+def _retrieval_input_target(target, archive):
+    # Check inputs are sensible
+    if not (archive == 'eu' or archive == 'nasa'):
+        sys.exit('Archive data options are: \'eu\' or \'nasa\'')
+    if archive == 'eu':
+        archive_data = 'EU archive'
+    elif archive == 'nasa':
+        archive_data = 'NASA archive'
+    highest, ratios = _fuzzy_search(target, archive=archive)
+    target = highest[0]
+    verify = ''
+    while (verify!="y" and verify!="n" and verify!='q'):
+        print(f'\nTarget search chose {target} from the {archive_data}:\n')
+        query(target, archive=archive)
+        verify = input('Proceed ([y]/n)?\n')
+    if (verify=='q'):
+        sys.exit('You chose to quit.')
+    elif verify =='y':
+        pass
+        return highest[0]
+    elif verify == "n":
+        while (verify!="y" and verify!='q'):
+            target = input('Please refine your search: ')
+            highest, ratios = _fuzzy_search(target, archive=archive)
+            target = highest[0]
+            print(f'\nTarget search chose {highest[0]} from the '
+                  f'{archive_data}:\n')
+            query(target, archive=archive)
+            verify = input('Proceed ([y]/n)? or type q to quit.\n')
+        if (verify=='q'):
+            sys.exit('You chose to quit.')
+        elif verify == "y":
+            pass
+            return highest[0]
+
 
 def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
                detrending_list=[['nth order', 2]],
@@ -219,38 +254,7 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
     
     >>> firefly/WASP-43 b timestamp.gz.tar
     '''
-    # Check inputs are sensible
-    if not (archive == 'eu' or archive == 'nasa'):
-        sys.exit('Archive data options are: \'eu\' or \'nasa\'')
-    else:
-        pass
-    if archive == 'eu':
-        archive_data = 'EU archive'
-    elif archive == 'nasa':
-        archive_data = 'NASA archive'
-    highest, ratios = _fuzzy_search(target, archive=archive)
-    target = highest[0]
-    verify = ''
-    while (verify!="y" and verify!="n" and verify!='q'):
-        print(f'\nTarget search chose {target} from the {archive_data}:\n')
-        query(target, archive=archive)
-        verify = input('Proceed ([y]/n)?\n')
-        if (verify=='q'):
-            sys.exit('You chose to quit.')
-    if verify == "n":
-        while (verify!="y" and verify!='q'):
-            target = input('Please refine your search: ')
-            highest, ratios = _fuzzy_search(target, archive=archive)
-            target = highest[0]
-            print(f'\nTarget search chose {highest[0]} from the '
-                  '{archive_data}:\n')
-            query(target, archive=archive)
-            verify = input('Proceed ([y]/n)? or type q to quit.\n')
-        if (verify=='q'):
-            sys.exit('You chose to quit.')
-        elif verify == "y":
-            target = highest[0]
-            pass
+    target = _retrieval_input_target(target, archive)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Filter Setup
     _TESS_filter()
