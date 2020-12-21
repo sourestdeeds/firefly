@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+The backend for auto_retrieval.
+
+@author: Steven Charles-Mindoza
+"""
+
 from ._archive import _eu, _nasa, suppress_print
 
 from transitfit import split_lightcurve_file, run_retrieval
