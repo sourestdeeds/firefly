@@ -1,7 +1,13 @@
 from ._utils import suppress_print, _check_nan, _fits, _TESS_filter, \
                     _eu, _nasa, _iterable_target, _fuzzy_search
 from transitfit import split_lightcurve_file, run_retrieval
-from lightkurve import search_lightcurve
+try:
+    from lightcurve import search_lightcurve
+except:
+    try:
+        from lightcurve import search_lightcurvefile as search_lightcurve
+    except:
+        raise
 from tabulate import tabulate
 from datetime import datetime
 from pandas import DataFrame
