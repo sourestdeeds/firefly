@@ -6,7 +6,7 @@ from smtplib import SMTP_SSL
 from tabulate import tabulate
 from astropy.io import fits
 from csv import DictWriter
-from fuzzywuzzy import fuzz, process
+from fuzzywuzzy import process
 from pandas import DataFrame, read_csv
 from shutil import rmtree, move, make_archive
 import sys
@@ -45,7 +45,10 @@ def _TESS_filter():
     here = os.path.dirname(os.path.abspath(__file__))
     os.makedirs('firefly/data', exist_ok=True)
     tess_filter_path = 'firefly/data/TESS_filter_path.csv'
-    os.remove(tess_filter_path)
+    try:
+        os.remove(tess_filter_path)
+    except:
+        pass
     tess_filter = f'{here}/data/Filters/TESS_filter.csv'
     cols = ['filter_idx', 'low_wl', 'high_wl']
     df = DataFrame(columns=cols)
@@ -53,6 +56,46 @@ def _TESS_filter():
                      'low_wl': tess_filter}], ignore_index=True)
     df.to_csv(tess_filter_path, index=False, header=True)
 
+def _download_eu():
+    os.makedirs('firefly/data', exist_ok=True)
+    eu_csv = 'firefly/data/eu.csv'
+    download_link = 'http://exoplanet.eu/catalog/csv'
+    if not os.path.exists(eu_csv):
+        print('eu.csv does not exist, downloading.')
+        df = read_csv(download_link)
+        df.to_csv(eu_csv, index=False)
+    ten_days_ago = datetime.now() - timedelta(days=10)
+    filetime = datetime.fromtimestamp(os.path.getctime(eu_csv))
+    if filetime < ten_days_ago:
+        print('eu.csv is 10 days old, updating.')
+        df = read_csv(download_link)
+        df.to_csv(eu_csv, index=False)
+    else:
+        pass
+    
+def _download_nasa():
+    download_link =  \
+        'https://exoplanetarchive.ipac.caltech.edu/' +\
+        'TAP/sync?query=select+' +\
+        'pl_name,pl_orbper,pl_orbpererr1,pl_orbsmax,pl_orbsmaxerr1,' +\
+        'pl_radj,pl_radjerr1,pl_orbeccen,pl_orbeccenerr1,disc_facility,' +\
+        'st_teff,st_tefferr1,st_rad,st_raderr1,st_mass,st_masserr1,' +\
+        'st_met,st_meterr1,pl_tranmid,pl_tranmiderr1,pl_trandur,' +\
+        'pl_orbincl,pl_orbinclerr1,pl_orblper,pl_orblpererr1,rowupdate' +\
+        '+from+ps&format=csv'
+    nasa_csv = 'firefly/data/nasa.csv'
+    if not os.path.exists(nasa_csv):
+        print('nasa.csv does not exist, downloading.')
+        df = read_csv(download_link)
+        df.to_csv(nasa_csv, index=False)
+    ten_days_ago = datetime.now() - timedelta(days=10)
+    filetime = datetime.fromtimestamp(os.path.getctime(nasa_csv))
+    if filetime < ten_days_ago:
+        print('nasa.csv is 10 days old, updating.')
+        df = read_csv(download_link)
+        df.to_csv(nasa_csv, index=False)
+    else:
+        pass
 
 def _eu(exoplanet):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -364,9 +407,13 @@ def _MAST_query(exoplanet):
 
 def _fuzzy_search(exoplanet, archive='eu'):
     if archive == 'eu':
+        with suppress_print():
+            _download_eu()
         eu_csv = 'firefly/data/eu.csv'
         exo_list = read_csv(eu_csv, usecols=['# name']).values.tolist()
     elif archive == 'nasa':
+        with suppress_print():
+            _download_nasa()
         nasa_csv = 'firefly/data/nasa.csv'
         exo_list = read_csv(nasa_csv, usecols=['pl_name']).values.tolist()
     # Ratios = process.extract(exoplanet,exo_list)
