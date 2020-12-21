@@ -6,6 +6,7 @@ Automated version of retrieval.
 @author: Steven Charles-Mindoza
 """
 
+from .query import query
 from ._utils import suppress_print, _iterable_target
 from ._archive import _check_nan
 from ._search import _fuzzy_search
@@ -289,8 +290,10 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
         sys.exit('The curve sample must be in the range 0 < curve_sample <= 1.')
     exoplanet_list = []
     for i, exoplanet in enumerate(targets):
-        highest, ratios = _fuzzy_search(exoplanet, archive='eu')
+        highest, ratios = _fuzzy_search(exoplanet, archive=archive)
         exoplanet = highest[0]
+        print(f'\nTarget search chose {highest[0]} from the list: \n')
+        query(exoplanet, archive=archive)
         with suppress_print():  
             nan = _check_nan(exoplanet, archive=archive)
         if nan == True:
