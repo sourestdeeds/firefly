@@ -1,3 +1,12 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Data retrievers.
+
+@author: Steven Charles-Mindoza
+"""
+
+
 from ._search import _fuzzy_search
 from ._archive import _eu, _nasa
 
