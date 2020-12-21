@@ -228,20 +228,23 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
     target = highest[0]
     verify = ''
     while (verify!="y" and verify!="n" and verify!='q'):
-        print(f'\nTarget search chose {highest[0]} from the list:\n')
+        print(f'\nTarget search chose {target} from the list:\n')
         query(target, archive=archive)
-        verify = input(f'Proceed ([y]/n)?\n')
+        verify = input('Proceed ([y]/n)?\n')
         if (verify=='q'):
             sys.exit('You chose to quit.')
     if verify == "n":
         while (verify!="y" and verify!='q'):
             target = input('Please refine your search: ')
+            highest, ratios = _fuzzy_search(target, archive=archive)
+            target = highest[0]
             print(f'\nTarget search chose {highest[0]} from the list:\n')
             query(target, archive=archive)
-            verify = input(f'Proceed ([y]/n)? or type q to quit.\n')
+            verify = input('Proceed ([y]/n)? or type q to quit.\n')
         if (verify=='q'):
             sys.exit('You chose to quit.')
         elif verify == "y":
+            target = highest[0]
             pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Filter Setup
