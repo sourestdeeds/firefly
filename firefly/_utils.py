@@ -143,7 +143,7 @@ def _eu(exoplanet):
     rp_m = (rp * u.R_jup).to(u.m)
     a_m = (a * u.AU).to(u.m)
     t14 = P * (rs_m * np.sin(np.radians(i)) + rp_m) / \
-              (np.pi * a_m) * 24 * 60 .value
+              (np.pi * a_m) * 24 * 60 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Assign Host data to Transitfit
     logg, err_logg = calculate_logg((s.loc['star_mass'],
