@@ -271,6 +271,11 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
         host_T, host_z, host_r, host_logg, t0, P, t14, nan = _nasa(target)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Split the Light curves
+    cols = [['t0', t0], ['P', P], ['t14', t14]]
+    df = DataFrame(cols, columns=['Parameter', 'Value'])
+    print('\nSplitting the lightcurve into seperate epochs'
+          ' using the following parameters.\n')
+    print(tabulate(df, tablefmt='psql', showindex=False, headers='keys'))
     csvfile = f'{exo_folder}/{target}.csv'
     split_curves = split_lightcurve_file(csvfile, t0=t0, P=P)
     print(f'\nA total of {str(len(split_curves))} lightcurves were created.')
