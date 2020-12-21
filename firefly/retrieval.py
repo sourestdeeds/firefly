@@ -684,4 +684,10 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
         with Pool(processes=processes) as pool:
             pool.map(func, exoplanet_list, chunksize=1)
     except KeyboardInterrupt:
-            sys.exit('User terminated retrieval')
+        exo_folder = f'firefly/{exoplanet}'
+        now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
+        make_archive(f'{exo_folder} {now} KeyboardInterrupt', format='gztar',
+                 root_dir=f'{os.getcwd()}/firefly/',
+                 base_dir=f'{exoplanet}')
+        rmtree(f'{exo_folder}')
+        sys.exit('User terminated retrieval')
