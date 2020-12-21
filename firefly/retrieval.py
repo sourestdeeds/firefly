@@ -6,7 +6,7 @@ A target data retriever for confirmed/candidate TESS exoplanets.
 @author: Steven Charles-Mindoza
 """
 
-
+from .query import query
 from ._utils import _fits, _TESS_filter
 from ._archive import _eu, _nasa
 from ._search import _fuzzy_search
@@ -224,8 +224,25 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
         sys.exit('Archive data options for dtype are: \'eu\' or \'nasa\'')
     else:
         pass
-    highest, ratios = _fuzzy_search(target, archive='eu')
+    highest, ratios = _fuzzy_search(target, archive=archive)
     target = highest[0]
+    verify = ''
+    while (verify!="y" and verify!="n" and verify!='q'):
+        print(f'\nTarget search chose {highest[0]} from the list:\n')
+        query(target, archive=archive)
+        verify = input(f'Proceed ([y]/n)?\n')
+        if (verify=='q'):
+            sys.exit('You chose to quit.')
+    if verify == "n":
+        while (verify!="y" and verify!='q'):
+            target = input('Please refine your search: ')
+            print(f'\nTarget search chose {highest[0]} from the list:\n')
+            query(target, archive=archive)
+            verify = input(f'Proceed ([y]/n)? or type q to quit.\n')
+        if (verify=='q'):
+            sys.exit('You chose to quit.')
+        elif verify == "y":
+            pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Filter Setup
     _TESS_filter()
