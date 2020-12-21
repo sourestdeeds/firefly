@@ -9,6 +9,8 @@ from csv import DictWriter
 from fuzzywuzzy import process
 from pandas import DataFrame, read_csv
 from shutil import rmtree, move, make_archive
+import astropy.units as u
+import numpy as np
 import sys
 import os
  
@@ -135,7 +137,13 @@ def _eu(exoplanet):
         sys.exit('The chosen target is either spelt incorrectly, or does not '
                  'exist in the EU archive.')
     s = df.mean()
-    t0, P = s.loc['tzero_tr'], s.loc['orbital_period']
+    t0, P, i = s.loc['tzero_tr'], s.loc['orbital_period'], s.loc['inclination']
+    rp, rs, a = s.loc['radius'], s.loc['star_radius'], s.loc['semi_major_axis']
+    rs_m = (rs * u.R_sun).to(u.m)
+    rp_m = (rp * u.R_jup).to(u.m)
+    a_m = (a * u.AU).to(u.m)
+    t14 = P * (rs_m * np.sin(np.radians(i)) + rp_m) / \
+              (np.pi * a_m) * 24 * 60 .value
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Assign Host data to Transitfit
     logg, err_logg = calculate_logg((s.loc['star_mass'],
@@ -192,7 +200,7 @@ def _eu(exoplanet):
     nan = repack.isnull().values.any()
     print(f'\nPriors generated from the EU Archive for {exoplanet}.\n')
     print(tabulate(repack, tablefmt='psql', showindex=False, headers='keys'))
-    return host_T, host_z, host_r, host_logg, t0, P, nan
+    return host_T, host_z, host_r, host_logg, t0, P, t14, nan
 
 
 def _nasa_full():
@@ -248,7 +256,8 @@ def _nasa(exoplanet):
                  'exist in the NASA archive.')
     s = df.mean()
     t0, P, t14 = s.loc['pl_tranmid'], s.loc['pl_orbper'], \
-        s.loc['pl_trandur'] * 24 * 60
+        s.loc['pl_trandur'] * 60
+    print(t14)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Assign Host data to Transitfit
     logg, err_logg = calculate_logg((s.loc['st_mass'],
@@ -335,18 +344,18 @@ def _check_nan(exoplanet, archive='eu', printing=False):
         if printing == False:
             with suppress_print():
                 nan = _eu(exoplanet)
-                nan = nan[6]
+                nan = nan[7]
         elif printing == True:
             nan = _eu(exoplanet)
-            nan = nan[6]
+            nan = nan[7]
     elif archive == 'nasa':
         if printing == False:
             with suppress_print():
                 nan = _nasa(exoplanet)
-                nan = nan[6]
+                nan = nan[7]
         elif printing == True:
             nan = _nasa(exoplanet)
-            nan = nan[6]
+            nan = nan[7]
     rmtree(temp)
     return nan
 
@@ -440,7 +449,7 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Download Archive
     if archive == 'eu':
-        host_T, host_z, host_r, host_logg, t0, P, nan = \
+        host_T, host_z, host_r, host_logg, t0, P, t14, nan  = \
                                             _eu(exoplanet)
     elif archive == 'nasa':
         host_T, host_z, host_r, host_logg, t0, P, t14, nan = \
@@ -463,7 +472,7 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False
         # Split the Light curves
         csvfile = f'{exo_folder}/{exoplanet}.csv'
         new_base_fname = f'sector_{sector}_split_curve'
-        split_curves = split_lightcurve_file(csvfile, t0=t0, P=P, 
+        split_curves = split_lightcurve_file(csvfile, t0=t0, P=P, t14=t14,
                                              new_base_fname=new_base_fname)
         curves = int(curve_sample * len(split_curves))
         if curves == 0:
