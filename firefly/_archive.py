@@ -1,3 +1,12 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Exoplanet archive tools.
+
+@author: Steven Charles-Mindoza
+"""
+
+
 from transitfit import calculate_logg
 from datetime import datetime, timedelta
 from tabulate import tabulate
