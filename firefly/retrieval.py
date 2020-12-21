@@ -1,5 +1,7 @@
-from ._utils import suppress_print, _check_nan, _fits, _TESS_filter, \
-                    _eu, _nasa, _iterable_target, _fuzzy_search
+from ._utils import suppress_print, _fits, _TESS_filter, _iterable_target
+from ._archive import _check_nan, _eu, _nasa
+from ._search import _fuzzy_search
+
 from transitfit import split_lightcurve_file, run_retrieval
 try:
     from lightkurve import search_lightcurve
@@ -17,42 +19,6 @@ from functools import partial
 import sys
 import os
 
-
-
-def query(target, archive='eu'):
-    '''
-    Performs a query for prior information and data products from MAST
-
-    Parameters
-    ----------
-    exoplanet : str
-        The exoplanet target to retreive information for.
-    archive : str, optional
-        The exoplanet archive to use for priors. The default is 'eu'.
-
-    Returns
-    -------
-    Data printed to console.
-
-    '''
-    exoplanet = _fuzzy_search(target, archive='eu')
-    temp = f'firefly/{exoplanet}'
-    os.makedirs(temp, exist_ok=True)
-    lc = search_lightcurve(exoplanet, mission='TESS')
-    if len(lc) == 0:
-        sys.exit(f'Search result contains no data products for {exoplanet}.')
-    lc = lc .table .to_pandas()[['observation', 
-                                 'productFilename', 'size', 't_exptime']] \
-            .rename(columns={'observation':'Observation'}) \
-            .rename(columns={'size':'Size'}) \
-            .rename(columns={'productFilename':'Product'}) 
-    lc = lc[lc.t_exptime != 20].drop(['t_exptime'], axis=1)
-    print(tabulate(lc, tablefmt='psql', showindex=False, headers='keys'))
-    if archive == 'eu':
-        _eu(exoplanet)
-    elif archive == 'nasa':
-        _nasa(exoplanet)
-    rmtree(temp)
 
 
 def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
@@ -251,7 +217,8 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
         sys.exit('Archive data options for dtype are: \'eu\' or \'nasa\'')
     else:
         pass
-    target = _fuzzy_search(target, archive='eu')
+    highest, ratios = _fuzzy_search(target, archive='eu')
+    target = highest[0]
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Filter Setup
     _TESS_filter()
@@ -653,7 +620,8 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
         sys.exit('The curve sample must be in the range 0 < curve_sample <= 1.')
     exoplanet_list = []
     for i, exoplanet in enumerate(targets):
-        exoplanet = _fuzzy_search(exoplanet, archive='eu')
+        highest, ratios = _fuzzy_search(exoplanet, archive='eu')
+        exoplanet = highest[0]
         with suppress_print():  
             nan = _check_nan(exoplanet, archive=archive)
         if nan == True:
