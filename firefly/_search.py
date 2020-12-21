@@ -17,6 +17,7 @@ def _fuzzy_search(exoplanet, archive='eu'):
             _download_nasa()
         nasa_csv = 'firefly/data/nasa.csv'
         exo_list = read_csv(nasa_csv, usecols=['pl_name']).values.tolist()
+        exo_list = [j for i in exo_list for j in i]
     ratios = process.extract(exoplanet,exo_list)
     highest = process.extractOne(exoplanet,exo_list)
     return highest, ratios
