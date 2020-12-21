@@ -24,11 +24,11 @@ class suppress_print():
         sys.stdout = self.original_stdout
         
 
-def _email(subject, body):
+def _email(subject, body, to):
     username = 'transitfit.server@gmail.com'
     password = 'yvoq efzi dcib dmbm'
     sent_from = username
-    to = ['transitfit.server@gmail.com']
+    # to = to ['transitfit.server@gmail.com']
     message = f'Subject: {subject}\n\n{body}'
     try:
         server = SMTP_SSL('smtp.gmail.com', 465)
@@ -552,7 +552,7 @@ def _iterable_target(exoplanet_list, archive='eu', curve_sample=1, nlive=300,
                      limb_darkening_model='quadratic', ld_fit_method='independent',
                      max_batch_parameters=25, batch_overlap=2, dlogz=None, 
                      maxiter=None, maxcall=None, dynesty_bounding='multi', 
-                     normalise=True, detrend=True, email=False,
+                     normalise=True, detrend=True, email=False, to=['transitfit.server@gmail.com'],
                      printing=False):
     for i, exoplanet in enumerate(exoplanet_list):
         try:
@@ -591,19 +591,19 @@ def _iterable_target(exoplanet_list, archive='eu', curve_sample=1, nlive=300,
                 _email(f'Success: {exoplanet}',
                        f'Data location: {success} \n\n'
                        'A new target has been fully retrieved across ' +
-                       'all available TESS Sectors.')
+                       'all available TESS Sectors.', to=to)
         except KeyboardInterrupt:
             sys.exit('User terminated retrieval')
         except TypeError:
             trace_back = format_exc()
             if email == True:
-                _email(f'Exception TypeError: {exoplanet}', trace_back)
+                _email(f'Exception TypeError: {exoplanet}', trace_back, to=to)
             else:
                 print(trace_back)
         except BaseException:
             trace_back = format_exc()
             if email == True:
-                _email(f'Exception: {exoplanet}', trace_back)
+                _email(f'Exception: {exoplanet}', trace_back, to=to)
             else:
                 print(trace_back)
             pass
