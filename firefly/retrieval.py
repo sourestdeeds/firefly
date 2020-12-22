@@ -298,7 +298,7 @@ def retrieval(exoplanet, archive='eu', nlive=300, fit_ttv=False,
     _TESS_filter()
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Search MAST lightcurves
-    sector_list = _MAST_query(exoplanet)
+    sector_list = _MAST_query(exoplanet, exo_folder)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Sector Input
     sector_list = retrieval_input_sector(sector_list)
@@ -330,7 +330,7 @@ def retrieval(exoplanet, archive='eu', nlive=300, fit_ttv=False,
         fitsfile = _fits(exoplanet, exo_folder, sector)
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # Split the Light curves
-        csvfile = f'{exo_folder}/{exoplanet}_Sector_{sector}.csv'
+        csvfile = f'{exo_folder}/{exoplanet} Sector {sector}.csv'
         new_base_fname = f'sector_{sector}_split_curve'
         split_curves = split_lightcurve_file(csvfile, t0=t0, P=P, # t14=t14,
                                              new_base_fname=new_base_fname)
@@ -392,38 +392,53 @@ def retrieval(exoplanet, archive='eu', nlive=300, fit_ttv=False,
                       dynesty_bounding=dynesty_bounding, 
                       normalise=normalise, detrend=detrend)
     except KeyboardInterrupt:
-        now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
-        make_archive(f'{exo_folder} {now} KeyboardInterrupt', format='gztar',
-                 root_dir=f'{os.getcwd()}/firefly/',
-                 base_dir=f'{exoplanet}')
-        rmtree(f'{exo_folder}')
-        sys.exit('User terminated retrieval')
+        try:
+            now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
+            make_archive(f'{exo_folder} {now} BaseException', format='gztar',
+                     root_dir=f'{os.getcwd()}/firefly/',
+                     base_dir=f'{exoplanet}')
+            rmtree(f'{exo_folder}')
+        except:
+            pass
     except BaseException:
-        now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
-        make_archive(f'{exo_folder} {now} BaseException', format='gztar',
-                 root_dir=f'{os.getcwd()}/firefly/',
-                 base_dir=f'{exoplanet}')
-        rmtree(f'{exo_folder}')
+        try:
+            now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
+            make_archive(f'{exo_folder} {now} BaseException', format='gztar',
+                     root_dir=f'{os.getcwd()}/firefly/',
+                     base_dir=f'{exoplanet}')
+            rmtree(f'{exo_folder}')
+        except:
+            pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Cleanup
-    try:
-        rmtree(f'{exo_folder}/mastDownload')
-        move(fitsfile, f'{exo_folder}.fits')
-        os.remove(f'{exo_folder}.fits')
-        os.remove(csvfile)
-        os.remove(priors)
-        for i in range(len(split_curves)):
-            os.remove(f'{exo_folder}/split_curve_{str(i)}.csv')
-    except BaseException:
-        pass
+    # try:
+    #     rmtree(f'{exo_folder}/mastDownload')
+    #     move(fitsfile, f'{exo_folder}.fits')
+    #     os.remove(f'{exo_folder}.fits')
+    #     os.remove(csvfile)
+    #     os.remove(data)
+    #     os.remove(priors)
+    #     sector_curves = dict(zip(sector_list, curves_delete))
+    #     for sector, curves in sector_curves.items():
+    #         move(fitsfile, f'{exo_folder}.fits')
+    #         os.remove(f'{exo_folder}.fits')
+    #         os.remove(csvfile)
+    #         for i in range(curves):
+    #             os.remove(f'{exo_folder}/sector_{sector}' +
+    #                       f'_split_curve_{str(i)}.csv')
+    # except BaseException:
+    #     pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Archive and sort
-    now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
-    make_archive(f'{exo_folder} {now}', format='gztar',
-                 root_dir=f'{os.getcwd()}/firefly/',
-                 base_dir=f'{exoplanet}')
-    rmtree(f'{exo_folder}')
-    success = f'{os.getcwd()}/{exo_folder} {now}.gz.tar'
-    print(f'\nData location: {success}\n'
-                       'A new target has been fully retrieved across ' +
-                       'all available TESS Sectors.')
+    try:
+        now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
+        make_archive(f'{exo_folder} {now}', format='gztar',
+                     root_dir=f'{os.getcwd()}/firefly/',
+                     base_dir=f'{exoplanet}')
+        rmtree(f'{exo_folder}')
+        success = f'{os.getcwd()}/{exo_folder} {now}.gz.tar'
+        print(f'\nData location: {success}\n'
+                           'A new target has been fully retrieved across ' +
+                           'all available TESS Sectors.')
+    except:
+        pass
