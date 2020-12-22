@@ -64,6 +64,40 @@ def _retrieval_input_target(target, archive):
             return highest[0]
 
 
+def retrieval_input_sector(sector_list):
+    sector = '0'
+    while (sector not in sector_list and sector != 'q'):
+        print('\nAvailable TESS Sectors are:', *sector_list)
+        sector = input('Enter which TESS Sector you would like to download: ')
+        while (sector not in sector_list and sector != 'q'):
+            print('\nPlease choose an integer from the list: \n', *sector_list,
+                  '\nor type q to quit.')
+            sector = input('Enter which TESS Sector you' +
+                               ' would like to download: ')
+        if sector == 'q':
+            sys.exit('You chose to quit.')
+        elif sector in sector_list:
+            pass
+        sector = int(sector)
+        return sector
+
+
+def retrieval_input_curves(split_curves):
+    curves = '0'
+    curve_list = [str(curve) for curve in range(1,len(split_curves)+1)]
+    while (curves not in curve_list and curves != 'q'):
+        curves = input('Enter how many lightcurves you wish to fit: ')
+        while (curves not in curve_list and curves != 'q'):
+            print('\nPlease enter an integer between 1 and' +\
+                  f' {len(split_curves)} or type q to quit.')
+            curves = input('Enter how many lightcurves you wish to fit: ')
+        if curves == 'q':
+            sys.exit('You chose to quit.')
+        elif (curves in curve_list):
+            pass
+            return curves
+
+
 def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
                detrending_list=[['nth order', 2]],
                dynesty_sample='rslice', fitting_mode='folded',
@@ -255,12 +289,14 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
     
     >>> firefly/WASP-43 b timestamp.gz.tar
     '''
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Target Input
     target = _retrieval_input_target(target, archive)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Filter Setup
     _TESS_filter()
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # Download MAST lightcurves
+    # Search MAST lightcurves
     lc = search_lightcurve(target, mission='TESS')
     if len(lc) == 0:
         sys.exit(f'Search result contains no data products for {target}.')
@@ -276,27 +312,17 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
             .rename(columns={'productFilename':'Product'}) 
     lc = lc[lc.t_exptime != 20].drop(['t_exptime'], axis=1)
     print(tabulate(lc, tablefmt='psql', showindex=False, headers='keys'))
-    sector = '0'
-    while (sector not in sector_list and sector != 'q'):
-        print('\nAvailable TESS Sectors are:', *sector_list)
-        sector = input('Enter which TESS Sector you would like to download: ')
-        while (sector not in sector_list and sector != 'q'):
-            print('\nPlease choose an integer from the list: \n', *sector_list,
-                  '\nor type q to quit.')
-            sector = input('Enter which TESS Sector you' +
-                               ' would like to download: ')
-        if sector == 'q':
-            sys.exit('You chose to quit.')
-        elif sector in sector_list:
-            pass
-    sector = int(sector)
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Sector Input
+    sector = retrieval_input_sector(sector_list)
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Download MAST lightcurves
     exo_folder = f'firefly/{target}/TESS Sector {str(sector)}'
     os.makedirs(exo_folder, exist_ok=True)
     lc = search_lightcurve(target, mission='TESS',
                                sector=sector)
     print(f'\nDownloading MAST Lightcurve for TESS Sector {str(sector)}.')
     lc.download_all(download_dir=exo_folder)
-
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Extract all light curves to a single csv file
     fitsfile = _fits(target, exo_folder)
@@ -317,21 +343,12 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
     split_curves = split_lightcurve_file(csvfile, t0=t0, P=P, t14=t14)
     print(f'\nA total of {str(len(split_curves))} lightcurves were created.')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Curves Input
+    curves = retrieval_input_curves(split_curves)
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Set the Data Paths
     cols = ['Path', 'Telescope', 'Filter', 'Epochs', 'Detrending']
     df = DataFrame(columns=cols)
-    curves = '0'
-    curve_list = [str(curve) for curve in range(1,len(split_curves)+1)]
-    while (curves not in curve_list and curves != 'q'):
-        curves = input('Enter how many lightcurves you wish to fit: ')
-        while (curves not in curve_list and curves != 'q'):
-            print('\nPlease enter an integer between 1 and' +\
-                  f' {len(split_curves)} or type q to quit.')
-            curves = input('Enter how many lightcurves you wish to fit: ')
-        if curves == 'q':
-            sys.exit('You chose to quit.')
-        elif (curves in curve_list):
-            pass
     print()
     for i in range(int(curves)):
         df = df.append([{'Path': f'{os.getcwd()}/{exo_folder}' +
