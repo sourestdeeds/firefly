@@ -162,9 +162,9 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False
         fitsfile = _fits(exoplanet, exo_folder, sector)
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # Split the Light curves
-        csvfile = f'{exo_folder}/{exoplanet}_Sector_{sector}.csv'
+        csvfile = f'{exo_folder}/{exoplanet} Sector {sector}.csv'
         new_base_fname = f'sector_{sector}_split_curve'
-        split_curves = split_lightcurve_file(csvfile, t0=t0, P=P, t14=t14,
+        split_curves = split_lightcurve_file(csvfile, t0=t0, P=P, # t14=t14,
                                              new_base_fname=new_base_fname)
         curves = int(curve_sample * len(split_curves))
         if curves == 0:
