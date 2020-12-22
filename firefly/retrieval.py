@@ -66,20 +66,19 @@ def _retrieval_input_target(target, archive):
 
 def retrieval_input_sector(sector_list):
     sector = '0'
-    while (sector not in sector_list and sector != 'q'):
+    while (sector not in sector_list and sector!= 'q' and sector!='all'):
         print('\nAvailable TESS Sectors are:', *sector_list)
-        sector = input('Enter which TESS Sector you would like to download: ')
-        while (sector not in sector_list and sector != 'q'):
-            print('\nPlease choose an integer from the list: \n', *sector_list,
-                  '\nor type q to quit.')
-            sector = input('Enter which TESS Sector you' +
-                               ' would like to download: ')
-        if sector == 'q':
+        sector = input('Enter which TESS Sector you would like to download' 
+                       ' or type all to download them all: ')
+    if sector == 'q':
             sys.exit('You chose to quit.')
-        elif sector in sector_list:
-            pass
-        sector = int(sector)
-        return sector
+    elif sector in sector_list:
+        sector_list = sector
+        pass
+        return sector_list
+    elif sector == 'all':
+        pass
+        return sector_list
 
 
 def retrieval_input_curves(split_curves):
@@ -292,6 +291,8 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Target Input
     target = _retrieval_input_target(target, archive)
+    exo_folder = f'firefly/{target}'
+    os.makedirs(exo_folder, exist_ok=True)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Filter Setup
     _TESS_filter()
@@ -300,49 +301,68 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
     sector_list = _MAST_query(target)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Sector Input
-    sector = retrieval_input_sector(sector_list)
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # Download MAST lightcurves
-    exo_folder = f'firefly/{target}/TESS Sector {str(sector)}'
-    os.makedirs(exo_folder, exist_ok=True)
-    lc = search_lightcurve(target, mission='TESS',
-                               sector=sector)
-    print(f'\nDownloading MAST Lightcurve for TESS Sector {str(sector)}.')
-    lc.download_all(download_dir=exo_folder)
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # Extract all light curves to a single csv file
-    fitsfile = _fits(target, exo_folder)
+    sector_list = retrieval_input_sector(sector_list)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Download Archive
     if archive == 'eu':
         host_T, host_z, host_r, host_logg, t0, P, t14, nan = _eu(target)
     elif archive == 'nasa':
         host_T, host_z, host_r, host_logg, t0, P, t14, nan = _nasa(target)
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # Split the Light curves
     cols = [['t0', t0], ['P', P], ['t14', t14]]
     df = DataFrame(cols, columns=['Parameter', 'Value'])
     print('\nSplitting the lightcurve into seperate epochs'
           ' using the following parameters.\n')
     print(tabulate(df, tablefmt='psql', showindex=False, headers='keys'))
-    csvfile = f'{exo_folder}/{target}.csv'
-    split_curves = split_lightcurve_file(csvfile, t0=t0, P=P, t14=t14)
-    print(f'\nA total of {str(len(split_curves))} lightcurves were created.')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # Curves Input
-    curves = retrieval_input_curves(split_curves)
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Iterate over all sectors
+    curves_split, curves_delete = [], []
+    for i, sector in enumerate(sector_list):
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        # MAST Download
+        lc = search_lightcurve(target, mission='TESS',
+                                   sector=sector)
+        print(f'\nDownloading MAST Lightcurve for {target} -' +
+              f' TESS Sector {str(sector)}.')
+        lc.download_all(download_dir=exo_folder)
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        # Extract all light curves to a single csv file
+        fitsfile = _fits(target, exo_folder)
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        # Split the Light curves
+        csvfile = f'{exo_folder}/{target}.csv'
+        new_base_fname = f'sector_{sector}_split_curve'
+        split_curves = split_lightcurve_file(csvfile, t0=t0, P=P, t14=t14,
+                                             new_base_fname=new_base_fname)
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        # Curves Input
+        curves = retrieval_input_curves(split_curves)
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        curves_split.append(curves)
+        curves_delete.append(len(split_curves))
+        print(f'\nA total of {len(split_curves)} lightcurves from TESS '
+              f'Sector {sector} were created.')
+        if curves == 1:
+            print(f'\nA sample of {str(curves)} lightcurve from '
+                  f'TESS Sector {sector} will be used.')
+        else:
+            print(f'\nA sample of {str(curves)} lightcurves from '
+                  f'TESS Sector {sector} will be used.')
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Set the Data Paths
+    data_path = f'{exo_folder}/data_paths.csv'
     cols = ['Path', 'Telescope', 'Filter', 'Epochs', 'Detrending']
     df = DataFrame(columns=cols)
-    print()
-    for i in range(int(curves)):
-        df = df.append([{'Path': f'{os.getcwd()}/{exo_folder}' +
-                         f'/split_curve_{str(i)}.csv'}],
-                       ignore_index=True)
-        df['Telescope'], df['Filter'], df['Detrending'] = 0, 0, 0
-        df['Epochs'] = range(0, len(df))
-    df.to_csv(r'firefly/data/data_paths.csv', index=False, header=True)
+    sector_curves = dict(zip(sector_list, curves_split))
+    for sector, curves in sector_curves.items():
+        for i in range(int(curves)):
+            df = df.append([{'Path': f'{os.getcwd()}/{exo_folder}' +
+                             f'/sector_{sector}_split_curve_{i}.csv'}],
+                           ignore_index=True)
+            df['Telescope'], df['Filter'], df['Detrending'] = 0, 0, 0
+            df['Epochs'] = range(0, len(df))
+    print(f'\nIn total, {len(df)} lightcurves will be fitted across all'
+          ' TESS Sectors.\n')
+    df.to_csv(data_path, index=False, header=True)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Paths to data, priors, and filter info:
     data = 'firefly/data/data_paths.csv'
