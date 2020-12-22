@@ -62,7 +62,7 @@ def _TESS_filter():
     df.to_csv(tess_filter_path, index=False, header=True)
 
 
-def _fits(exoplanet, exo_folder):
+def _fits(exoplanet, exo_folder, sector):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Root, Directories, Files
     files_in_dir = []
@@ -71,7 +71,7 @@ def _fits(exoplanet, exo_folder):
         for item in f:
             if '.fits' in item:
                 files_in_dir.append(os.path.join(r, item))
-    destination = f'{exo_folder}/{exoplanet}.fits'
+    destination = f'{exo_folder}/{exoplanet} Sector {sector}.fits'
     for files in files_in_dir:
         if files.endswith(".fits"):
             move(files, destination)
@@ -104,6 +104,7 @@ def _MAST_query(exoplanet):
         sys.exit(f'Search result contains no data products for {exoplanet}.')
     sector_list = lc .table .to_pandas()['sequence_number'] \
                      .drop_duplicates() .tolist()
+    sector_list = [str(sector) for sector in sector_list]
     print(f'\nQuery from MAST returned {len(sector_list)} '
           f'data products for {exoplanet}.\n')
     lc = lc .table .to_pandas()[['observation', 
@@ -158,10 +159,10 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False
         lc.download_all(download_dir=exo_folder)
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # Extract all light curves to a single csv file
-        fitsfile = _fits(exoplanet, exo_folder)
+        fitsfile = _fits(exoplanet, exo_folder, sector)
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # Split the Light curves
-        csvfile = f'{exo_folder}/{exoplanet}.csv'
+        csvfile = f'{exo_folder}/{exoplanet}_Sector_{sector}.csv'
         new_base_fname = f'sector_{sector}_split_curve'
         split_curves = split_lightcurve_file(csvfile, t0=t0, P=P, t14=t14,
                                              new_base_fname=new_base_fname)
