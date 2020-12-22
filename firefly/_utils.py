@@ -98,9 +98,10 @@ def _fits(exoplanet, exo_folder, sector):
     return fitsfile
 
 
-def _MAST_query(exoplanet):
+def _MAST_query(exoplanet, exo_folder):
     lc = search_lightcurve(exoplanet, mission='TESS')
     if len(lc) == 0:
+        rmtree(exo_folder)
         sys.exit(f'Search result contains no data products for {exoplanet}.')
     sector_list = lc .table .to_pandas()['sequence_number'] \
                      .drop_duplicates() .tolist()
@@ -132,7 +133,7 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False
     _TESS_filter()
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # MAST Query
-    sector_list = _MAST_query(exoplanet)
+    sector_list = _MAST_query(exoplanet, exo_folder)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Download Archive
     if archive == 'eu':
@@ -223,20 +224,23 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False
                   normalise=normalise, detrend=detrend)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Cleanup
-    try:
-        rmtree(f'{exo_folder}/mastDownload')
-        move(fitsfile, f'{exo_folder}.fits')
-        os.remove(f'{exo_folder}.fits')
-        os.remove(data)
-        os.remove(csvfile)
-        os.remove(priors)
-        sector_curves = dict(zip(sector_list, curves_delete))
-        for sector, curves in sector_curves.items():
-            for i in range(curves):
-                os.remove(f'{exo_folder}/sector_{sector}' +
-                          f'_split_curve_{str(i)}.csv')
-    except BaseException:
-        pass
+    # try:
+    #     rmtree(f'{exo_folder}/mastDownload')
+    #     move(fitsfile, f'{exo_folder}.fits')
+    #     os.remove(f'{exo_folder}.fits')
+    #     os.remove(data)
+    #     os.remove(csvfile)
+    #     os.remove(priors)
+    #     sector_curves = dict(zip(sector_list, curves_delete))
+    #     for sector, curves in sector_curves.items():
+    #         move(fitsfile, f'{exo_folder}.fits')
+    #         os.remove(f'{exo_folder}.fits')
+    #         os.remove(csvfile)
+    #         for i in range(curves):
+    #             os.remove(f'{exo_folder}/sector_{sector}' +
+    #                       f'_split_curve_{str(i)}.csv')
+    # except BaseException:
+    #     pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Archive and sort
     now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
@@ -293,15 +297,15 @@ def _iterable_target(exoplanet_list, archive='eu', curve_sample=1, nlive=300,
                        f'Data location: {success} \n\n'
                        'A new target has been fully retrieved across ' +
                        'all available TESS Sectors.', to=to)
-        except KeyboardInterrupt:
-            sys.exit('User terminated retrieval')
-        except TypeError:
-            trace_back = format_exc()
-            if email == True:
-                _email(f'Exception TypeError: {exoplanet}', trace_back, to=to)
-            else:
-                print(trace_back)
-        except BaseException:
+        # except KeyboardInterrupt:
+        #     sys.exit('User terminated retrieval')
+        # except TypeError:
+        #     trace_back = format_exc()
+        #     if email == True:
+        #         _email(f'Exception TypeError: {exoplanet}', trace_back, to=to)
+        #     else:
+        #         print(trace_back)
+        except Exception:
             trace_back = format_exc()
             if email == True:
                 _email(f'Exception: {exoplanet}', trace_back, to=to)
