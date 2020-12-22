@@ -44,7 +44,6 @@ def _retrieval_input_target(exoplanet, archive):
         sys.exit('You chose to quit.')
     elif (verify=='y'):
         print(f'\nChecking data products from MAST for {exoplanet}.')
-        pass
         return highest[0]
     elif (verify =='tess' or verify=='n'):
         while (verify!="y" and verify!='q'):
@@ -60,7 +59,6 @@ def _retrieval_input_target(exoplanet, archive):
             sys.exit('You chose to quit.')
         elif (verify=="y"):
             print(f'\nChecking data products from MAST for {exoplanet}.')
-            pass
             return highest[0]
 
 
@@ -78,7 +76,6 @@ def retrieval_input_sector(sector_list):
         sector_list = sector
         return sector_list
     elif sector == 'all':
-        pass
         return sector_list
 
 
@@ -94,7 +91,6 @@ def retrieval_input_curves(split_curves):
         if curves == 'q':
             sys.exit('You chose to quit.')
         elif (curves in curve_list):
-            pass
             return curves
 
 
