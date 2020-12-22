@@ -40,14 +40,14 @@ def query(target, archive='eu'):
     Data printed to console.
 
     '''
-    if archive == 'eu':
-        output = _fuzzy_search(target, archive='eu')
-        table = output[1]
-        print(tabulate(table, tablefmt='psql', headers=['Exoplanet', '% Match']))
-    elif archive == 'nasa':
-        output = _fuzzy_search(target, archive='nasa')
-        table = output[1]
-        print(tabulate(table, tablefmt='psql', headers=['Exoplanet', '% Match']))
+    # if archive == 'eu':
+    output = _fuzzy_search(target, archive='eu')
+    table = output[1]
+    print(tabulate(table, tablefmt='psql', headers=['Exoplanet', '% Match']))
+    # elif archive == 'nasa':
+    #     output = _fuzzy_search(target, archive='nasa')
+    #     table = output[1]
+    #     print(tabulate(table, tablefmt='psql', headers=['Exoplanet', '% Match']))
 
 
 def archive_query(target, archive='eu'):
