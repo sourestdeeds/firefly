@@ -324,16 +324,26 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
         with Pool(processes=processes) as pool:
             pool.map(func, exoplanet_list, chunksize=1)
     except KeyboardInterrupt:
-        exo_folder = f'firefly/{exoplanet}'
-        now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
-        make_archive(f'{exo_folder} {now} KeyboardInterrupt', format='gztar',
-                 root_dir=f'{os.getcwd()}/firefly/',
-                 base_dir=f'{exoplanet}')
-        rmtree(f'{exo_folder}')
+        try:
+            exo_folder = f'firefly/{exoplanet}'
+            now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
+            keyboard = f'firefly/KeyboardInterrupt/{exoplanet} ' +\
+                       f'{now} KeyboardInterrupt'
+            make_archive(keyboard, format='gztar',
+                     root_dir=f'{os.getcwd()}/firefly/',
+                     base_dir=f'{exoplanet}')
+            rmtree(exo_folder)
+        except:
+            pass
     except BaseException:
-        exo_folder = f'firefly/{exoplanet}'
-        now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
-        make_archive(f'{exo_folder} {now} BaseException', format='gztar',
-                 root_dir=f'{os.getcwd()}/firefly/',
-                 base_dir=f'{exoplanet}')
-        rmtree(f'{exo_folder}')
+        try:
+            exo_folder = f'firefly/{exoplanet}'
+            now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
+            exception = f'firefly/Exception/{exoplanet} ' +\
+                        f'{now} Exception'
+            make_archive(exception, format='gztar',
+                     root_dir=f'{os.getcwd()}/firefly/',
+                     base_dir=f'{exoplanet}')
+            rmtree(exo_folder)
+        except:
+            pass
