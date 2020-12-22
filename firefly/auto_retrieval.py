@@ -330,7 +330,6 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
                  root_dir=f'{os.getcwd()}/firefly/',
                  base_dir=f'{exoplanet}')
         rmtree(f'{exo_folder}')
-        sys.exit('User terminated retrieval')
     except BaseException:
         exo_folder = f'firefly/{exoplanet}'
         now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
@@ -338,4 +337,3 @@ def auto_retrieval(targets, processes=len(os.sched_getaffinity(0)) // 4,
                  root_dir=f'{os.getcwd()}/firefly/',
                  base_dir=f'{exoplanet}')
         rmtree(f'{exo_folder}')
-        sys.exit('User terminated retrieval')
