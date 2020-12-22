@@ -198,7 +198,6 @@ def _nasa(exoplanet):
     s = df.mean()
     t0, P, t14 = s.loc['pl_tranmid'], s.loc['pl_orbper'], \
         s.loc['pl_trandur'] * 60
-    print(t14)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Assign Host data to Transitfit
     logg, err_logg = calculate_logg((s.loc['st_mass'],
@@ -223,8 +222,6 @@ def _nasa(exoplanet):
             ['rp', 'uniform',
              0.5 * radius_const * s.loc['pl_radj'] / s.loc['st_rad'],
              2 * radius_const * s.loc['pl_radj'] / s.loc['st_rad'], 0]]
-    priors_csv = DataFrame(cols, columns=['Parameter', 'Distribution',
-                                          'Input_A', 'Input_B', 'Filter'])
     priors_csv = DataFrame(cols, columns=['Parameter', 'Distribution',
                                           'Input_A', 'Input_B', 'Filter'])
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
