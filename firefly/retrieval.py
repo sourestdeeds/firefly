@@ -66,15 +66,16 @@ def _retrieval_input_target(exoplanet, archive):
 
 def retrieval_input_sector(sector_list):
     sector = '0'
-    while (sector not in sector_list and sector!= 'q' and sector!='all'):
+    check = all(item in sector_list for item in sector) # False
+    while (check!=True and sector!= 'q' and sector!='all'):
         print('\nAvailable TESS Sectors are:', *sector_list)
-        sector = input('Enter which TESS Sector you would like to download' 
-                       ' or type all to download them all: ')
+        sector = input('Enter which TESS Sectors you would like to download' 
+                       ' or type all to download them all: ').split()
+        check = all(item in sector_list for item in sector)
     if sector == 'q':
             sys.exit('You chose to quit.')
-    elif sector in sector_list:
+    elif check == True:
         sector_list = sector
-        pass
         return sector_list
     elif sector == 'all':
         pass
