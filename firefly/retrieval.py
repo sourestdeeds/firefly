@@ -302,7 +302,6 @@ def retrieval(exoplanet, archive='eu', nlive=300, fit_ttv=False,
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Sector Input
     sector_list = retrieval_input_sector(sector_list)
-    # sector_list = [int(sector) for sector in sector_list]
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Download Archive
     if archive == 'eu':
@@ -394,19 +393,23 @@ def retrieval(exoplanet, archive='eu', nlive=300, fit_ttv=False,
     except KeyboardInterrupt:
         try:
             now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
-            make_archive(f'{exo_folder} {now} BaseException', format='gztar',
+            keyboard = f'firefly/KeyboardInterrupt/{exoplanet} ' +\
+                       f'{now} KeyboardInterrupt'
+            make_archive(keyboard, format='gztar',
                      root_dir=f'{os.getcwd()}/firefly/',
                      base_dir=f'{exoplanet}')
-            rmtree(f'{exo_folder}')
+            rmtree(exo_folder)
         except:
             pass
     except BaseException:
         try:
             now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
-            make_archive(f'{exo_folder} {now} BaseException', format='gztar',
+            exception = f'firefly/Exception/{exoplanet} ' +\
+                        f'{now} Exception'
+            make_archive(exception, format='gztar',
                      root_dir=f'{os.getcwd()}/firefly/',
                      base_dir=f'{exoplanet}')
-            rmtree(f'{exo_folder}')
+            rmtree(exo_folder)
         except:
             pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -435,7 +438,7 @@ def retrieval(exoplanet, archive='eu', nlive=300, fit_ttv=False,
         make_archive(f'{exo_folder} {now}', format='gztar',
                      root_dir=f'{os.getcwd()}/firefly/',
                      base_dir=f'{exoplanet}')
-        rmtree(f'{exo_folder}')
+        rmtree(exo_folder)
         success = f'{os.getcwd()}/{exo_folder} {now}.gz.tar'
         print(f'\nData location: {success}\n'
                            'A new target has been fully retrieved across ' +
