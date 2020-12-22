@@ -7,7 +7,7 @@ A target data retriever for confirmed/candidate TESS exoplanets.
 """
 
 from .query import query, tess_targets
-from ._utils import _fits, _TESS_filter
+from ._utils import _fits, _TESS_filter, _MAST_query
 from ._archive import _eu, _nasa
 from ._search import _fuzzy_search
 
@@ -297,21 +297,7 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
     _TESS_filter()
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Search MAST lightcurves
-    lc = search_lightcurve(target, mission='TESS')
-    if len(lc) == 0:
-        sys.exit(f'Search result contains no data products for {target}.')
-    sector_list = lc .table .to_pandas()['sequence_number'] \
-                     .drop_duplicates() .tolist()
-    sector_list = [str(sector) for sector in sector_list]
-    print(f'\nQuery from MAST returned {len(sector_list)} '
-          f'data products for {target}.\n')
-    lc = lc .table .to_pandas()[['observation', 
-                                 'productFilename', 'size', 't_exptime']] \
-            .rename(columns={'observation':'Observation'}) \
-            .rename(columns={'size':'Size'}) \
-            .rename(columns={'productFilename':'Product'}) 
-    lc = lc[lc.t_exptime != 20].drop(['t_exptime'], axis=1)
-    print(tabulate(lc, tablefmt='psql', showindex=False, headers='keys'))
+    sector_list = _MAST_query(target)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Sector Input
     sector = retrieval_input_sector(sector_list)
