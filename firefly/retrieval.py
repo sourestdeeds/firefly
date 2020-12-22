@@ -43,6 +43,7 @@ def _retrieval_input_target(target, archive):
     if (verify=='q'):
         sys.exit('You chose to quit.')
     elif (verify=='y'):
+        print(f'\nChecking data products from MAST for {target}.')
         pass
         return highest[0]
     elif (verify =='tess' or verify=='n'):
@@ -58,6 +59,7 @@ def _retrieval_input_target(target, archive):
         if (verify=='q'):
             sys.exit('You chose to quit.')
         elif (verify=="y"):
+            print(f'\nChecking data products from MAST for {target}.')
             pass
             return highest[0]
 
