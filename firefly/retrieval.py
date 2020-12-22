@@ -365,7 +365,7 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
     df.to_csv(data_path, index=False, header=True)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Paths to data, priors, and filter info:
-    data = 'firefly/data/data_paths.csv'
+    data = data_path
     priors = f'firefly/{target}/{target} Priors.csv'
     filters = 'firefly/data/TESS_filter_path.csv'
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -375,20 +375,36 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
     plot_folder = f'{exo_folder}/plots'
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Run the retrieval
-    run_retrieval(data, priors, filters, detrending_list=detrending_list,
-                  host_T=host_T, host_logg=host_logg, host_z=host_z,
-                  host_r=host_r, dynesty_sample=dynesty_sample,
-                  fitting_mode=fitting_mode, fit_ttv=fit_ttv,
-                  results_output_folder=results_output_folder,
-                  final_lightcurve_folder=fitted_lightcurve_folder,
-                  plot_folder=plot_folder, nlive=nlive,
-                  limb_darkening_model=limb_darkening_model, 
-                  ld_fit_method=ld_fit_method,
-                  max_batch_parameters=max_batch_parameters, 
-                  batch_overlap=batch_overlap, dlogz=dlogz, 
-                  maxiter=maxiter, maxcall=maxcall, 
-                  dynesty_bounding=dynesty_bounding, 
-                  normalise=normalise, detrend=detrend)
+    try:
+        run_retrieval(data, priors, filters, detrending_list=detrending_list,
+                      host_T=host_T, host_logg=host_logg, host_z=host_z,
+                      host_r=host_r, dynesty_sample=dynesty_sample,
+                      fitting_mode=fitting_mode, fit_ttv=fit_ttv,
+                      results_output_folder=results_output_folder,
+                      final_lightcurve_folder=fitted_lightcurve_folder,
+                      plot_folder=plot_folder, nlive=nlive,
+                      limb_darkening_model=limb_darkening_model, 
+                      ld_fit_method=ld_fit_method,
+                      max_batch_parameters=max_batch_parameters, 
+                      batch_overlap=batch_overlap, dlogz=dlogz, 
+                      maxiter=maxiter, maxcall=maxcall, 
+                      dynesty_bounding=dynesty_bounding, 
+                      normalise=normalise, detrend=detrend)
+    except KeyboardInterrupt:
+        exo_folder = f'firefly/{target}'
+        now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
+        make_archive(f'{exo_folder} {now} KeyboardInterrupt', format='gztar',
+                 root_dir=f'{os.getcwd()}/firefly/',
+                 base_dir=f'{target}')
+        rmtree(f'{exo_folder}')
+        sys.exit('User terminated retrieval')
+    except BaseException:
+        exo_folder = f'firefly/{target}'
+        now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
+        make_archive(f'{exo_folder} {now} BaseException', format='gztar',
+                 root_dir=f'{os.getcwd()}/firefly/',
+                 base_dir=f'{target}')
+        rmtree(f'{exo_folder}')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Cleanup
     try:
