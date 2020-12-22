@@ -27,39 +27,39 @@ import sys
 import os
 
 
-def _retrieval_input_target(target, archive):
+def _retrieval_input_target(exoplanet, archive):
     # Check inputs are sensible
     if not (archive == 'eu' or archive == 'nasa'):
         sys.exit('Archive data options are: \'eu\' or \'nasa\'')
     archive_data = 'EU archive'
-    highest, ratios = _fuzzy_search(target, archive=archive)
-    target = highest[0]
+    highest, ratios = _fuzzy_search(exoplanet, archive=archive)
+    exoplanet = highest[0]
     verify = ''
     while (verify!="y" and verify!="n" and verify!='q' and verify!='tess'):
-        print(f'\nTarget search chose {target} from the {archive_data}:\n')
-        query(target, archive=archive)
+        print(f'\nTarget search chose {exoplanet} from the {archive_data}:\n')
+        query(exoplanet, archive=archive)
         print('\nFor a list of TESS targets, type tess.')
         verify = input('Proceed ([y]/n)?\n')
     if (verify=='q'):
         sys.exit('You chose to quit.')
     elif (verify=='y'):
-        print(f'\nChecking data products from MAST for {target}.')
+        print(f'\nChecking data products from MAST for {exoplanet}.')
         pass
         return highest[0]
     elif (verify =='tess' or verify=='n'):
         while (verify!="y" and verify!='q'):
             tess_targets()
-            target = input('Please refine your search: ')
-            highest, ratios = _fuzzy_search(target, archive=archive)
-            target = highest[0]
+            exoplanet = input('Please refine your search: ')
+            highest, ratios = _fuzzy_search(exoplanet, archive=archive)
+            exoplanet = highest[0]
             print(f'\nTarget search chose {highest[0]} from the '
                   f'{archive_data}:\n')
-            query(target, archive=archive)
+            query(exoplanet, archive=archive)
             verify = input('Proceed ([y]/n)? or type q to quit.\n')   
         if (verify=='q'):
             sys.exit('You chose to quit.')
         elif (verify=="y"):
-            print(f'\nChecking data products from MAST for {target}.')
+            print(f'\nChecking data products from MAST for {exoplanet}.')
             pass
             return highest[0]
 
@@ -97,7 +97,7 @@ def retrieval_input_curves(split_curves):
             return curves
 
 
-def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
+def retrieval(exoplanet, archive='eu', nlive=300, fit_ttv=False,
                detrending_list=[['nth order', 2]],
                dynesty_sample='rslice', fitting_mode='folded',
                limb_darkening_model='quadratic', ld_fit_method='independent',
@@ -117,7 +117,7 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
 
         >>> from firefly import retrieval
         >>> exoplanet = 'WASP-43 b'
-        >>> retrieval(target)
+        >>> retrieval(exoplanet)
         
     Input is capable of handling:
     
@@ -129,7 +129,7 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
 
     Parameters
     ----------
-    target : 'WASP-43 b', string, 
+    exoplanet : 'WASP-43 b', string, 
         The target exoplanet.
 
     archive : string, optional
@@ -290,24 +290,25 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
     '''
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Target Input
-    target = _retrieval_input_target(target, archive)
-    exo_folder = f'firefly/{target}'
+    exoplanet = _retrieval_input_target(exoplanet, archive)
+    exo_folder = f'firefly/{exoplanet}'
     os.makedirs(exo_folder, exist_ok=True)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Filter Setup
     _TESS_filter()
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Search MAST lightcurves
-    sector_list = _MAST_query(target)
+    sector_list = _MAST_query(exoplanet)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Sector Input
     sector_list = retrieval_input_sector(sector_list)
+    # sector_list = [int(sector) for sector in sector_list]
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Download Archive
     if archive == 'eu':
-        host_T, host_z, host_r, host_logg, t0, P, t14, nan = _eu(target)
+        host_T, host_z, host_r, host_logg, t0, P, t14, nan = _eu(exoplanet)
     elif archive == 'nasa':
-        host_T, host_z, host_r, host_logg, t0, P, t14, nan = _nasa(target)
+        host_T, host_z, host_r, host_logg, t0, P, t14, nan = _nasa(exoplanet)
     cols = [['t0', t0], ['P', P], ['t14', t14]]
     df = DataFrame(cols, columns=['Parameter', 'Value'])
     print('\nSplitting the lightcurve into seperate epochs'
@@ -319,17 +320,17 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
     for i, sector in enumerate(sector_list):
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # MAST Download
-        lc = search_lightcurve(target, mission='TESS',
+        lc = search_lightcurve(exoplanet, mission='TESS',
                                    sector=sector)
-        print(f'\nDownloading MAST Lightcurve for {target} -' +
+        print(f'\nDownloading MAST Lightcurve for {exoplanet} -' +
               f' TESS Sector {str(sector)}.')
         lc.download_all(download_dir=exo_folder)
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # Extract all light curves to a single csv file
-        fitsfile = _fits(target, exo_folder)
+        fitsfile = _fits(exoplanet, exo_folder, sector)
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # Split the Light curves
-        csvfile = f'{exo_folder}/{target}.csv'
+        csvfile = f'{exo_folder}/{exoplanet}_Sector_{sector}.csv'
         new_base_fname = f'sector_{sector}_split_curve'
         split_curves = split_lightcurve_file(csvfile, t0=t0, P=P, t14=t14,
                                              new_base_fname=new_base_fname)
@@ -366,7 +367,7 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Paths to data, priors, and filter info:
     data = data_path
-    priors = f'firefly/{target}/{target} Priors.csv'
+    priors = f'{exo_folder}/{exoplanet} Priors.csv'
     filters = 'firefly/data/TESS_filter_path.csv'
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Output folders
@@ -391,19 +392,17 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
                       dynesty_bounding=dynesty_bounding, 
                       normalise=normalise, detrend=detrend)
     except KeyboardInterrupt:
-        exo_folder = f'firefly/{target}'
         now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
         make_archive(f'{exo_folder} {now} KeyboardInterrupt', format='gztar',
                  root_dir=f'{os.getcwd()}/firefly/',
-                 base_dir=f'{target}')
+                 base_dir=f'{exoplanet}')
         rmtree(f'{exo_folder}')
         sys.exit('User terminated retrieval')
     except BaseException:
-        exo_folder = f'firefly/{target}'
         now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
         make_archive(f'{exo_folder} {now} BaseException', format='gztar',
                  root_dir=f'{os.getcwd()}/firefly/',
-                 base_dir=f'{target}')
+                 base_dir=f'{exoplanet}')
         rmtree(f'{exo_folder}')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Cleanup
@@ -422,7 +421,7 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
     now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
     make_archive(f'{exo_folder} {now}', format='gztar',
                  root_dir=f'{os.getcwd()}/firefly/',
-                 base_dir=f'{target}')
+                 base_dir=f'{exoplanet}')
     rmtree(f'{exo_folder}')
     success = f'{os.getcwd()}/{exo_folder} {now}.gz.tar'
     print(f'\nData location: {success}\n'
