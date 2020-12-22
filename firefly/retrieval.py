@@ -334,14 +334,14 @@ def retrieval(exoplanet, archive='eu', nlive=300, fit_ttv=False,
         new_base_fname = f'sector_{sector}_split_curve'
         split_curves = split_lightcurve_file(csvfile, t0=t0, P=P, # t14=t14,
                                              new_base_fname=new_base_fname)
+        print(f'\nA total of {len(split_curves)} lightcurves from TESS '
+              f'Sector {sector} were created.')
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # Curves Input
         curves = retrieval_input_curves(split_curves)
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         curves_split.append(curves)
         curves_delete.append(len(split_curves))
-        print(f'\nA total of {len(split_curves)} lightcurves from TESS '
-              f'Sector {sector} were created.')
         if curves == 1:
             print(f'\nA sample of {str(curves)} lightcurve from '
                   f'TESS Sector {sector} will be used.')
