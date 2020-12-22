@@ -6,7 +6,7 @@ A target data retriever for confirmed/candidate TESS exoplanets.
 @author: Steven Charles-Mindoza
 """
 
-from .query import query
+from .query import query, tess_targets
 from ._utils import _fits, _TESS_filter
 from ._archive import _eu, _nasa
 from ._search import _fuzzy_search
@@ -31,34 +31,33 @@ def _retrieval_input_target(target, archive):
     # Check inputs are sensible
     if not (archive == 'eu' or archive == 'nasa'):
         sys.exit('Archive data options are: \'eu\' or \'nasa\'')
-    if archive == 'eu':
-        archive_data = 'EU archive'
-    elif archive == 'nasa':
-        archive_data = 'NASA archive'
+    archive_data = 'EU archive'
     highest, ratios = _fuzzy_search(target, archive=archive)
     target = highest[0]
     verify = ''
-    while (verify!="y" and verify!="n" and verify!='q'):
+    while (verify!="y" and verify!="n" and verify!='q' and verify!='tess'):
         print(f'\nTarget search chose {target} from the {archive_data}:\n')
         query(target, archive=archive)
+        print('\nFor a list of TESS targets, type tess.')
         verify = input('Proceed ([y]/n)?\n')
     if (verify=='q'):
         sys.exit('You chose to quit.')
-    elif verify =='y':
+    elif (verify=='y'):
         pass
         return highest[0]
-    elif verify == "n":
+    elif (verify =='tess' or verify=='n'):
         while (verify!="y" and verify!='q'):
+            tess_targets()
             target = input('Please refine your search: ')
             highest, ratios = _fuzzy_search(target, archive=archive)
             target = highest[0]
             print(f'\nTarget search chose {highest[0]} from the '
                   f'{archive_data}:\n')
             query(target, archive=archive)
-            verify = input('Proceed ([y]/n)? or type q to quit.\n')
+            verify = input('Proceed ([y]/n)? or type q to quit.\n')   
         if (verify=='q'):
             sys.exit('You chose to quit.')
-        elif verify == "y":
+        elif (verify=="y"):
             pass
             return highest[0]
 
@@ -313,7 +312,7 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
           ' using the following parameters.\n')
     print(tabulate(df, tablefmt='psql', showindex=False, headers='keys'))
     csvfile = f'{exo_folder}/{target}.csv'
-    split_curves = split_lightcurve_file(csvfile, t0=t0, P=P, t14=t14)
+    split_curves = split_lightcurve_file(csvfile, t0=t0, P=P)
     print(f'\nA total of {str(len(split_curves))} lightcurves were created.')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Set the Data Paths
