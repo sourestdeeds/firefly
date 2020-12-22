@@ -312,7 +312,7 @@ def retrieval(target, archive='eu', nlive=300, fit_ttv=False,
           ' using the following parameters.\n')
     print(tabulate(df, tablefmt='psql', showindex=False, headers='keys'))
     csvfile = f'{exo_folder}/{target}.csv'
-    split_curves = split_lightcurve_file(csvfile, t0=t0, P=P)
+    split_curves = split_lightcurve_file(csvfile, t0=t0, P=P, t14=t14)
     print(f'\nA total of {str(len(split_curves))} lightcurves were created.')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Set the Data Paths
