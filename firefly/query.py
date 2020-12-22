@@ -8,7 +8,7 @@ Data retrievers.
 
 
 from ._search import _fuzzy_search
-from ._archive import _eu, _nasa
+from ._archive import _eu, _download_nasa, _nasa
 
 try:
     from lightkurve import search_lightcurve
@@ -40,15 +40,34 @@ def query(target, archive='eu'):
     Data printed to console.
 
     '''
-    # if archive == 'eu':
     output = _fuzzy_search(target, archive='eu')
     table = output[1]
     print(tabulate(table, tablefmt='psql', headers=['Exoplanet', '% Match']))
-    # elif archive == 'nasa':
-    #     output = _fuzzy_search(target, archive='nasa')
-    #     table = output[1]
-    #     print(tabulate(table, tablefmt='psql', headers=['Exoplanet', '% Match']))
 
+
+def tess_targets():
+    '''
+    A list of all exoplanets discovered by TESS.
+
+    Parameters
+    ----------
+    None
+
+    Returns
+    -------
+    Data printed to console.
+
+    '''
+    _download_nasa()
+    nasa_csv = 'firefly/data/nasa.csv'
+    df = read_csv(nasa_csv, 
+                        usecols=['pl_name', 
+                                 'soltype', 
+                                 'disc_facility'])
+    TESS = 'Transiting Exoplanet Survey Satellite (TESS)'
+    df = df[df.disc_facility == TESS].drop(['disc_facility'], axis=1)
+    print(tabulate(df, tablefmt='psql', showindex=False,
+                   headers=['Exoplanet', 'Confirmed/Candidate']))
 
 def archive_query(target, archive='eu'):
     '''
@@ -104,3 +123,4 @@ def mast_query(target, archive='eu'):
             .rename(columns={'productFilename':'Product'}) 
     lc = lc[lc.t_exptime != 20].drop(['t_exptime'], axis=1)
     print(tabulate(lc, tablefmt='psql', showindex=False, headers='keys'))
+    
