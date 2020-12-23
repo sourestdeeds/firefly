@@ -7,7 +7,7 @@ A target data retriever for confirmed/candidate TESS exoplanets.
 """
 
 from .query import query, tess_targets
-from ._utils import _fits, _TESS_filter, _MAST_query
+from ._utils import _fits, _TESS_filter, _MAST_query, _email
 from ._archive import _eu, _nasa
 from ._search import _fuzzy_search
 
@@ -19,6 +19,7 @@ except:
         from lightkurve import search_lightcurvefile as search_lightcurve
     except:
         raise
+from traceback import format_exc
 from tabulate import tabulate
 from datetime import datetime
 from pandas import DataFrame
@@ -33,28 +34,30 @@ def _retrieval_input_target(exoplanet, archive):
     if not (archive == 'eu' or archive == 'nasa'):
         sys.exit('Archive data options are: \'eu\' or \'nasa\'')
     archive_data = 'EU archive'
-    highest, ratios = _fuzzy_search(exoplanet, archive=archive)
+    highest, ratios = _fuzzy_search(exoplanet, archive='nasa')
     exoplanet = highest[0]
     verify = ''
-    while (verify!="y" and verify!="n" and verify!='q' and verify!='tess'):
-        print(f'\nTarget search chose {exoplanet} from the {archive_data}:\n')
-        query(exoplanet, archive=archive)
-        print('\nFor a list of TESS targets, type tess.')
+    while (verify!="y" and verify!="n" and verify!='q'):
+        print(f'\nTarget search chose {exoplanet}.')
+        # query(exoplanet, archive=archive)
+        # print('\nFor a list of TESS targets, type tess.')
         verify = input('Proceed ([y]/n)?\n')
     if (verify=='q'):
         sys.exit('You chose to quit.')
     elif (verify=='y'):
         print(f'\nChecking data products from MAST for {exoplanet}.')
         return highest[0]
-    elif (verify =='tess' or verify=='n'):
-        while (verify!="y" and verify!='q'):
+    elif (verify=='n'):
+        while (verify!="y" and verify!='q' and exoplanet!='q'):
             tess_targets()
-            exoplanet = input('Please refine your search: ')
+            exoplanet = input('Please refine your search or type q to quit: ')
+        if (exoplanet=='q'):
+            sys.exit('You chose to quit.')
             highest, ratios = _fuzzy_search(exoplanet, archive=archive)
             exoplanet = highest[0]
             print(f'\nTarget search chose {highest[0]} from the '
                   f'{archive_data}:\n')
-            query(exoplanet, archive=archive)
+            # query(exoplanet, archive=archive)
             verify = input('Proceed ([y]/n)? or type q to quit.\n')   
         if (verify=='q'):
             sys.exit('You chose to quit.')
@@ -93,13 +96,14 @@ def retrieval_input_curve_sample(split_curve_in_dir):
         return sample
 
 
-def retrieval(exoplanet, archive='eu', nlive=300, fit_ttv=False,
-               detrending_list=[['nth order', 2]],
-               dynesty_sample='rslice', fitting_mode='folded',
-               limb_darkening_model='quadratic', ld_fit_method='independent',
-               max_batch_parameters=25, batch_overlap=2, dlogz=None, 
-               maxiter=None, maxcall=None, dynesty_bounding='multi', 
-               normalise=True, detrend=True):
+def retrieval(exoplanet, archive='eu', email=False, 
+              to=['transitfit.server@gmail.com'], nlive=300, fit_ttv=False,
+              detrending_list=[['nth order', 2]],
+              dynesty_sample='rslice', fitting_mode='folded',
+              limb_darkening_model='quadratic', ld_fit_method='independent',
+              max_batch_parameters=25, batch_overlap=2, dlogz=None, 
+              maxiter=None, maxcall=None, dynesty_bounding='multi', 
+              normalise=True, detrend=True):
     '''
     A target data retriever for confirmed/candidate TESS exoplanets.
     Generates the priors and host star variables for a chosen target.
@@ -137,7 +141,14 @@ def retrieval(exoplanet, archive='eu', nlive=300, fit_ttv=False,
 
         NASA : Data downloaded and stored in 'data/nasa.csv'.
         https://exoplanetarchive.ipac.caltech.edu/index.html
-
+        
+    email : bool, optional
+        If True will send status emails. The default is False.
+    to : str, optional
+        The email address to send status updates to.
+        The default is:
+            
+        >>> to=['transitfit.server@gmail.com']
     nlive : int, optional
         The number of live points to use in the nested sampling retrieval.
         Default is 300.
@@ -320,7 +331,7 @@ def retrieval(exoplanet, archive='eu', nlive=300, fit_ttv=False,
     for i, sector in enumerate(sector_list):
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # MAST Download
-        lc = search_lightcurve(exoplanet, mission='TESS',
+        lc = search_lightcurve(exoplanet, mission='TESS', radius=750,
                                    sector=sector)
         print(f'\nDownloading MAST Lightcurve for {exoplanet} -' +
               f' TESS Sector {str(sector)}.')
@@ -404,6 +415,9 @@ def retrieval(exoplanet, archive='eu', nlive=300, fit_ttv=False,
                      root_dir=f'{os.getcwd()}/firefly/',
                      base_dir=f'{exoplanet}')
             rmtree(exo_folder)
+            trace_back = format_exc()
+            if email == True:
+                _email(f'Exception: {exoplanet}', trace_back, to=to)
         except:
             pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -424,5 +438,10 @@ def retrieval(exoplanet, archive='eu', nlive=300, fit_ttv=False,
         print(f'\nData location: {success}\n'
                            'A new target has been fully retrieved across ' +
                            'all available TESS Sectors.')
+        if email == True:
+            _email(f'Success: {exoplanet}',
+                           f'Data location: {success} \n\n'
+                           'A new target has been fully retrieved across ' +
+                           'all available TESS Sectors.', to=to)
     except:
         pass
