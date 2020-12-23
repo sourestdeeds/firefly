@@ -256,42 +256,14 @@ def _nasa(exoplanet):
     return host_T, host_z, host_r, host_logg, t0, P, t14, nan
 
 
-def _check_nan(exoplanet, archive='eu', printing=False):
-    '''
-    Checks if the priors generated have values for each entry.
-
-    Parameters
-    ----------
-    exoplanet : str
-        The chosen target.
-    archive : str, optional
-        The exoplanet archive to pull data from. Options are:
-        
-        - 'eu'
-        - 'nasa'
-        The default is 'eu'.
-
-    Returns
-    -------
-    None.
-
-    '''
+def _check_nan(exoplanet, archive='eu'):
     temp = f'firefly/{exoplanet}'
     os.makedirs(temp, exist_ok=True)
-    if archive == 'eu':
-        if printing == False:
-            with suppress_print():
-                nan = _eu(exoplanet)
-                nan = nan[7]
-        elif printing == True:
+    with suppress_print():
+        if archive == 'eu':
             nan = _eu(exoplanet)
             nan = nan[7]
-    elif archive == 'nasa':
-        if printing == False:
-            with suppress_print():
-                nan = _nasa(exoplanet)
-                nan = nan[7]
-        elif printing == True:
+        elif archive == 'nasa':
             nan = _nasa(exoplanet)
             nan = nan[7]
     rmtree(temp)
