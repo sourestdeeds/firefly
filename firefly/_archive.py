@@ -256,14 +256,23 @@ def _nasa(exoplanet):
     return host_T, host_z, host_r, host_logg, t0, P, t14, nan
 
 
-def _check_nan(exoplanet, archive='eu'):
+def _check_nan(exoplanet, archive='eu', printing=False):
     temp = f'firefly/{exoplanet}'
     os.makedirs(temp, exist_ok=True)
-    with suppress_print():
-        if archive == 'eu':
+    if archive == 'eu':
+        if printing == False:
+            with suppress_print():
+                nan = _eu(exoplanet)
+                nan = nan[7]
+        elif printing == True:
             nan = _eu(exoplanet)
             nan = nan[7]
-        elif archive == 'nasa':
+    elif archive == 'nasa':
+        if printing == False:
+            with suppress_print():
+                nan = _nasa(exoplanet)
+                nan = nan[7]
+        elif printing == True:
             nan = _nasa(exoplanet)
             nan = nan[7]
     rmtree(temp)
