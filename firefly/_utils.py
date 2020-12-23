@@ -107,7 +107,7 @@ def _fits(exoplanet, exo_folder):
 
 
 def _MAST_query(exoplanet, exo_folder):
-    lc = search_lightcurve(exoplanet, mission='TESS')
+    lc = search_lightcurve(exoplanet, mission='TESS', radius=750)
     if len(lc) == 0:
         rmtree(exo_folder)
         sys.exit(f'Search result contains no data products for {exoplanet}.')
@@ -160,7 +160,7 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False
     for i, sector in enumerate(sector_list):
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # MAST Download
-        lc = search_lightcurve(exoplanet, mission='TESS',
+        lc = search_lightcurve(exoplanet, mission='TESS', radius=750,
                                    sector=sector)
         print(f'\nDownloading MAST Lightcurve for {exoplanet} -' +
               f' TESS Sector {str(sector)}.')
@@ -181,7 +181,8 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False
                 split_curve_in_dir.append(os.path.join(r, item))
     print(f'\nA total of {len(split_curve_in_dir)} lightcurves were generated.')
     # Sort the files into ascending order
-    curves = int(curve_sample * len(split_curve_in_dir))
+    curves = round(curve_sample * len(split_curve_in_dir))
+    
     split_curve_in_dir = random.sample(split_curve_in_dir, k=int(curves))
     split_curve_in_dir.sort(key=lambda f: int(''.join(filter(str.isdigit, f))))
          
