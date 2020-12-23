@@ -6,7 +6,7 @@ The backend for auto_retrieval.
 @author: Steven Charles-Mindoza
 """
 
-from ._archive import _eu, _nasa, suppress_print
+from ._archive import _eu, _nasa
 
 from transitfit import split_lightcurve_file, run_retrieval
 try:
@@ -16,14 +16,13 @@ except:
         from lightkurve import search_lightcurvefile as search_lightcurve
     except:
         raise
-from traceback import format_exc
 from datetime import datetime
 from smtplib import SMTP_SSL
 from tabulate import tabulate
 from astropy.io import fits
 from csv import DictWriter
 from pandas import DataFrame
-from shutil import rmtree, move, make_archive
+from shutil import rmtree, make_archive
 import sys
 import os
 import random
@@ -126,7 +125,8 @@ def _MAST_query(exoplanet, exo_folder):
     return sector_list
     
 
-def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False,
+def _retrieval(exoplanet, archive='eu', curve_sample=1, email=False, 
+               to=['transitfit.server@gmail.com'], nlive=300, fit_ttv=False,
                detrending_list=[['nth order', 2]],
                dynesty_sample='rslice', fitting_mode='folded',
                limb_darkening_model='quadratic', ld_fit_method='independent',
@@ -237,57 +237,3 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False
     rmtree(f'{exo_folder}')
     return f'{os.getcwd()}/{exo_folder} {now}.gz.tar'
 
-
-def _iterable_target(exoplanet_list, archive='eu', curve_sample=1, nlive=300,
-                     detrending_list=[['nth order', 2]],
-                     dynesty_sample='rslice', fitting_mode='folded', fit_ttv=False,
-                     limb_darkening_model='quadratic', ld_fit_method='independent',
-                     max_batch_parameters=25, batch_overlap=2, dlogz=None, 
-                     maxiter=None, maxcall=None, dynesty_bounding='multi', 
-                     normalise=True, detrend=True, email=False, to=['transitfit.server@gmail.com'],
-                     printing=False):
-    for i, exoplanet in enumerate(exoplanet_list):
-        try:
-            # Printing suppressed within scope
-            if printing == False:
-                with suppress_print():
-                    success = _retrieval(exoplanet, archive=archive, nlive=nlive,
-                                         detrending_list=detrending_list,
-                                         dynesty_sample=dynesty_sample,
-                                         fitting_mode=fitting_mode, fit_ttv=fit_ttv,
-                                         limb_darkening_model=limb_darkening_model, 
-                                         ld_fit_method=ld_fit_method,
-                                         max_batch_parameters=max_batch_parameters, 
-                                         batch_overlap=batch_overlap, dlogz=dlogz, 
-                                         maxiter=maxiter, maxcall=maxcall, 
-                                         dynesty_bounding=dynesty_bounding, 
-                                         normalise=normalise, detrend=detrend,
-                                         curve_sample=curve_sample)
-            elif printing == True:
-                success = _retrieval(exoplanet, archive=archive, nlive=nlive,
-                                     detrending_list=detrending_list,
-                                     dynesty_sample=dynesty_sample,
-                                     fitting_mode=fitting_mode, fit_ttv=fit_ttv,
-                                     limb_darkening_model=limb_darkening_model, 
-                                     ld_fit_method=ld_fit_method,
-                                     max_batch_parameters=max_batch_parameters, 
-                                     batch_overlap=batch_overlap, dlogz=dlogz, 
-                                     maxiter=maxiter, maxcall=maxcall, 
-                                     dynesty_bounding=dynesty_bounding, 
-                                     normalise=normalise, detrend=detrend,
-                                     curve_sample=curve_sample)
-                print(f'\nData location: {success}\n'
-                       'A new target has been fully retrieved across ' +
-                       'all available TESS Sectors.')
-            if email == True:
-                _email(f'Success: {exoplanet}',
-                       f'Data location: {success} \n\n'
-                       'A new target has been fully retrieved across ' +
-                       'all available TESS Sectors.', to=to)
-        except Exception:
-            trace_back = format_exc()
-            if email == True:
-                _email(f'Exception: {exoplanet}', trace_back, to=to)
-            else:
-                print(trace_back)
-            pass
