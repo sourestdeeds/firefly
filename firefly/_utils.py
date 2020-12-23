@@ -95,7 +95,7 @@ def _fits(exoplanet, exo_folder):
             writer = DictWriter(f, columns)
             writer.writeheader()
             writer.writerows(write_dict)
-        os.remove(fitsfile)
+        # os.remove(fitsfile)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Path to downloaded csv   
     csv_in_dir = []
@@ -170,7 +170,7 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False
     csv_in_dir = _fits(exoplanet, exo_folder)
     for i, csvfile in enumerate(csv_in_dir):
         split_lightcurve_file(csvfile, t0=t0, P=P) #, t14=t14)
-        os.remove(csvfile)
+        # os.remove(csvfile)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Set the Data Paths
     split_curve_in_dir = []
@@ -223,10 +223,10 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False
                   normalise=normalise, detrend=detrend)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Cleanup
-    try:
-        rmtree(f'{exo_folder}/mastDownload')
-    except BaseException:
-        pass
+    # try:
+    #     rmtree(f'{exo_folder}/mastDownload')
+    # except BaseException:
+    #     pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Archive and sort
     now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
