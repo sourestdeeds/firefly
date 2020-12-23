@@ -6,10 +6,10 @@ A target data retriever for confirmed/candidate TESS exoplanets.
 @author: Steven Charles-Mindoza
 """
 
-from .query import query, tess_targets
 from ._utils import _fits, _TESS_filter, _MAST_query, _email
 from ._archive import _eu, _nasa
 from ._search import _fuzzy_search
+from .query import tess_targets
 
 from transitfit import split_lightcurve_file, run_retrieval
 try:
@@ -23,7 +23,7 @@ from traceback import format_exc
 from tabulate import tabulate
 from datetime import datetime
 from pandas import DataFrame
-from shutil import rmtree, move, make_archive
+from shutil import rmtree, make_archive
 import sys
 import os
 import random
