@@ -66,14 +66,14 @@ def _retrieval_input_target(exoplanet, archive):
 def retrieval_input_sector(sector_list):
     sector = '0'
     check = all(i in sector_list for i in sector) # False
-    while (check!=True and sector!='q' and sector!='all'):
+    while (check!=True and sector!='q' and sector!='a'):
         print('\nAvailable TESS Sectors are:', *sector_list)
         sector = input('Enter which TESS Sectors you would like to download' 
-                       ' or type all to download them all: ').split()
-        check = all(item in sector_list for item in sector)
+                       ' or type a to download them all: ')
+        check = all(item in sector_list for item in sector.split())
     if sector == 'q':
             sys.exit('You chose to quit.')
-    elif sector == 'all':
+    elif sector == 'a':
         return sector_list
     elif check == True:
         sector_list = sector
@@ -330,7 +330,7 @@ def retrieval(exoplanet, archive='eu', nlive=300, fit_ttv=False,
     csv_in_dir = _fits(exoplanet, exo_folder)
     for i, csvfile in enumerate(csv_in_dir):
         split_lightcurve_file(csvfile, t0=t0, P=P) #, t14=t14)
-        os.remove(csvfile)
+        # os.remove(csvfile)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Set the Data Paths
     split_curve_in_dir = []
@@ -408,10 +408,10 @@ def retrieval(exoplanet, archive='eu', nlive=300, fit_ttv=False,
             pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Cleanup
-    try:
-        rmtree(f'{exo_folder}/mastDownload')
-    except BaseException:
-        pass
+    # try:
+    #     rmtree(f'{exo_folder}/mastDownload')
+    # except BaseException:
+    #     pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Archive and sort
     try:
