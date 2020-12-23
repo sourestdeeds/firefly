@@ -6,7 +6,7 @@ Automated version of retrieval.
 @author: Steven Charles-Mindoza
 """
 
-from ._utils import _email, _retrieval, suppress_print
+from ._utils import _email, _retrieval
 from ._archive import _check_nan
 from ._search import _fuzzy_search
 
@@ -28,8 +28,7 @@ def _auto_input_check(targets, archive, curve_sample):
         highest, ratios = _fuzzy_search(exoplanet, archive=archive)
         exoplanet = highest[0]
         print(f'Target search chose {highest[0]}.')
-        with suppress_print():  
-            nan = _check_nan(exoplanet, archive=archive)
+        nan = _check_nan(exoplanet, archive=archive)
         if nan == True:
             _check_nan(exoplanet, archive=archive, printing=True)
             verify = ''
