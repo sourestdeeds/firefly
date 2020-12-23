@@ -331,7 +331,7 @@ def retrieval(exoplanet, archive='eu', email=False,
     for i, sector in enumerate(sector_list):
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # MAST Download
-        lc = search_lightcurve(exoplanet, mission='TESS', radius=750,
+        lc = search_lightcurve(exoplanet, mission='TESS', #radius=750,
                                    sector=sector)
         print(f'\nDownloading MAST Lightcurve for {exoplanet} -' +
               f' TESS Sector {str(sector)}.')
