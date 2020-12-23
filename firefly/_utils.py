@@ -26,6 +26,7 @@ from pandas import DataFrame
 from shutil import rmtree, move, make_archive
 import sys
 import os
+import random
 
 
 
@@ -62,40 +63,47 @@ def _TESS_filter():
     df.to_csv(tess_filter_path, index=False, header=True)
 
 
-def _fits(exoplanet, exo_folder, sector):
+def _fits(exoplanet, exo_folder):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # Root, Directories, Files
-    files_in_dir = []
+    # Path to downloaded fits
+    fits_in_dir = []
     source = f'{exo_folder}/mastDownload/TESS/'
+    # Delete the fast_lc files
     for r, d, f in os.walk(source):
         for item in f:
-            if '.fits' in item:
-                files_in_dir.append(os.path.join(r, item))
-    destination = f'{exo_folder}/{exoplanet} Sector {sector}.fits'
-    for files in files_in_dir:
-        if files.endswith(".fits"):
-            move(files, destination)
+            if 'fast-lc.fits' in item:
+                rmtree(r)
+            elif '_lc.fits' in item:
+                fits_in_dir.append(os.path.join(r, item))
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Extract Time series
-    fitsfile = destination
-    with fits.open(fitsfile) as TESS_fits:
-        time = TESS_fits[1].data['TIME'] + 2457000
-        time += TESS_fits[1].data['TIMECORR']
-        flux = TESS_fits[1].data['PDCSAP_FLUX']
-        flux_err = TESS_fits[1].data['PDCSAP_FLUX_ERR']
+    for i, fitsfile in enumerate(fits_in_dir):
+        with fits.open(fitsfile) as TESS_fits:
+            time = TESS_fits[1].data['TIME'] + 2457000
+            time += TESS_fits[1].data['TIMECORR']
+            flux = TESS_fits[1].data['PDCSAP_FLUX']
+            flux_err = TESS_fits[1].data['PDCSAP_FLUX_ERR']
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Extract all light curves to a single csv file
-    write_dict = []
-    for i in range(len(time)):
-        write_dict.append({'Time': time[i], 'Flux': flux[i],
-                           'Flux err': flux_err[i]})
-    csv_name = os.path.splitext(fitsfile)[0] + '.csv'
-    with open(csv_name, 'w') as f:
-        columns = ['Time', 'Flux', 'Flux err']
-        writer = DictWriter(f, columns)
-        writer.writeheader()
-        writer.writerows(write_dict)
-    return fitsfile
+        write_dict = []
+        for i in range(len(time)):
+            write_dict.append({'Time': time[i], 'Flux': flux[i],
+                               'Flux err': flux_err[i]})
+        csv_name = os.path.splitext(fitsfile)[0] + '.csv'
+        with open(csv_name, 'w') as f:
+            columns = ['Time', 'Flux', 'Flux err']
+            writer = DictWriter(f, columns)
+            writer.writeheader()
+            writer.writerows(write_dict)
+        os.remove(fitsfile)
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Path to downloaded csv   
+    csv_in_dir = []
+    for r, d, f in os.walk(source):
+        for item in f:
+            if '.csv' in item:
+                csv_in_dir.append(os.path.join(r, item))
+    return csv_in_dir
 
 
 def _MAST_query(exoplanet, exo_folder):
@@ -108,10 +116,10 @@ def _MAST_query(exoplanet, exo_folder):
     sector_list = [str(sector) for sector in sector_list]
     print(f'\nQuery from MAST returned {len(sector_list)} '
           f'data products for {exoplanet}.\n')
-    lc = lc .table .to_pandas()[['observation', 
-                                 'productFilename', 'size', 't_exptime']] \
+    lc = lc .table .to_pandas()[['target_name', 'observation', 
+                                 'productFilename', 't_exptime']] \
+            .rename(columns={'target_name':'Target'}) \
             .rename(columns={'observation':'Observation'}) \
-            .rename(columns={'size':'Size'}) \
             .rename(columns={'productFilename':'Product'}) 
     lc = lc[lc.t_exptime != 20].drop(['t_exptime'], axis=1)
     print(tabulate(lc, tablefmt='psql', showindex=False, headers='keys'))
@@ -149,7 +157,6 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False
     print(tabulate(df, tablefmt='psql', showindex=False, headers='keys'))
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Iterate over all sectors
-    curves_split, curves_delete = [], []
     for i, sector in enumerate(sector_list):
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # MAST Download
@@ -158,42 +165,34 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False
         print(f'\nDownloading MAST Lightcurve for {exoplanet} -' +
               f' TESS Sector {str(sector)}.')
         lc.download_all(download_dir=exo_folder)
-        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-        # Extract all light curves to a single csv file
-        fitsfile = _fits(exoplanet, exo_folder, sector)
-        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-        # Split the Light curves
-        csvfile = f'{exo_folder}/{exoplanet} Sector {sector}.csv'
-        new_base_fname = f'sector_{sector}_split_curve'
-        split_curves = split_lightcurve_file(csvfile, t0=t0, P=P, # t14=t14,
-                                             new_base_fname=new_base_fname)
-        curves = int(curve_sample * len(split_curves))
-        if curves == 0:
-            curves = 1
-        curves_split.append(curves)
-        curves_delete.append(len(split_curves))
-        print(f'\nA total of {len(split_curves)} lightcurves from TESS '
-              f'Sector {sector} were created.')
-        if curves == 1:
-            print(f'\nA sample of {str(curves)} lightcurve from '
-                  f'TESS Sector {sector} will be used.')
-        else:
-            print(f'\nA sample of {str(curves)} lightcurves from '
-                  f'TESS Sector {sector} will be used.')
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Split the Light curves
+    csv_in_dir = _fits(exoplanet, exo_folder)
+    for i, csvfile in enumerate(csv_in_dir):
+        split_lightcurve_file(csvfile, t0=t0, P=P) #, t14=t14)
+        os.remove(csvfile)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Set the Data Paths
+    split_curve_in_dir = []
+    source = f'{exo_folder}/mastDownload/TESS/'
+    for r, d, f in os.walk(source):
+        for item in f:
+            if '.csv' in item:
+                split_curve_in_dir.append(os.path.join(r, item))
+    print(f'\nA total of {len(split_curve_in_dir)} lightcurves were generated.')
+    # Sort the files into ascending order
+    curves = int(curve_sample * len(split_curve_in_dir))
+    split_curve_in_dir = random.sample(split_curve_in_dir, k=int(curves))
+    split_curve_in_dir.sort(key=lambda f: int(''.join(filter(str.isdigit, f))))
+         
     data_path = f'{exo_folder}/data_paths.csv'
     cols = ['Path', 'Telescope', 'Filter', 'Epochs', 'Detrending']
     df = DataFrame(columns=cols)
-    sector_curves = dict(zip(sector_list, curves_split))
-    for sector, curves in sector_curves.items():
-        for i in range(curves):
-            df = df.append([{'Path': f'{os.getcwd()}/{exo_folder}' +
-                             f'/sector_{sector}_split_curve_{i}.csv'}],
-                           ignore_index=True)
-            df['Telescope'], df['Filter'], df['Detrending'] = 0, 0, 0
-            df['Epochs'] = range(0, len(df))
-    print(f'\nIn total, {len(df)} lightcurves will be fitted across all'
+    for i, split_curve in enumerate(split_curve_in_dir):
+        df = df.append([{'Path': split_curve}], ignore_index=True)
+        df['Telescope'], df['Filter'], df['Detrending'] = 0, 0, 0
+        df['Epochs'] = range(0, len(df))
+    print(f'\nA random sample of {len(df)} lightcurves will be fitted across all'
           ' TESS Sectors.\n')
     df.to_csv(data_path, index=False, header=True)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -224,23 +223,10 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False
                   normalise=normalise, detrend=detrend)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Cleanup
-    # try:
-    #     rmtree(f'{exo_folder}/mastDownload')
-    #     move(fitsfile, f'{exo_folder}.fits')
-    #     os.remove(f'{exo_folder}.fits')
-    #     os.remove(data)
-    #     os.remove(csvfile)
-    #     os.remove(priors)
-    #     sector_curves = dict(zip(sector_list, curves_delete))
-    #     for sector, curves in sector_curves.items():
-    #         move(fitsfile, f'{exo_folder}.fits')
-    #         os.remove(f'{exo_folder}.fits')
-    #         os.remove(csvfile)
-    #         for i in range(curves):
-    #             os.remove(f'{exo_folder}/sector_{sector}' +
-    #                       f'_split_curve_{str(i)}.csv')
-    # except BaseException:
-    #     pass
+    try:
+        rmtree(f'{exo_folder}/mastDownload')
+    except BaseException:
+        pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Archive and sort
     now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
@@ -297,14 +283,6 @@ def _iterable_target(exoplanet_list, archive='eu', curve_sample=1, nlive=300,
                        f'Data location: {success} \n\n'
                        'A new target has been fully retrieved across ' +
                        'all available TESS Sectors.', to=to)
-        # except KeyboardInterrupt:
-        #     sys.exit('User terminated retrieval')
-        # except TypeError:
-        #     trace_back = format_exc()
-        #     if email == True:
-        #         _email(f'Exception TypeError: {exoplanet}', trace_back, to=to)
-        #     else:
-        #         print(trace_back)
         except Exception:
             trace_back = format_exc()
             if email == True:
