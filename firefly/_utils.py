@@ -182,7 +182,8 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, email=False,
     print(f'\nA total of {len(split_curve_in_dir)} lightcurves were generated.')
     # Sort the files into ascending order
     curves = round(curve_sample * len(split_curve_in_dir))
-    
+    if curves == 0:
+        curves = 1
     split_curve_in_dir = random.sample(split_curve_in_dir, k=int(curves))
     split_curve_in_dir.sort(key=lambda f: int(''.join(filter(str.isdigit, f))))
          
