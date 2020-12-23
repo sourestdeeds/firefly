@@ -25,6 +25,7 @@ from pandas import DataFrame
 from shutil import rmtree, move, make_archive
 import sys
 import os
+import random
 
 
 def _retrieval_input_target(exoplanet, archive):
@@ -64,34 +65,32 @@ def _retrieval_input_target(exoplanet, archive):
 
 def retrieval_input_sector(sector_list):
     sector = '0'
-    check = all(item in sector_list for item in sector) # False
-    while (check!=True and sector!= 'q' and sector!='all'):
+    check = all(i in sector_list for i in sector) # False
+    while (check!=True and sector!='q' and sector!='all'):
         print('\nAvailable TESS Sectors are:', *sector_list)
         sector = input('Enter which TESS Sectors you would like to download' 
                        ' or type all to download them all: ').split()
         check = all(item in sector_list for item in sector)
     if sector == 'q':
             sys.exit('You chose to quit.')
+    elif sector == 'all':
+        return sector_list
     elif check == True:
         sector_list = sector
         return sector_list
-    elif sector == 'all':
-        return sector_list
 
 
-def retrieval_input_curves(split_curves):
-    curves = '0'
-    curve_list = [str(curve) for curve in range(1,len(split_curves)+1)]
-    while (curves not in curve_list and curves != 'q'):
-        curves = input('Enter how many lightcurves you wish to fit: ')
-        while (curves not in curve_list and curves != 'q'):
-            print('\nPlease enter an integer between 1 and' +\
-                  f' {len(split_curves)} or type q to quit.')
-            curves = input('Enter how many lightcurves you wish to fit: ')
-        if curves == 'q':
-            sys.exit('You chose to quit.')
-        elif (curves in curve_list):
-            return curves
+def retrieval_input_curve_sample(split_curve_in_dir):
+    sample = '0'
+    sample_range = range(1, len(split_curve_in_dir)+1)
+    sample_range = [str(sample) for sample in sample_range]
+    while (sample not in sample_range and sample != 'q'):
+        print(f'\nUp to {len(split_curve_in_dir)} epochs are available.')
+        sample = input('Enter a random sample of lightcurves you wish to fit: ')
+    if sample == 'q':
+        sys.exit('You chose to quit.')
+    elif sample in sample_range:
+        return sample
 
 
 def retrieval(exoplanet, archive='eu', nlive=300, fit_ttv=False,
@@ -285,10 +284,16 @@ def retrieval(exoplanet, archive='eu', nlive=300, fit_ttv=False,
     
     >>> firefly/WASP-43 b timestamp.gz.tar
     '''
+    if not (archive == 'eu' or archive == 'nasa'):
+        sys.exit('Archive data options for dtype are: \'eu\' or \'nasa\'')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Target Input
     exoplanet = _retrieval_input_target(exoplanet, archive)
     exo_folder = f'firefly/{exoplanet}'
+    try:
+        rmtree(exo_folder)
+    except:
+        pass
     os.makedirs(exo_folder, exist_ok=True)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Filter Setup
@@ -312,7 +317,6 @@ def retrieval(exoplanet, archive='eu', nlive=300, fit_ttv=False,
     print(tabulate(df, tablefmt='psql', showindex=False, headers='keys'))
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Iterate over all sectors
-    curves_split, curves_delete = [], []
     for i, sector in enumerate(sector_list):
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # MAST Download
@@ -321,42 +325,35 @@ def retrieval(exoplanet, archive='eu', nlive=300, fit_ttv=False,
         print(f'\nDownloading MAST Lightcurve for {exoplanet} -' +
               f' TESS Sector {str(sector)}.')
         lc.download_all(download_dir=exo_folder)
-        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-        # Extract all light curves to a single csv file
-        fitsfile = _fits(exoplanet, exo_folder, sector)
-        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-        # Split the Light curves
-        csvfile = f'{exo_folder}/{exoplanet} Sector {sector}.csv'
-        new_base_fname = f'sector_{sector}_split_curve'
-        split_curves = split_lightcurve_file(csvfile, t0=t0, P=P, # t14=t14,
-                                             new_base_fname=new_base_fname)
-        print(f'\nA total of {len(split_curves)} lightcurves from TESS '
-              f'Sector {sector} were created.')
-        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-        # Curves Input
-        curves = retrieval_input_curves(split_curves)
-        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-        curves_split.append(curves)
-        curves_delete.append(len(split_curves))
-        if curves == 1:
-            print(f'\nA sample of {str(curves)} lightcurve from '
-                  f'TESS Sector {sector} will be used.')
-        else:
-            print(f'\nA sample of {str(curves)} lightcurves from '
-                  f'TESS Sector {sector} will be used.')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Split the Light curves
+    csv_in_dir = _fits(exoplanet, exo_folder)
+    for i, csvfile in enumerate(csv_in_dir):
+        split_lightcurve_file(csvfile, t0=t0, P=P) #, t14=t14)
+        os.remove(csvfile)
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Set the Data Paths
+    split_curve_in_dir = []
+    source = f'{exo_folder}/mastDownload/TESS/'
+    for r, d, f in os.walk(source):
+        for item in f:
+            if '.csv' in item:
+                split_curve_in_dir.append(os.path.join(r, item))
+    
+    # curves = int(curve_sample * len(split_curves))
+    curve_sample = retrieval_input_curve_sample(split_curve_in_dir)
+    split_curve_in_dir = random.sample(split_curve_in_dir, k=int(curve_sample))
+
+    # Sort the files into ascending order
+    split_curve_in_dir.sort(key=lambda f: int(''.join(filter(str.isdigit, f))))
+    
     data_path = f'{exo_folder}/data_paths.csv'
     cols = ['Path', 'Telescope', 'Filter', 'Epochs', 'Detrending']
     df = DataFrame(columns=cols)
-    sector_curves = dict(zip(sector_list, curves_split))
-    for sector, curves in sector_curves.items():
-        for i in range(int(curves)):
-            df = df.append([{'Path': f'{os.getcwd()}/{exo_folder}' +
-                             f'/sector_{sector}_split_curve_{i}.csv'}],
-                           ignore_index=True)
-            df['Telescope'], df['Filter'], df['Detrending'] = 0, 0, 0
-            df['Epochs'] = range(0, len(df))
+    for i, split_curve in enumerate(split_curve_in_dir):
+        df = df.append([{'Path': split_curve}], ignore_index=True)
+        df['Telescope'], df['Filter'], df['Detrending'] = 0, 0, 0
+        df['Epochs'] = range(0, len(df))
     print(f'\nIn total, {len(df)} lightcurves will be fitted across all'
           ' TESS Sectors.\n')
     df.to_csv(data_path, index=False, header=True)
@@ -411,23 +408,10 @@ def retrieval(exoplanet, archive='eu', nlive=300, fit_ttv=False,
             pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Cleanup
-    # try:
-    #     rmtree(f'{exo_folder}/mastDownload')
-    #     move(fitsfile, f'{exo_folder}.fits')
-    #     os.remove(f'{exo_folder}.fits')
-    #     os.remove(csvfile)
-    #     os.remove(data)
-    #     os.remove(priors)
-    #     sector_curves = dict(zip(sector_list, curves_delete))
-    #     for sector, curves in sector_curves.items():
-    #         move(fitsfile, f'{exo_folder}.fits')
-    #         os.remove(f'{exo_folder}.fits')
-    #         os.remove(csvfile)
-    #         for i in range(curves):
-    #             os.remove(f'{exo_folder}/sector_{sector}' +
-    #                       f'_split_curve_{str(i)}.csv')
-    # except BaseException:
-    #     pass
+    try:
+        rmtree(f'{exo_folder}/mastDownload')
+    except BaseException:
+        pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Archive and sort
     try:
