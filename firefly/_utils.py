@@ -106,7 +106,7 @@ def _fits(exoplanet, exo_folder):
 
 
 def _MAST_query(exoplanet, exo_folder):
-    lc = search_lightcurve(exoplanet, mission='TESS', radius=750)
+    lc = search_lightcurve(exoplanet, mission='TESS') #, radius=750)
     if len(lc) == 0:
         rmtree(exo_folder)
         sys.exit(f'Search result contains no data products for {exoplanet}.')
@@ -160,7 +160,7 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, email=False,
     for i, sector in enumerate(sector_list):
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # MAST Download
-        lc = search_lightcurve(exoplanet, mission='TESS', radius=750,
+        lc = search_lightcurve(exoplanet, mission='TESS', #radius=750,
                                    sector=sector)
         print(f'\nDownloading MAST Lightcurve for {exoplanet} -' +
               f' TESS Sector {str(sector)}.')
