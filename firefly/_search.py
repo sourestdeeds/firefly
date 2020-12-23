@@ -8,7 +8,6 @@ Spelling checker for the search engine.
 
 
 from ._archive import _download_eu, _download_nasa
-from ._utils import suppress_print
 
 from fuzzywuzzy import process
 from pandas import read_csv
