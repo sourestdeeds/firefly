@@ -170,7 +170,7 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False
     csv_in_dir = _fits(exoplanet, exo_folder)
     for i, csvfile in enumerate(csv_in_dir):
         split_lightcurve_file(csvfile, t0=t0, P=P) #, t14=t14)
-        # os.remove(csvfile)
+        os.remove(csvfile)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Set the Data Paths
     split_curve_in_dir = []
