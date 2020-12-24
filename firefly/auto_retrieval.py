@@ -13,10 +13,11 @@ from ._search import _fuzzy_search
 from datetime import datetime
 from shutil import rmtree, make_archive
 from traceback import format_exc
+import faulthandler
 import sys
 import os
 
-
+faulthandler.enable()
 
 def _auto_input_check(targets, archive, curve_sample):
     if not (archive == 'eu' or archive == 'nasa'):
@@ -319,7 +320,7 @@ def auto_retrieval(targets, archive='eu', curve_sample=1, email=False,
                          base_dir=f'{exoplanet}')
                 rmtree(exo_folder)
             except:
-                pass
+                sys.exit()
         except BaseException:
             try:
                 exo_folder = f'firefly/{exoplanet}'
