@@ -1,12 +1,23 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-    A data retriever for use with TransitFit.
+                                        
+                     (                   (     (        
+                     )\ )  (   (      (  )\ )  )\ (     
+                    (()/(  )\  )(    ))\(()/( ((_))\ )  
+                     /(_))((_)(()\  /((_)/(_)) _ (()/(  
+                    (_) _| (_) ((_)(_)) (_) _|| | )(_)) 
+                     |  _| | || '_|/ -_) |  _|| || || | 
+                     |_|   |_||_|  \___| |_|  |_| \_, | 
+                                                  |__/  
+                                  
+                  A data retriever for use with TransitFit.
 
     Functions
     ---------
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     retrieval()
+    
         A target data retriever for confirmed/candidate TESS exoplanets.
         Generates the priors and host star variables for a chosen target.
         Downloads exoplanet archives every 10 days and stores in /data.
@@ -28,8 +39,10 @@
         Forces corrections based on classifier: 
         
             >>> 'WASP', 'LTT', 'GJ' etc
+            
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     auto_retrieval()
+    
         Automated version of retrieval. For a single target the procedure is:
          
          >>> from firefly import auto_retrieval
@@ -76,6 +89,7 @@
         Forces corrections based on classifier: 
         
             >>> 'WASP', 'LTT', 'GJ' etc
+            
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     
 """
