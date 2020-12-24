@@ -320,7 +320,8 @@ def auto_retrieval(targets, archive='eu', curve_sample=1, email=False,
                          base_dir=f'{exoplanet}')
                 rmtree(exo_folder)
             except:
-                sys.exit()
+                pass
+            sys.exit()
         except BaseException:
             try:
                 exo_folder = f'firefly/{exoplanet}'
