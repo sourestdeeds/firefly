@@ -283,8 +283,8 @@ def auto_retrieval(targets, archive='eu', curve_sample=1, email=False,
 
     '''
     exoplanet_list = _auto_input_check(targets, archive, curve_sample)
-    try:
-        for i, exoplanet in enumerate(exoplanet_list):
+    for i, exoplanet in enumerate(exoplanet_list):
+        try:
             _retrieval(exoplanet, archive=archive, nlive=nlive,
                        detrending_list=detrending_list,
                        dynesty_sample=dynesty_sample,
@@ -308,31 +308,31 @@ def auto_retrieval(targets, archive='eu', curve_sample=1, email=False,
                                f'Data location: {success} \n\n'
                                'A new target has been fully retrieved across ' +
                                'all available TESS Sectors.', to=to)
-    except KeyboardInterrupt:
-        try:
-            exo_folder = f'firefly/{exoplanet}'
-            now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
-            keyboard = f'firefly/KeyboardInterrupt/{exoplanet} ' +\
-                       f'{now} KeyboardInterrupt'
-            make_archive(keyboard, format='gztar',
-                     root_dir=f'{os.getcwd()}/firefly/',
-                     base_dir=f'{exoplanet}')
-            rmtree(exo_folder)
-        except:
-            pass
-    except BaseException:
-        try:
-            exo_folder = f'firefly/{exoplanet}'
-            now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
-            exception = f'firefly/Exception/{exoplanet} ' +\
-                        f'{now} Exception'
-            make_archive(exception, format='gztar',
-                     root_dir=f'{os.getcwd()}/firefly/',
-                     base_dir=f'{exoplanet}')
-            rmtree(exo_folder)
-            trace_back = format_exc()
-            if email == True:
-                _email(f'Exception: {exoplanet}', trace_back, to=to)
-        except:
-            pass
-            
+        except KeyboardInterrupt:
+            try:
+                exo_folder = f'firefly/{exoplanet}'
+                now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
+                keyboard = f'firefly/KeyboardInterrupt/{exoplanet} ' +\
+                           f'{now} KeyboardInterrupt'
+                make_archive(keyboard, format='gztar',
+                         root_dir=f'{os.getcwd()}/firefly/',
+                         base_dir=f'{exoplanet}')
+                rmtree(exo_folder)
+            except:
+                pass
+        except BaseException:
+            try:
+                exo_folder = f'firefly/{exoplanet}'
+                now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
+                exception = f'firefly/Exception/{exoplanet} ' +\
+                            f'{now} Exception'
+                make_archive(exception, format='gztar',
+                         root_dir=f'{os.getcwd()}/firefly/',
+                         base_dir=f'{exoplanet}')
+                rmtree(exo_folder)
+                trace_back = format_exc()
+                if email == True:
+                    _email(f'Exception: {exoplanet}', trace_back, to=to)
+            except:
+                pass
+        
