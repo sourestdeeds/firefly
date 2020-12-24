@@ -277,7 +277,7 @@ def auto_retrieval(targets, archive='eu', curve_sample=1, email=False,
     Returns
     -------
     A whole lot of data to science!
-    Zipped files are found in :
+    Zipped files are found in:
     
     >>> firefly/WASP-43 b timestamp.gz.tar
 
@@ -286,7 +286,6 @@ def auto_retrieval(targets, archive='eu', curve_sample=1, email=False,
     try:
         for i, exoplanet in enumerate(exoplanet_list):
             _retrieval(exoplanet, archive=archive, nlive=nlive,
-                       email=email, to=to,
                        detrending_list=detrending_list,
                        dynesty_sample=dynesty_sample,
                        fitting_mode=fitting_mode, fit_ttv=fit_ttv,
