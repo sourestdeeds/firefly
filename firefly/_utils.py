@@ -23,6 +23,7 @@ from astropy.io import fits
 from csv import DictWriter
 from pandas import DataFrame
 from shutil import rmtree, make_archive
+from math import ceil
 import sys
 import os
 import random
@@ -63,18 +64,19 @@ def _TESS_filter():
 
 
 def _fits(exoplanet, exo_folder):
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Path to downloaded fits
     fits_in_dir = []
     source = f'{exo_folder}/mastDownload/TESS/'
-    # Delete the fast_lc files
     for r, d, f in os.walk(source):
         for item in f:
+            # Delete the fast-lc files
             if 'fast-lc.fits' in item:
                 rmtree(r)
+            # Keep the _lc files
             elif '_lc.fits' in item:
                 fits_in_dir.append(os.path.join(r, item))
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Extract Time series
     for i, fitsfile in enumerate(fits_in_dir):
         with fits.open(fitsfile) as TESS_fits:
@@ -82,7 +84,7 @@ def _fits(exoplanet, exo_folder):
             time += TESS_fits[1].data['TIMECORR']
             flux = TESS_fits[1].data['PDCSAP_FLUX']
             flux_err = TESS_fits[1].data['PDCSAP_FLUX_ERR']
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Extract all light curves to a single csv file
         write_dict = []
         for i in range(len(time)):
@@ -94,8 +96,8 @@ def _fits(exoplanet, exo_folder):
             writer = DictWriter(f, columns)
             writer.writeheader()
             writer.writerows(write_dict)
-        # os.remove(fitsfile)
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        os.remove(fitsfile)
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Path to downloaded csv   
     csv_in_dir = []
     for r, d, f in os.walk(source):
@@ -111,9 +113,9 @@ def _MAST_query(exoplanet, exo_folder):
         rmtree(exo_folder)
         sys.exit(f'Search result contains no data products for {exoplanet}.')
     sector_list = lc .table .to_pandas()['sequence_number'] \
-                     .drop_duplicates() .tolist()
+                      .drop_duplicates() .tolist()
     sector_list = [str(sector) for sector in sector_list]
-    print(f'\nQuery from MAST returned {len(sector_list)} '
+    print(f'\nQuery from MAST returned {len(lc)} '
           f'data products for {exoplanet}.\n')
     lc = lc .table .to_pandas()[['target_name', 'observation', 
                                  'productFilename', 't_exptime']] \
@@ -125,8 +127,7 @@ def _MAST_query(exoplanet, exo_folder):
     return sector_list
     
 
-def _retrieval(exoplanet, archive='eu', curve_sample=1, email=False, 
-               to=['transitfit.server@gmail.com'], nlive=300, fit_ttv=False,
+def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False,
                detrending_list=[['nth order', 2]],
                dynesty_sample='rslice', fitting_mode='folded',
                limb_darkening_model='quadratic', ld_fit_method='independent',
@@ -141,7 +142,7 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, email=False,
     _TESS_filter()
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # MAST Query
-    sector_list = _MAST_query(exoplanet, exo_folder)
+    _MAST_query(exoplanet, exo_folder)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Download Archive
     if archive == 'eu':
@@ -156,23 +157,18 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, email=False,
           ' using the following parameters.\n')
     print(tabulate(df, tablefmt='psql', showindex=False, headers='keys'))
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # Iterate over all sectors
-    for i, sector in enumerate(sector_list):
-        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-        # MAST Download
-        lc = search_lightcurve(exoplanet, mission='TESS', #radius=750,
-                                   sector=sector)
-        print(f'\nDownloading MAST Lightcurve for {exoplanet} -' +
-              f' TESS Sector {str(sector)}.')
-        lc.download_all(download_dir=exo_folder)
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # MAST Download
+    lc = search_lightcurve(exoplanet, mission='TESS')
+    print(f'\nDownloading MAST Lightcurves for {exoplanet}.')
+    lc.download_all(download_dir=exo_folder)
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Split the Light curves
     csv_in_dir = _fits(exoplanet, exo_folder)
     for i, csvfile in enumerate(csv_in_dir):
         split_lightcurve_file(csvfile, t0=t0, P=P) #, t14=t14)
         os.remove(csvfile)
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # Set the Data Paths
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Find the split_curve_*.csv
     split_curve_in_dir = []
     source = f'{exo_folder}/mastDownload/TESS/'
     for r, d, f in os.walk(source):
@@ -180,13 +176,13 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, email=False,
             if '.csv' in item:
                 split_curve_in_dir.append(os.path.join(r, item))
     print(f'\nA total of {len(split_curve_in_dir)} lightcurves were generated.')
-    # Sort the files into ascending order
-    curves = round(curve_sample * len(split_curve_in_dir))
-    if curves == 0:
-        curves = 1
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Sort the files into ascending order and take random sample
+    curves = ceil(curve_sample * len(split_curve_in_dir))
     split_curve_in_dir = random.sample(split_curve_in_dir, k=int(curves))
     split_curve_in_dir.sort(key=lambda f: int(''.join(filter(str.isdigit, f))))
-         
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Set the Data Paths     
     data_path = f'{exo_folder}/data_paths.csv'
     cols = ['Path', 'Telescope', 'Filter', 'Epochs', 'Detrending']
     df = DataFrame(columns=cols)
@@ -197,17 +193,17 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, email=False,
     print(f'\nA random sample of {len(df)} lightcurves will be fitted across all'
           ' TESS Sectors.\n')
     df.to_csv(data_path, index=False, header=True)
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Paths to data, priors, and filter info:
     data = data_path
     priors = f'{exo_folder}/{exoplanet} Priors.csv'
     filters = 'firefly/data/TESS_filter_path.csv'
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Output folders
     results_output_folder = f'{exo_folder}/output_parameters'
     fitted_lightcurve_folder = f'{exo_folder}/fitted_lightcurves'
     plot_folder = f'{exo_folder}/plots'
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Run the retrieval
     run_retrieval(data, priors, filters, detrending_list=detrending_list,
                   host_T=host_T, host_logg=host_logg, host_z=host_z,
@@ -223,12 +219,12 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, email=False,
                   maxiter=maxiter, maxcall=maxcall, 
                   dynesty_bounding=dynesty_bounding, 
                   normalise=normalise, detrend=detrend)
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Cleanup
-    # try:
-    #     rmtree(f'{exo_folder}/mastDownload')
-    # except BaseException:
-    #     pass
+    try:
+        rmtree(f'{exo_folder}/mastDownload')
+    except BaseException:
+        pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Archive and sort
     now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
