@@ -336,28 +336,27 @@ def retrieval(exoplanet, archive='eu', email=False,
         print(f'\nDownloading MAST Lightcurve for {exoplanet} -' +
               f' TESS Sector {str(sector)}.')
         lc.download_all(download_dir=exo_folder)
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Split the Light curves
     csv_in_dir = _fits(exoplanet, exo_folder)
     for i, csvfile in enumerate(csv_in_dir):
         split_lightcurve_file(csvfile, t0=t0, P=P) #, t14=t14)
         os.remove(csvfile)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # Set the Data Paths
+    # Find the split_curve_*.csv
     split_curve_in_dir = []
     source = f'{exo_folder}/mastDownload/TESS/'
     for r, d, f in os.walk(source):
         for item in f:
             if '.csv' in item:
                 split_curve_in_dir.append(os.path.join(r, item))
-    
-    # curves = int(curve_sample * len(split_curves))
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Sort the files into ascending order and take a random sample
     curve_sample = retrieval_input_curve_sample(split_curve_in_dir)
     split_curve_in_dir = random.sample(split_curve_in_dir, k=int(curve_sample))
-
-    # Sort the files into ascending order
     split_curve_in_dir.sort(key=lambda f: int(''.join(filter(str.isdigit, f))))
-    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Set the data paths
     data_path = f'{exo_folder}/data_paths.csv'
     cols = ['Path', 'Telescope', 'Filter', 'Epochs', 'Detrending']
     df = DataFrame(columns=cols)
