@@ -404,7 +404,6 @@ def retrieval(exoplanet, archive='eu', email=False, clean=False,
         rmtree(exo_folder)
         raise
     except BaseException:
-        raise
         now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
         exception = f'firefly/Exception/{exoplanet} ' +\
                     f'{now} Exception'
@@ -415,6 +414,7 @@ def retrieval(exoplanet, archive='eu', email=False, clean=False,
         trace_back = format_exc()
         if email == True:
             _email(f'Exception: {exoplanet}', trace_back, to=to)
+        raise
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Cleanup
     if clean == True:
