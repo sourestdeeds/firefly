@@ -95,7 +95,7 @@
 """
 
 name = 'firefly'
-__version__ = '0.6.8'
+__version__ = '0.6.9'
 
 from .auto_retrieval import auto_retrieval
 from .retrieval import retrieval
