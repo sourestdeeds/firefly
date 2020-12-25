@@ -99,4 +99,4 @@ __version__ = '0.6.9'
 
 from .auto_retrieval import auto_retrieval
 from .retrieval import retrieval
-from .query import query, tess_targets, archive_query, mast_query
+from .query import query, tess, priors, mast
