@@ -294,18 +294,18 @@ def auto_retrieval(targets, archive='eu', curve_sample=1, email=False,
     exoplanet_list = _auto_input_check(targets, archive, curve_sample)
     for i, exoplanet in enumerate(exoplanet_list):
         try:
-            _retrieval(exoplanet, archive=archive, nlive=nlive, clean=clean,
-                       detrending_list=detrending_list,
-                       dynesty_sample=dynesty_sample,
-                       fitting_mode=fitting_mode, fit_ttv=fit_ttv,
-                       limb_darkening_model=limb_darkening_model, 
-                       ld_fit_method=ld_fit_method,
-                       max_batch_parameters=max_batch_parameters, 
-                       batch_overlap=batch_overlap, dlogz=dlogz, 
-                       maxiter=maxiter, maxcall=maxcall, 
-                       dynesty_bounding=dynesty_bounding, 
-                       normalise=normalise, detrend=detrend,
-                       curve_sample=curve_sample)
+            results = _retrieval(exoplanet, archive=archive, nlive=nlive, clean=clean,
+                                 detrending_list=detrending_list,
+                                 dynesty_sample=dynesty_sample,
+                                 fitting_mode=fitting_mode, fit_ttv=fit_ttv,
+                                 limb_darkening_model=limb_darkening_model, 
+                                 ld_fit_method=ld_fit_method,
+                                 max_batch_parameters=max_batch_parameters, 
+                                 batch_overlap=batch_overlap, dlogz=dlogz, 
+                                 maxiter=maxiter, maxcall=maxcall, 
+                                 dynesty_bounding=dynesty_bounding, 
+                                 normalise=normalise, detrend=detrend,
+                                 curve_sample=curve_sample)
             now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
             exo_folder = f'firefly/{exoplanet}'
             success = f'{os.getcwd()}/{exo_folder} {now}.gz.tar'
@@ -341,4 +341,5 @@ def auto_retrieval(targets, archive='eu', curve_sample=1, email=False,
             if email == True:
                 _email(f'Exception: {exoplanet}', trace_back, to=to)
             pass
+    return results
         
