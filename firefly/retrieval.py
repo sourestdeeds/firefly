@@ -395,7 +395,6 @@ def retrieval(exoplanet, archive='eu', email=False, clean=False,
                       dynesty_bounding=dynesty_bounding, 
                       normalise=normalise, detrend=detrend)
     except KeyboardInterrupt:
-        raise
         now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
         keyboard = f'firefly/KeyboardInterrupt/{exoplanet} ' +\
                    f'{now} KeyboardInterrupt'
@@ -403,6 +402,7 @@ def retrieval(exoplanet, archive='eu', email=False, clean=False,
                  root_dir=f'{os.getcwd()}/firefly/',
                  base_dir=f'{exoplanet}')
         rmtree(exo_folder)
+        raise
     except BaseException:
         raise
         now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
