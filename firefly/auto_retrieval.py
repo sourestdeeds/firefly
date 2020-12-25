@@ -314,7 +314,6 @@ def auto_retrieval(targets, archive='eu', curve_sample=1, email=False,
                        'A new target has been fully retrieved across ' +
                        'all available TESS Sectors.', to=to)
         except KeyboardInterrupt:
-            raise
             exo_folder = f'firefly/{exoplanet}'
             now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
             keyboard = f'firefly/KeyboardInterrupt/{exoplanet} ' +\
@@ -323,9 +322,9 @@ def auto_retrieval(targets, archive='eu', curve_sample=1, email=False,
                      root_dir=f'{os.getcwd()}/firefly/',
                      base_dir=f'{exoplanet}')
             rmtree(exo_folder)
+            raise
             sys.exit()
         except BaseException:
-            raise
             exo_folder = f'firefly/{exoplanet}'
             now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
             exception = f'firefly/Exception/{exoplanet} ' +\
@@ -337,5 +336,6 @@ def auto_retrieval(targets, archive='eu', curve_sample=1, email=False,
             trace_back = format_exc()
             if email == True:
                 _email(f'Exception: {exoplanet}', trace_back, to=to)
+            raise
             pass
         
