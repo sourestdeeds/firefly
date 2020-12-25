@@ -9,7 +9,7 @@ A target data retriever for confirmed/candidate TESS exoplanets.
 from ._utils import _fits, _TESS_filter, _MAST_query, _email
 from ._archive import _eu, _nasa
 from ._search import _fuzzy_search
-from .query import tess_targets
+from .query import tess
 
 from transitfit import split_lightcurve_file, run_retrieval
 try:
@@ -47,7 +47,7 @@ def _retrieval_input_target(exoplanet, archive):
         return highest[0]
     elif (verify=='n'):
         while (verify!="y" and verify!='q' and exoplanet!='q'):
-            tess_targets()
+            tess()
             exoplanet = input('Please refine your search or type q to quit: ')
             highest, ratios = _fuzzy_search(exoplanet, archive=archive)
             exoplanet = highest[0]
