@@ -96,7 +96,7 @@ def retrieval_input_curve_sample(split_curve_in_dir):
         return sample
 
 
-def retrieval(exoplanet, archive='eu', email=False, 
+def retrieval(exoplanet, archive='eu', email=False, clean=False,
               to=['transitfit.server@gmail.com'], nlive=300, fit_ttv=False,
               detrending_list=[['nth order', 2]],
               dynesty_sample='rslice', fitting_mode='folded',
@@ -149,6 +149,9 @@ def retrieval(exoplanet, archive='eu', email=False,
         The default is:
             
         >>> to=['transitfit.server@gmail.com']
+    clean : bool, optional
+        If True will delete all downloaded files and zip outputs only.
+        The default is False.
     nlive : int, optional
         The number of live points to use in the nested sampling retrieval.
         Default is 300.
@@ -338,18 +341,15 @@ def retrieval(exoplanet, archive='eu', email=False,
         lc.download_all(download_dir=exo_folder)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Split the Light curves
-    csv_in_dir = _fits(exoplanet, exo_folder)
-    for i, csvfile in enumerate(csv_in_dir):
-        split_lightcurve_file(csvfile, t0=t0, P=P) #, t14=t14)
-        os.remove(csvfile)
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # Find the split_curve_*.csv
     split_curve_in_dir = []
-    source = f'{exo_folder}/mastDownload/TESS/'
-    for r, d, f in os.walk(source):
-        for item in f:
-            if '.csv' in item:
-                split_curve_in_dir.append(os.path.join(r, item))
+    csv_in_dir = _fits(exoplanet, exo_folder, clean)
+    for i, csvfile in enumerate(csv_in_dir):
+        split_curves = split_lightcurve_file(csvfile, t0=t0, P=P) #, t14=t14)
+        split_curves = [s + '.csv' for s in split_curves]
+        split_curve_in_dir.append(split_curves)
+        if clean == True:
+            os.remove(csvfile)
+    split_curve_in_dir = [i for sub in split_curve_in_dir for i in sub]
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Sort the files into ascending order and take a random sample
     curve_sample = retrieval_input_curve_sample(split_curve_in_dir)
@@ -395,36 +395,32 @@ def retrieval(exoplanet, archive='eu', email=False,
                       dynesty_bounding=dynesty_bounding, 
                       normalise=normalise, detrend=detrend)
     except KeyboardInterrupt:
-        try:
-            now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
-            keyboard = f'firefly/KeyboardInterrupt/{exoplanet} ' +\
-                       f'{now} KeyboardInterrupt'
-            make_archive(keyboard, format='gztar',
-                     root_dir=f'{os.getcwd()}/firefly/',
-                     base_dir=f'{exoplanet}')
-            rmtree(exo_folder)
-        except:
-            pass
+        raise
+        now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
+        keyboard = f'firefly/KeyboardInterrupt/{exoplanet} ' +\
+                   f'{now} KeyboardInterrupt'
+        make_archive(keyboard, format='gztar',
+                 root_dir=f'{os.getcwd()}/firefly/',
+                 base_dir=f'{exoplanet}')
+        rmtree(exo_folder)
     except BaseException:
-        try:
-            now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
-            exception = f'firefly/Exception/{exoplanet} ' +\
-                        f'{now} Exception'
-            make_archive(exception, format='gztar',
-                     root_dir=f'{os.getcwd()}/firefly/',
-                     base_dir=f'{exoplanet}')
-            rmtree(exo_folder)
-            trace_back = format_exc()
-            if email == True:
-                _email(f'Exception: {exoplanet}', trace_back, to=to)
-        except:
-            pass
+        raise
+        now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
+        exception = f'firefly/Exception/{exoplanet} ' +\
+                    f'{now} Exception'
+        make_archive(exception, format='gztar',
+                 root_dir=f'{os.getcwd()}/firefly/',
+                 base_dir=f'{exoplanet}')
+        rmtree(exo_folder)
+        trace_back = format_exc()
+        if email == True:
+            _email(f'Exception: {exoplanet}', trace_back, to=to)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Cleanup
-    # try:
-    #     rmtree(f'{exo_folder}/mastDownload')
-    # except BaseException:
-    #     pass
+    if clean == True:
+        rmtree(f'{exo_folder}/mastDownload')
+        os.remove(data)
+        os.remove(priors)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Archive and sort
     try:
