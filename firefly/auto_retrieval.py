@@ -13,11 +13,10 @@ from ._search import _fuzzy_search
 from datetime import datetime
 from shutil import rmtree, make_archive
 from traceback import format_exc
-import faulthandler
 import sys
 import os
 
-faulthandler.enable()
+
 
 def _auto_input_check(targets, archive, curve_sample):
     if not (archive == 'eu' or archive == 'nasa'):
@@ -59,33 +58,35 @@ def auto_retrieval(targets, archive='eu', curve_sample=1, email=False,
          
          >>> from firefly import auto_retrieval
              target = ('WASP-43 b',)
-             if __name__ == '__main__':
-                 auto_retrieval(target)
+             auto_retrieval(target)
          
     For a list of targets:
          
          >>> from firefly import auto_retrieval
              targets = ('WASP-43 b', 'WASP-18 b')
-             if __name__ == '__main__':
-                 auto_retrieval(targets)
+             auto_retrieval(targets)
      
-    - Targets passed are corrected for basic user input. 'wasp43b' is
-      interpreted as 'WASP-43 b'. List must be of the form given in the example below.
-    - Initial checks for targets from the exoplanet archive are then taken to ascertain 
-      whether the prior data extracted has entries in all columns. If there are missing
-      entries for a given target in the list, the user will be asked whether to proceed.
-    - Iteratively takes the targets given and employs TransitFit across each TESS sector 
-      for every exoplanet in the list given.
+    - Targets passed are corrected for basic user input; 'wasp43b' is
+      interpreted as 'WASP-43 b'. List must be of the form given in the 
+      example below.
+    - Initial checks for targets from the exoplanet archive are then taken 
+      to ascertain 
+      whether the prior data extracted has entries in all columns. If there 
+      are missing entries for a given target in the list, the user will be 
+      asked whether to proceed.
+    - Iteratively takes the targets given and employs TransitFit across each 
+      TESS sector for every exoplanet in the list given.
     - All available split curves are fitted with TransitFit, then the results
-      are then zipped up and time stamped. Optionally sends an email upon an error or 
-      full completion of a target.
-    - Email is also disabled by default. If enabled, status updates on completion
-      and exceptions with the full traceback are sent. 
+      are then zipped up and time stamped. Optionally sends an email upon an 
+      error or full completion of a target.
+    - Email is also disabled by default. If enabled, status updates on 
+      completion and exceptions with the full traceback are sent. 
       
     Background tasks for feeding data to TransitFit include:
     
     - Set the filter path to the TESS Filter.
-    - Download EU/NASA exoplanet archive data every 10 days (checks the file age).
+    - Download EU/NASA exoplanet archive data every 10 days 
+      (checks the file age).
     - Download MAST lightcurve data for target TESS Sectors.
     - Split the lightcurves into seperate transits or epochs.
     - Create the data paths to each seperate epoch.
