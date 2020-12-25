@@ -45,7 +45,7 @@ def query(target, archive='eu'):
     print(tabulate(table, tablefmt='psql', headers=['Exoplanet', '% Match']))
 
 
-def tess_targets():
+def tess():
     '''
     A list of all exoplanets discovered by TESS.
 
@@ -71,7 +71,7 @@ def tess_targets():
     print(tabulate(df, tablefmt='psql', showindex=False,
                    headers=['Exoplanet', 'Confirmed/Candidate', 'Updated']))
 
-def archive_query(target, archive='eu'):
+def priors(target, archive='eu'):
     '''
     Performs a query for prior information.
 
@@ -97,7 +97,7 @@ def archive_query(target, archive='eu'):
         _nasa(exoplanet)
     rmtree(temp)
 
-def mast_query(target, archive='eu'):
+def mast(target, archive='eu'):
     '''
     Performs a query for data products from MAST.
 
