@@ -30,17 +30,19 @@ def _auto_input_check(targets, archive, curve_sample):
         print(f'Target search chose {highest[0]}.')
         nan = _check_nan(exoplanet, archive=archive)
         if nan == True:
-            _check_nan(exoplanet, archive=archive, printing=True)
-            verify = ''
-            while (verify!="y" and verify!="n"):
-                verify = input(f'\nWARNING: {exoplanet} has missing '
-                                   'prior entries. Proceed ([y]/n)?\n')
-            if verify == "n":
-                sys.exit()
-            elif verify == "y":
-                pass
-        # If checks for nans are passed, continue
-        exoplanet_list.append(exoplanet)
+            print(f'Skipping {exoplanet} due to missing prior data.')
+            # _check_nan(exoplanet, archive=archive, printing=True)
+            # verify = ''
+            # while (verify!="y" and verify!="n"):
+            #     verify = input(f'\nWARNING: {exoplanet} has missing '
+            #                        'prior entries. Proceed ([y]/n)?\n')
+            # if verify == "n":
+            #     sys.exit()
+            # elif verify == "y":
+            #     pass
+            pass
+        elif nan == False:
+            exoplanet_list.append(exoplanet)
     print('Input checks passed.')
     return exoplanet_list
 
