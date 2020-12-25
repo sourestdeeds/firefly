@@ -41,6 +41,7 @@ def _auto_input_check(targets, archive, curve_sample):
                 pass
         # If checks for nans are passed, continue
         exoplanet_list.append(exoplanet)
+    print('Input checks passed.')
     return exoplanet_list
 
 
@@ -48,7 +49,7 @@ def auto_retrieval(targets, archive='eu', curve_sample=1, email=False,
                    to=['transitfit.server@gmail.com'], clean=False,
                    nlive=300, fit_ttv=False,
                    detrending_list=[['nth order', 2]],
-                   dynesty_sample='rslice', fitting_mode='folded',
+                   dynesty_sample='auto', fitting_mode='auto',
                    limb_darkening_model='quadratic', ld_fit_method='independent',
                    max_batch_parameters=25, batch_overlap=2, dlogz=None, 
                    maxiter=None, maxcall=None, dynesty_bounding='multi', 
@@ -184,11 +185,13 @@ def auto_retrieval(targets, archive='eu', curve_sample=1, email=False,
         and any callable function which follows
         the pattern of the sample methods defined in dynesty.sampling.
         'auto' selects the sampling method based on the dimensionality of
-        the problem (from ndim). When ndim < 10, this defaults to 'unif'.
-        When 10 <= ndim <= 20, this defaults to 'rwalk'. When ndim > 20,
-        this defaults to 'hslice' if a gradient is provided and 'slice'
-        otherwise. 'rstagger' and 'rslice' are provided as alternatives for
-        'rwalk' and 'slice', respectively. Default is 'rslice'.
+        the problem (from ndim). 
+        - When ndim < 10, this defaults to 'unif'.
+        - When 10 <= ndim <= 20, this defaults to 'rwalk'. 
+        - When ndim > 20, this defaults to 'hslice' if a gradient is provided 
+          and 'slice' otherwise. 
+        - 'rstagger' and 'rslice' are provided as alternatives for
+          'rwalk' and 'slice', respectively. Default is 'auto'.
     fitting_mode : {`'auto'`, `'all'`, `'folded'`, `'batched'`}, optional
         The approach TransitFit takes towards limiting the number of parameters
         being simultaneously fitted. The available modes are:
@@ -209,7 +212,7 @@ def auto_retrieval(targets, archive='eu', curve_sample=1, email=False,
           multi-epoch information. This mode splits the filters into sets of
           overlapping batches, runs each batch and uses the weighted means of
           each batch to produce a final result.
-        Default is `'folded'`.
+        Default is `'auto'`.
     fit_ttv : boolean, optional
         DESCRIPTION. The default is False.
     limb_darkening_model : str, optional
