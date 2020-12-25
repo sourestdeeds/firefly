@@ -336,6 +336,5 @@ def auto_retrieval(targets, archive='eu', curve_sample=1, email=False,
             trace_back = format_exc()
             if email == True:
                 _email(f'Exception: {exoplanet}', trace_back, to=to)
-            raise
             pass
         
