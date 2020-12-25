@@ -34,7 +34,7 @@ def _retrieval_input_target(exoplanet, archive):
     if not (archive == 'eu' or archive == 'nasa'):
         sys.exit('Archive data options are: \'eu\' or \'nasa\'')
     archive_data = 'EU archive'
-    highest, ratios = _fuzzy_search(exoplanet, archive='nasa')
+    highest, ratios = _fuzzy_search(exoplanet, archive=archive)
     exoplanet = highest[0]
     verify = ''
     while (verify!="y" and verify!="n" and verify!='q'):
