@@ -7,7 +7,7 @@ A target data retriever for confirmed/candidate TESS exoplanets.
 """
 
 from ._utils import _fits, _TESS_filter, _MAST_query, _email
-from ._archive import _eu, _nasa
+from ._archive import _eu, _nasa, _check_nan
 from ._search import _fuzzy_search
 from .query import tess
 
@@ -29,6 +29,20 @@ import os
 import random
 
 
+def _nan(exoplanet, archive, printing=False):
+    nan = _check_nan(exoplanet, archive=archive)
+    if nan == True:
+        _check_nan(exoplanet, archive=archive, printing=True)
+        verify = ''
+        while (verify!="y" and verify!="n"):
+            verify = input(f'\nWARNING: {exoplanet} has missing '
+                                'prior entries. Proceed ([y]/n)?\n')
+        if verify == "n":
+            sys.exit()
+        elif verify == "y":
+            pass
+
+
 def _retrieval_input_target(exoplanet, archive):
     # Check inputs are sensible
     if not (archive == 'eu' or archive == 'nasa'):
@@ -40,6 +54,7 @@ def _retrieval_input_target(exoplanet, archive):
     while (verify!="y" and verify!="n" and verify!='q'):
         print(f'\nTarget search chose {exoplanet}.')
         verify = input('Proceed ([y]/n)?\n')
+        _nan(exoplanet, archive)
     if (verify=='q'):
         sys.exit('You chose to quit.')
     elif (verify=='y'):
@@ -53,7 +68,8 @@ def _retrieval_input_target(exoplanet, archive):
             exoplanet = highest[0]
             print(f'\nTarget search chose {highest[0]} from the '
                   f'{archive_data}:\n')
-            verify = input('Proceed ([y]/n)? or type q to quit.\n')   
+            verify = input('Proceed ([y]/n)? or type q to quit.\n')
+            _nan(exoplanet, archive)
         if (verify=='q' or exoplanet=='q'):
             sys.exit('You chose to quit.')
         elif (verify=="y"):
