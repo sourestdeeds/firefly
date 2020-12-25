@@ -116,14 +116,14 @@ def _MAST_query(exoplanet, exo_folder):
     sector_list = lc .table .to_pandas()['sequence_number'] \
                       .drop_duplicates() .tolist()
     sector_list = [str(sector) for sector in sector_list]
-    print(f'\nQuery from MAST returned {len(lc)} '
-          f'data products for {exoplanet}.\n')
     lc = lc .table .to_pandas()[['target_name', 'observation', 
                                  'productFilename', 't_exptime']] \
             .rename(columns={'target_name':'Target'}) \
             .rename(columns={'observation':'Observation'}) \
             .rename(columns={'productFilename':'Product'}) 
     lc = lc[lc.t_exptime != 20].drop(['t_exptime'], axis=1)
+    print(f'\nQuery from MAST returned {len(lc)} '
+          f'data products for {exoplanet}.\n')
     print(tabulate(lc, tablefmt='psql', showindex=False, headers='keys'))
     return sector_list
     
