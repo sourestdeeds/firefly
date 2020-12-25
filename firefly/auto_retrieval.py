@@ -45,8 +45,9 @@ def _auto_input_check(targets, archive, curve_sample):
     return exoplanet_list
 
 
-def auto_retrieval(targets, archive='eu', curve_sample=1, email=False, 
-                   to=['transitfit.server@gmail.com'], nlive=300, fit_ttv=False,
+def auto_retrieval(targets, archive='eu', curve_sample=1, email=False,
+                   to=['transitfit.server@gmail.com'], clean=False,
+                   nlive=300, fit_ttv=False,
                    detrending_list=[['nth order', 2]],
                    dynesty_sample='rslice', fitting_mode='folded',
                    limb_darkening_model='quadratic', ld_fit_method='independent',
@@ -135,6 +136,9 @@ def auto_retrieval(targets, archive='eu', curve_sample=1, email=False,
         The email address to send status updates to.
         
         >>> to=['transitfit.server@gmail.com']
+    clean : bool, optional
+        If True will delete all downloaded files and zip outputs only.
+        The default is False.
     nlive : int, optional
         The number of live points to use in the nested sampling retrieval.
         Default is 1000.
@@ -286,7 +290,7 @@ def auto_retrieval(targets, archive='eu', curve_sample=1, email=False,
     exoplanet_list = _auto_input_check(targets, archive, curve_sample)
     for i, exoplanet in enumerate(exoplanet_list):
         try:
-            _retrieval(exoplanet, archive=archive, nlive=nlive,
+            _retrieval(exoplanet, archive=archive, nlive=nlive, clean=clean,
                        detrending_list=detrending_list,
                        dynesty_sample=dynesty_sample,
                        fitting_mode=fitting_mode, fit_ttv=fit_ttv,
@@ -302,40 +306,36 @@ def auto_retrieval(targets, archive='eu', curve_sample=1, email=False,
             exo_folder = f'firefly/{exoplanet}'
             success = f'{os.getcwd()}/{exo_folder} {now}.gz.tar'
             print(f'\nData location: {success}\n'
-                               'A new target has been fully retrieved across ' +
-                               'all available TESS Sectors.')
+                    'A new target has been fully retrieved across ' +
+                    'all available TESS Sectors.')
             if email == True:
                 _email(f'Success: {exoplanet}',
-                               f'Data location: {success} \n\n'
-                               'A new target has been fully retrieved across ' +
-                               'all available TESS Sectors.', to=to)
+                       f'Data location: {success} \n\n'
+                       'A new target has been fully retrieved across ' +
+                       'all available TESS Sectors.', to=to)
         except KeyboardInterrupt:
-            try:
-                exo_folder = f'firefly/{exoplanet}'
-                now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
-                keyboard = f'firefly/KeyboardInterrupt/{exoplanet} ' +\
-                           f'{now} KeyboardInterrupt'
-                make_archive(keyboard, format='gztar',
-                         root_dir=f'{os.getcwd()}/firefly/',
-                         base_dir=f'{exoplanet}')
-                rmtree(exo_folder)
-            except:
-                pass
+            raise
+            exo_folder = f'firefly/{exoplanet}'
+            now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
+            keyboard = f'firefly/KeyboardInterrupt/{exoplanet} ' +\
+                       f'{now} KeyboardInterrupt'
+            make_archive(keyboard, format='gztar',
+                     root_dir=f'{os.getcwd()}/firefly/',
+                     base_dir=f'{exoplanet}')
+            rmtree(exo_folder)
             sys.exit()
         except BaseException:
-            try:
-                exo_folder = f'firefly/{exoplanet}'
-                now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
-                exception = f'firefly/Exception/{exoplanet} ' +\
-                            f'{now} Exception'
-                make_archive(exception, format='gztar',
-                         root_dir=f'{os.getcwd()}/firefly/',
-                         base_dir=f'{exoplanet}')
-                rmtree(exo_folder)
-                trace_back = format_exc()
-                if email == True:
-                    _email(f'Exception: {exoplanet}', trace_back, to=to)
-            except:
-                pass
+            raise
+            exo_folder = f'firefly/{exoplanet}'
+            now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
+            exception = f'firefly/Exception/{exoplanet} ' +\
+                        f'{now} Exception'
+            make_archive(exception, format='gztar',
+                     root_dir=f'{os.getcwd()}/firefly/',
+                     base_dir=f'{exoplanet}')
+            rmtree(exo_folder)
+            trace_back = format_exc()
+            if email == True:
+                _email(f'Exception: {exoplanet}', trace_back, to=to)
             pass
         
