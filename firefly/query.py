@@ -40,7 +40,7 @@ def query(target, archive='eu'):
     Data printed to console.
 
     '''
-    output = _fuzzy_search(target, archive='eu')
+    output = _fuzzy_search(target, archive=archive)
     table = output[1]
     print(tabulate(table, tablefmt='psql', headers=['Exoplanet', '% Match']))
 
@@ -85,7 +85,7 @@ def archive_query(target, archive='eu'):
     Data printed to console.
 
     '''
-    highest, ratios = _fuzzy_search(target, archive='eu')
+    highest, ratios = _fuzzy_search(target, archive=archive)
     exoplanet = highest[0]
     temp = f'firefly/{exoplanet}'
     os.makedirs(temp, exist_ok=True)
@@ -111,7 +111,7 @@ def mast_query(target, archive='eu'):
     Data printed to console.
 
     '''
-    highest, ratios = _fuzzy_search(target, archive='eu')
+    highest, ratios = _fuzzy_search(target, archive=archive)
     exoplanet = highest[0]
     lc = search_lightcurve(exoplanet, mission='TESS')
     if len(lc) == 0:
