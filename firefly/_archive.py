@@ -57,7 +57,7 @@ def _download_nasa():
         'pl_radj,pl_radjerr1,pl_orbeccen,pl_orbeccenerr1,disc_facility,' +\
         'st_teff,st_tefferr1,st_rad,st_raderr1,st_mass,st_masserr1,' +\
         'st_met,st_meterr1,pl_tranmid,pl_tranmiderr1,pl_trandur,' +\
-        'pl_orbincl,pl_orbinclerr1,pl_orblper,pl_orblpererr1,soltype' +\
+        'pl_orbincl,pl_orbinclerr1,pl_orblper,pl_orblpererr1,soltype,rowupdate' +\
         '+from+ps&format=csv'
     nasa_csv = 'firefly/data/nasa.csv'
     if not os.path.exists(nasa_csv):
