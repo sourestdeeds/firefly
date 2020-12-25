@@ -60,14 +60,16 @@ def tess_targets():
     '''
     _download_nasa()
     nasa_csv = 'firefly/data/nasa.csv'
-    df = read_csv(nasa_csv, 
-                        usecols=['pl_name', 
-                                 'soltype', 
-                                 'disc_facility']).drop_duplicates('pl_name')
+    df = read_csv(nasa_csv, usecols=['pl_name', 
+                                     'soltype',
+                                     'rowupdate',
+                                     'disc_facility']) \
+                                    .drop_duplicates('pl_name', keep='last') \
+                                    .sort_values('pl_name')
     TESS = 'Transiting Exoplanet Survey Satellite (TESS)'
     df = df[df.disc_facility == TESS].drop(['disc_facility'], axis=1)
     print(tabulate(df, tablefmt='psql', showindex=False,
-                   headers=['Exoplanet', 'Confirmed/Candidate']))
+                   headers=['Exoplanet', 'Confirmed/Candidate', 'Updated']))
 
 def archive_query(target, archive='eu'):
     '''
