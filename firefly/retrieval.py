@@ -94,7 +94,7 @@ def retrieval_input_curve_sample(split_curve_in_dir):
 def retrieval(exoplanet, archive='eu', email=False, 
               to=['transitfit.server@gmail.com'], clean=False, nlive=300, 
               fit_ttv=False, detrending_list=[['nth order', 2]],
-              dynesty_sample='rslice', fitting_mode='folded',
+              dynesty_sample='auto', fitting_mode='folded',
               limb_darkening_model='quadratic', ld_fit_method='independent',
               max_batch_parameters=25, batch_overlap=2, dlogz=None, 
               maxiter=None, maxcall=None, dynesty_bounding='multi', 
