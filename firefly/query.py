@@ -63,7 +63,7 @@ def tess_targets():
     df = read_csv(nasa_csv, 
                         usecols=['pl_name', 
                                  'soltype', 
-                                 'disc_facility'])
+                                 'disc_facility']).drop_duplicates('pl_name')
     TESS = 'Transiting Exoplanet Survey Satellite (TESS)'
     df = df[df.disc_facility == TESS].drop(['disc_facility'], axis=1)
     print(tabulate(df, tablefmt='psql', showindex=False,
