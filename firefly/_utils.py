@@ -128,9 +128,9 @@ def _MAST_query(exoplanet, exo_folder):
     return sector_list
     
 
-def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False,
-               detrending_list=[['nth order', 2]], clean=False,
-               dynesty_sample='rslice', fitting_mode='folded',
+def _retrieval(exoplanet, archive='eu', curve_sample=1, clean=False,
+               nlive=300, fit_ttv=False, detrending_list=[['nth order', 2]],
+               dynesty_sample='auto', fitting_mode='auto',
                limb_darkening_model='quadratic', ld_fit_method='independent',
                max_batch_parameters=25, batch_overlap=2, dlogz=None, 
                maxiter=None, maxcall=None, dynesty_bounding='multi', 
@@ -173,7 +173,8 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False
         if clean == True:
             os.remove(csvfile)
     split_curve_in_dir = [i for sub in split_curve_in_dir for i in sub]
-    print(f'\nA total of {len(split_curve_in_dir)} lightcurves were generated.')
+    print(f'\nA total of {len(split_curve_in_dir)} lightcurves '
+          'were generated.')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Sort the files into ascending order and take random sample
     curves = ceil(curve_sample * len(split_curve_in_dir))
@@ -188,8 +189,8 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False
         df = df.append([{'Path': split_curve}], ignore_index=True)
         df['Telescope'], df['Filter'], df['Detrending'] = 0, 0, 0
         df['Epochs'] = range(0, len(df))
-    print(f'\nA random sample of {len(df)} lightcurves will be fitted across all'
-          ' TESS Sectors.\n')
+    print(f'\nA random sample of {len(df)} lightcurves will be fitted'
+          ' across all TESS Sectors.\n')
     df.to_csv(data_path, index=False, header=True)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Paths to data, priors, and filter info:
