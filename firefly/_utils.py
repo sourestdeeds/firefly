@@ -63,7 +63,7 @@ def _TESS_filter():
     df.to_csv(tess_filter_path, index=False, header=True)
 
 
-def _fits(exoplanet, exo_folder):
+def _fits(exoplanet, exo_folder, clean):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Path to downloaded fits
     fits_in_dir = []
@@ -96,7 +96,8 @@ def _fits(exoplanet, exo_folder):
             writer = DictWriter(f, columns)
             writer.writeheader()
             writer.writerows(write_dict)
-        os.remove(fitsfile)
+        if clean == True:
+            os.remove(fitsfile)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Path to downloaded csv   
     csv_in_dir = []
@@ -128,7 +129,7 @@ def _MAST_query(exoplanet, exo_folder):
     
 
 def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False,
-               detrending_list=[['nth order', 2]],
+               detrending_list=[['nth order', 2]], clean=False,
                dynesty_sample='rslice', fitting_mode='folded',
                limb_darkening_model='quadratic', ld_fit_method='independent',
                max_batch_parameters=25, batch_overlap=2, dlogz=None, 
@@ -163,18 +164,15 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False
     lc.download_all(download_dir=exo_folder)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Split the Light curves
-    csv_in_dir = _fits(exoplanet, exo_folder)
-    for i, csvfile in enumerate(csv_in_dir):
-        split_lightcurve_file(csvfile, t0=t0, P=P) #, t14=t14)
-        os.remove(csvfile)
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # Find the split_curve_*.csv
     split_curve_in_dir = []
-    source = f'{exo_folder}/mastDownload/TESS/'
-    for r, d, f in os.walk(source):
-        for item in f:
-            if '.csv' in item:
-                split_curve_in_dir.append(os.path.join(r, item))
+    csv_in_dir = _fits(exoplanet, exo_folder, clean)
+    for i, csvfile in enumerate(csv_in_dir):
+        split_curves = split_lightcurve_file(csvfile, t0=t0, P=P) #, t14=t14)
+        split_curves = [s + '.csv' for s in split_curves]
+        split_curve_in_dir.append(split_curves)
+        if clean == True:
+            os.remove(csvfile)
+    split_curve_in_dir = [i for sub in split_curve_in_dir for i in sub]
     print(f'\nA total of {len(split_curve_in_dir)} lightcurves were generated.')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Sort the files into ascending order and take random sample
@@ -221,10 +219,10 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, nlive=300, fit_ttv=False
                   normalise=normalise, detrend=detrend)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Cleanup
-    try:
+    if clean == True:
         rmtree(f'{exo_folder}/mastDownload')
-    except BaseException:
-        pass
+        os.remove(data)
+        os.remove(priors)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Archive and sort
     now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
