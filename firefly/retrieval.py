@@ -39,8 +39,6 @@ def _retrieval_input_target(exoplanet, archive):
     verify = ''
     while (verify!="y" and verify!="n" and verify!='q'):
         print(f'\nTarget search chose {exoplanet}.')
-        # query(exoplanet, archive=archive)
-        # print('\nFor a list of TESS targets, type tess.')
         verify = input('Proceed ([y]/n)?\n')
     if (verify=='q'):
         sys.exit('You chose to quit.')
@@ -51,15 +49,12 @@ def _retrieval_input_target(exoplanet, archive):
         while (verify!="y" and verify!='q' and exoplanet!='q'):
             tess_targets()
             exoplanet = input('Please refine your search or type q to quit: ')
-        if (exoplanet=='q'):
-            sys.exit('You chose to quit.')
             highest, ratios = _fuzzy_search(exoplanet, archive=archive)
             exoplanet = highest[0]
             print(f'\nTarget search chose {highest[0]} from the '
                   f'{archive_data}:\n')
-            # query(exoplanet, archive=archive)
             verify = input('Proceed ([y]/n)? or type q to quit.\n')   
-        if (verify=='q'):
+        if (verify=='q' or exoplanet=='q'):
             sys.exit('You chose to quit.')
         elif (verify=="y"):
             print(f'\nChecking data products from MAST for {exoplanet}.')
@@ -96,9 +91,9 @@ def retrieval_input_curve_sample(split_curve_in_dir):
         return sample
 
 
-def retrieval(exoplanet, archive='eu', email=False, clean=False,
-              to=['transitfit.server@gmail.com'], nlive=300, fit_ttv=False,
-              detrending_list=[['nth order', 2]],
+def retrieval(exoplanet, archive='eu', email=False, 
+              to=['transitfit.server@gmail.com'], clean=False, nlive=300, 
+              fit_ttv=False, detrending_list=[['nth order', 2]],
               dynesty_sample='rslice', fitting_mode='folded',
               limb_darkening_model='quadratic', ld_fit_method='independent',
               max_batch_parameters=25, batch_overlap=2, dlogz=None, 
@@ -161,7 +156,8 @@ def retrieval(exoplanet, archive='eu', email=False, clean=False,
         Accepted methods are:
             
         - ['nth order', order]
-        - ['custom', function, [global fit indices, filter fit indices, epoch fit indices]]
+        - ['custom', function, [global fit indices, filter fit indices, 
+                                epoch fit indices]]
         - ['off', ]
         Function here is a custom detrending function. TransitFit assumes
         that the first argument to this function is times and that all
