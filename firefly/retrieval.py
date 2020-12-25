@@ -376,22 +376,22 @@ def retrieval(exoplanet, archive='eu', email=False,
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Run the retrieval
     try:
-        results = run_retrieval(data, priors, filters, 
-                                detrending_list=detrending_list,
-                                host_T=host_T, host_logg=host_logg, 
-                                host_z=host_z, host_r=host_r, 
-                                dynesty_sample=dynesty_sample,
-                                fitting_mode=fitting_mode, fit_ttv=fit_ttv,
-                                results_output_folder=results_output_folder,
-                                final_lightcurve_folder=fitted_lightcurve_folder,
-                                plot_folder=plot_folder, nlive=nlive,
-                                limb_darkening_model=limb_darkening_model, 
-                                ld_fit_method=ld_fit_method,
-                                max_batch_parameters=max_batch_parameters, 
-                                batch_overlap=batch_overlap, dlogz=dlogz, 
-                                maxiter=maxiter, maxcall=maxcall, 
-                                dynesty_bounding=dynesty_bounding, 
-                                normalise=normalise, detrend=detrend)
+        run_retrieval(data, priors, filters, 
+                      detrending_list=detrending_list,
+                      host_T=host_T, host_logg=host_logg, 
+                      host_z=host_z, host_r=host_r, 
+                      dynesty_sample=dynesty_sample,
+                      fitting_mode=fitting_mode, fit_ttv=fit_ttv,
+                      results_output_folder=results_output_folder,
+                      final_lightcurve_folder=fitted_lightcurve_folder,
+                      plot_folder=plot_folder, nlive=nlive,
+                      limb_darkening_model=limb_darkening_model, 
+                      ld_fit_method=ld_fit_method,
+                      max_batch_parameters=max_batch_parameters, 
+                      batch_overlap=batch_overlap, dlogz=dlogz, 
+                      maxiter=maxiter, maxcall=maxcall, 
+                      dynesty_bounding=dynesty_bounding, 
+                      normalise=normalise, detrend=detrend)
     except KeyboardInterrupt:
         now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
         keyboard = f'firefly/KeyboardInterrupt/{exoplanet} ' +\
@@ -438,4 +438,3 @@ def retrieval(exoplanet, archive='eu', email=False,
                            'all available TESS Sectors.', to=to)
     except:
         pass
-    return results
