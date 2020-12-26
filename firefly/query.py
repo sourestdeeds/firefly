@@ -60,7 +60,8 @@ def tess():
     '''
     _download_nasa()
     nasa_csv = 'firefly/data/nasa.csv'
-    df = read_csv(nasa_csv, usecols=['pl_name', 
+    df = read_csv(nasa_csv, usecols=['pl_name',
+                                     'tic_id',
                                      'soltype',
                                      'rowupdate',
                                      'disc_facility']) \
@@ -69,10 +70,41 @@ def tess():
     TESS = 'Transiting Exoplanet Survey Satellite (TESS)'
     df = df[df.disc_facility == TESS].drop(['disc_facility'], axis=1)
     print(tabulate(df, tablefmt='psql', showindex=False,
-                   headers=['Exoplanet', 'Confirmed/Candidate', 'Updated']))
-    targets = df .drop(['soltype', 'rowupdate'], axis=1) .values .tolist()
+                   headers=['Exoplanet', 'TIC ID', 'Confirmed/Candidate', 'Updated']))
+    targets = df .drop(['tic_id', 'soltype', 'rowupdate'], axis=1) \
+                 .values .tolist()
     targets = [i for j in df for i in j]
     return targets
+
+
+def tic():
+    '''
+    Returns a dataframe of all planet names and tic ID's.
+
+    Parameters
+    ----------
+    None
+
+    Returns
+    -------
+    Data printed to console.
+
+    '''
+    _download_nasa()
+    nasa_csv = 'firefly/data/nasa.csv'
+    df = read_csv(nasa_csv, usecols=['pl_name',
+                                     'tic_id',
+                                     'soltype',
+                                     'rowupdate',
+                                     'disc_facility']) \
+                                    .drop_duplicates('pl_name', keep='last') \
+                                    .sort_values('pl_name')
+    tic = 'firefly/data/tic.csv'
+    df.to_csv(tic, index=False, header=True)
+    tic_df = df .drop(['soltype', 'rowupdate', 'disc_facility'], axis=1).dropna() 
+                 #.to_dict('records')
+    return tic_df
+
 
 def priors(target, archive='eu'):
     '''
