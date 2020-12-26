@@ -9,7 +9,7 @@ A target data retriever for confirmed/candidate TESS exoplanets.
 from ._utils import _fits, _TESS_filter, _MAST_query, _email
 from ._archive import _eu, _nasa, _check_nan
 from ._search import _fuzzy_search
-from .query import tess
+from .query import tess, tic
 
 from transitfit import split_lightcurve_file, run_retrieval
 try:
@@ -27,8 +27,6 @@ from shutil import rmtree, make_archive
 import sys
 import os
 import random
-
-
 
 def _nan(exoplanet, archive, printing=False):
     nan = _check_nan(exoplanet, archive=archive)
@@ -48,18 +46,18 @@ def _retrieval_input_target(exoplanet, archive):
     # Check inputs are sensible
     if not (archive == 'eu' or archive == 'nasa'):
         sys.exit('Archive data options are: \'eu\' or \'nasa\'')
-    archive_data = 'EU archive'
     highest, ratios = _fuzzy_search(exoplanet, archive=archive)
     exoplanet = highest[0]
+    tic_id = tic(exoplanet)
     verify = ''
     while (verify!="y" and verify!="n" and verify!='q'):
-        print(f'\nTarget search chose {exoplanet}.')
+        print(f'\nTarget search chose {exoplanet} ({tic_id}).')
         verify = input('Proceed ([y]/n)?\n')
         _nan(exoplanet, archive)
     if (verify=='q'):
         sys.exit('You chose to quit.')
     elif (verify=='y'):
-        print(f'\nChecking data products from MAST for {exoplanet}.')
+        print(f'\nChecking data products from MAST for {exoplanet} ({tic_id}).')
         return highest[0]
     elif (verify=='n'):
         while (verify!="y" and verify!='q' and exoplanet!='q'):
@@ -67,14 +65,15 @@ def _retrieval_input_target(exoplanet, archive):
             exoplanet = input('Please refine your search or type q to quit: ')
             highest, ratios = _fuzzy_search(exoplanet, archive=archive)
             exoplanet = highest[0]
-            print(f'\nTarget search chose {highest[0]} from the '
-                  f'{archive_data}:\n')
+            tic_id = tic(exoplanet)
+            print(f'\nTarget search chose {exoplanet} ({tic_id}).\n')
             verify = input('Proceed ([y]/n)? or type q to quit.\n')
             _nan(exoplanet, archive)
         if (verify=='q' or exoplanet=='q'):
             sys.exit('You chose to quit.')
         elif (verify=="y"):
-            print(f'\nChecking data products from MAST for {exoplanet}.')
+            print(f'\nChecking data products from MAST for {exoplanet} '
+                  f'({tic_id}).')
             return highest[0]
 
 
@@ -108,7 +107,7 @@ def retrieval_input_curve_sample(split_curve_in_dir):
         return sample
 
 
-def retrieval(exoplanet, archive='eu', email=False, 
+def retrieval(exoplanet, archive='nasa', email=False, 
               to=['transitfit.server@gmail.com'], clean=False, nlive=300, 
               fit_ttv=False, detrending_list=[['nth order', 2]],
               dynesty_sample='auto', fitting_mode='folded',
