@@ -195,6 +195,7 @@ def _nasa(exoplanet, save=True):
     except KeyError:
         sys.exit('The chosen target is either spelt incorrectly, or does not '
                  'exist in the NASA archive.')
+    tic = df['tic_id'] .drop_duplicates() .values .tolist()[0]
     s = df.mean()
     t0, P, t14 = s.loc['pl_tranmid'], s.loc['pl_orbper'], \
         s.loc['pl_trandur'] * 60
@@ -252,7 +253,8 @@ def _nasa(exoplanet, save=True):
     repack = DataFrame(cols, columns=['Parameter', 'Distribution',
                                       'Input_A', 'Input_B', 'Filter'])
     nan = repack.isnull().values.any()
-    print(f'\nPriors generated from the NASA Archive for {exoplanet}.\n')
+    print(f'\nPriors generated from the NASA Archive for {exoplanet}'
+          f' ({tic}).\n')
     print(tabulate(repack, tablefmt='psql', showindex=False, headers='keys'))
     return host_T, host_z, host_r, host_logg, t0, P, t14, nan
 
