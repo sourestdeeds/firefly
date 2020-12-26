@@ -52,7 +52,7 @@ def _download_nasa():
     download_link =  \
         'https://exoplanetarchive.ipac.caltech.edu/' +\
         'TAP/sync?query=select+' +\
-        'pl_name,pl_orbper,pl_orbpererr1,pl_orbsmax,pl_orbsmaxerr1,' +\
+        'pl_name,tic_id,pl_orbper,pl_orbpererr1,pl_orbsmax,pl_orbsmaxerr1,' +\
         'pl_radj,pl_radjerr1,pl_orbeccen,pl_orbeccenerr1,disc_facility,' +\
         'st_teff,st_tefferr1,st_rad,st_raderr1,st_mass,st_masserr1,' +\
         'st_met,st_meterr1,pl_tranmid,pl_tranmiderr1,pl_trandur,' +\
