@@ -47,7 +47,7 @@ def query(target, archive='eu'):
 
 def tess():
     '''
-    A list of all exoplanets discovered by TESS.
+    A list of all exoplanets with a TIC ID, and full prior entries.
 
     Parameters
     ----------
@@ -73,7 +73,7 @@ def tess():
                    headers=['Exoplanet', 'TIC ID', 'Confirmed/Candidate', 'Updated']))
     targets = df .drop(['tic_id', 'soltype', 'rowupdate'], axis=1) \
                  .values .tolist()
-    targets = [i for j in df for i in j]
+    targets = [i for j in targets for i in j]
     return targets
 
 
