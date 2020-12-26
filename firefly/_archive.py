@@ -11,7 +11,6 @@ from transitfit import calculate_logg
 from datetime import datetime, timedelta
 from tabulate import tabulate
 from pandas import DataFrame, read_csv
-from shutil import rmtree
 import astropy.units as u
 import numpy as np
 import sys
@@ -75,7 +74,7 @@ def _download_nasa():
     return nasa_csv
 
 
-def _eu(exoplanet):
+def _eu(exoplanet, save=True):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Download EU archive
     eu_csv = _download_eu()
@@ -135,11 +134,12 @@ def _eu(exoplanet):
                                           'Input_A', 'Input_B', 'Filter'])
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Save the priors
-    priors = f'firefly/{exoplanet}/{exoplanet} Priors.csv'
-    if not os.path.exists(priors):
-        priors_csv.to_csv(priors, index=False, header=True)
-    else:
-        pass
+    if save == True:
+        priors = f'firefly/{exoplanet}/{exoplanet} Priors.csv'
+        if not os.path.exists(priors):
+            priors_csv.to_csv(priors, index=False, header=True)
+        else:
+            pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # For printing variables only
     cols = [['P', 'gaussian', s.loc['orbital_period'],
@@ -181,7 +181,7 @@ def _nasa_full():
     df.to_csv('firefly/data/nasa_full.csv', index=False)
         
     
-def _nasa(exoplanet):
+def _nasa(exoplanet, save=True):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Download NASA archive
     nasa_csv = _download_nasa()
@@ -226,11 +226,12 @@ def _nasa(exoplanet):
                                           'Input_A', 'Input_B', 'Filter'])
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Save the priors
-    priors = f'firefly/{exoplanet}/{exoplanet} Priors.csv'
-    if not os.path.exists(priors):
-        priors_csv.to_csv(priors, index=False, header=True)
-    else:
-        pass
+    if save == True:
+        priors = f'firefly/{exoplanet}/{exoplanet} Priors.csv'
+        if not os.path.exists(priors):
+            priors_csv.to_csv(priors, index=False, header=True)
+        else:
+            pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # For printing variables only
     cols = [['P', 'gaussian', s.loc['pl_orbper'],
@@ -257,23 +258,20 @@ def _nasa(exoplanet):
 
 
 def _check_nan(exoplanet, archive='eu', printing=False):
-    temp = f'firefly/{exoplanet}'
-    os.makedirs(temp, exist_ok=True)
     if archive == 'eu':
         if printing == False:
             with suppress_print():
-                nan = _eu(exoplanet)
+                nan = _eu(exoplanet, save=False)
                 nan = nan[7]
         elif printing == True:
-            nan = _eu(exoplanet)
+            nan = _eu(exoplanet, save=False)
             nan = nan[7]
     elif archive == 'nasa':
         if printing == False:
             with suppress_print():
-                nan = _nasa(exoplanet)
+                nan = _nasa(exoplanet, save=False)
                 nan = nan[7]
         elif printing == True:
-            nan = _nasa(exoplanet)
+            nan = _nasa(exoplanet, save=False)
             nan = nan[7]
-    rmtree(temp)
     return nan
