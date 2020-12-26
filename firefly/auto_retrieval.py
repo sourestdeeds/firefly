@@ -331,16 +331,18 @@ def auto_retrieval(targets, archive='eu', curve_sample=1, email=False,
             raise
             sys.exit()
         except BaseException:
-            exo_folder = f'firefly/{exoplanet}'
-            now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
-            exception = f'firefly/Exception/{exoplanet} ' +\
-                        f'{now} Exception'
-            trace_back = format_exc()
-            print(trace_back, file=open(exo_folder+'/traceback.txt', 'w'))
-            make_archive(exception, format='gztar',
-                     root_dir=f'{os.getcwd()}/firefly/',
-                     base_dir=f'{exoplanet}')
-            rmtree(exo_folder)
-            if email == True:
-                _email(f'Exception: {exoplanet}', trace_back, to=to)
-            pass
+            try:
+                exo_folder = f'firefly/{exoplanet}'
+                now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
+                exception = f'firefly/Exception/{exoplanet} ' +\
+                            f'{now} Exception'
+                trace_back = format_exc()
+                print(trace_back, file=open(exo_folder+'/traceback.txt', 'w'))
+                make_archive(exception, format='gztar',
+                         root_dir=f'{os.getcwd()}/firefly/',
+                         base_dir=f'{exoplanet}')
+                rmtree(exo_folder)
+                if email == True:
+                    _email(f'Exception: {exoplanet}', trace_back, to=to)
+            except:
+                pass
