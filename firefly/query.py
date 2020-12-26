@@ -77,7 +77,7 @@ def tess():
     return targets
 
 
-def tic():
+def tic(exoplanet):
     '''
     Returns a dataframe of all planet names and tic ID's.
 
@@ -87,7 +87,7 @@ def tic():
 
     Returns
     -------
-    Data printed to console.
+    TIC ID of an exoplanet target.
 
     '''
     _download_nasa()
@@ -101,9 +101,11 @@ def tic():
                                     .sort_values('pl_name')
     tic = 'firefly/data/tic.csv'
     df.to_csv(tic, index=False, header=True)
-    tic_df = df .drop(['soltype', 'rowupdate', 'disc_facility'], axis=1).dropna() 
-                 #.to_dict('records')
-    return tic_df
+    tic_df = df .drop(['soltype', 'rowupdate', 'disc_facility'], axis=1).dropna() \
+                 .set_index('pl_name')
+    target = tic_df.loc[[exoplanet]]
+    tic_id = target['tic_id'] .values .tolist()[0]
+    return tic_id
 
 
 def priors(target, archive='eu'):
