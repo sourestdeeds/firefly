@@ -70,7 +70,9 @@ def tess():
     df = df[df.disc_facility == TESS].drop(['disc_facility'], axis=1)
     print(tabulate(df, tablefmt='psql', showindex=False,
                    headers=['Exoplanet', 'Confirmed/Candidate', 'Updated']))
-    return df
+    targets = df .drop(['soltype', 'rowupdate'], axis=1) .values .tolist()
+    targets = [i for j in df for i in j]
+    return targets
 
 def priors(target, archive='eu'):
     '''
