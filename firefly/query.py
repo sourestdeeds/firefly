@@ -68,13 +68,14 @@ def tess():
                                     .drop_duplicates('pl_name', keep='last') \
                                     .sort_values('pl_name')
     TESS = 'Transiting Exoplanet Survey Satellite (TESS)'
-    df = df[df.disc_facility == TESS].drop(['disc_facility'], axis=1)
-    print(tabulate(df, tablefmt='psql', showindex=False,
+    disc_by_tess = df[df.disc_facility == TESS].drop(['disc_facility'], axis=1)
+    print(tabulate(disc_by_tess, tablefmt='psql', showindex=False,
                    headers=['Exoplanet', 'TIC ID', 'Confirmed/Candidate', 'Updated']))
-    targets = df .drop(['tic_id', 'soltype', 'rowupdate'], axis=1) \
+    tess_targets = disc_by_tess .drop(['tic_id', 'soltype', 'rowupdate'], axis=1) \
                  .values .tolist()
-    targets = [i for j in targets for i in j]
-    return targets
+    tess_targets = [i for j in tess_targets for i in j]
+            
+    return tess_targets
 
 
 def tic(exoplanet):
@@ -96,9 +97,9 @@ def tic(exoplanet):
                                      'tic_id',
                                      'soltype',
                                      'rowupdate',
-                                     'disc_facility']) \
-                                    .drop_duplicates('pl_name', keep='last') \
-                                    .sort_values('pl_name')
+                                     'disc_facility']) .sort_values('pl_name') \
+                                    .drop_duplicates('pl_name', keep='last') 
+                                    #.sort_values('pl_name')
     tic = 'firefly/data/tic.csv'
     df.to_csv(tic, index=False, header=True)
     tic_df = df .drop(['soltype', 'rowupdate', 'disc_facility'], axis=1).dropna() \
