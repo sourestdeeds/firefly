@@ -115,6 +115,8 @@ def retrieval(
         to=['transitfit.server@gmail.com'], 
         clean=False,
         # TransitFit Variables
+        cutoff=0.25,
+        window=2.5,
         nlive=300, 
         fit_ttv=False, 
         detrending_list=[['nth order', 2]],
@@ -372,7 +374,8 @@ def retrieval(
     split_curve_in_dir = []
     csv_in_dir = _fits(exoplanet, exo_folder, clean)
     for i, csvfile in enumerate(csv_in_dir):
-        split_curves = split_lightcurve_file(csvfile, t0=t0, P=P) #, t14=t14)
+        split_curves = split_lightcurve_file(csvfile, t0=t0, P=P, t14=t14,
+                                             cutoff=cutoff, window=window)
         split_curves = [s + '.csv' for s in split_curves]
         split_curve_in_dir.append(split_curves)
         if clean == True:
