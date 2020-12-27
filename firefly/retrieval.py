@@ -86,7 +86,7 @@ def retrieval_input_sector(sector_list):
                        ' or type a to download them all: ')
         check = all(item in sector_list for item in sector.split())
     if sector == 'q':
-            sys.exit('You chose to quit.')
+        sys.exit('You chose to quit.')
     elif sector == 'a':
         return sector_list
     elif check == True:
