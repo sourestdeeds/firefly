@@ -315,8 +315,7 @@ def auto_retrieval(
     >>> firefly/WASP-43 b timestamp.gz.tar
 
     '''
-    #exoplanet_list = _auto_input_check(targets, archive, curve_sample)
-    exoplanet_list = targets
+    exoplanet_list = _auto_input_check(targets, archive, curve_sample)
     for i, exoplanet in enumerate(exoplanet_list):
         try:
             _retrieval(
