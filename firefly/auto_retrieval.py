@@ -41,7 +41,7 @@ def _auto_input_check(targets, archive, curve_sample):
 def auto_retrieval(
         # Firefly Interface
         targets, 
-        archive='eu', 
+        archive='nasa', 
         curve_sample=1, 
         email=False,
         to=['transitfit.server@gmail.com'], 
