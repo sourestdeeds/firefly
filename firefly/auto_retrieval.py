@@ -153,11 +153,18 @@ def auto_retrieval(
         If True will delete all downloaded files and zip outputs only.
         The default is False.
     cutoff : float, optional
-        If there are no data within t14 * cutoff of t0, a period will be
+        If there are no data within 
+        
+        >>> t14 * cutoff of t0, 
+        
+        a period will be
         discarded. Default is 0.25
     window : float, optional
-        Data outside of the range [t0 ± (0.5 * t14) * window] will be
-        discarded.
+        Data outside of the range 
+        
+        >>> [t0 ± (0.5 * t14) * window] 
+        
+        will be discarded.
     nlive : int, optional
         The number of live points to use in the nested sampling retrieval.
         Default is 1000.
