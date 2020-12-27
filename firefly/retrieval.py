@@ -115,6 +115,8 @@ def retrieval(
         to=['transitfit.server@gmail.com'], 
         clean=False,
         # TransitFit Variables
+        cutoff=0.25,
+        window=2.5,
         nlive=300, 
         fit_ttv=False, 
         detrending_list=[['nth order', 2]],
@@ -176,9 +178,22 @@ def retrieval(
         The default is:
             
         >>> to=['transitfit.server@gmail.com']
-    clean : bool, optional
-        If True will delete all downloaded files and zip outputs only.
-        The default is False.
+    cutoff : float, optional
+        If there are no data within 
+        
+        >>> t14 * cutoff of t0, 
+        
+        a period will be
+        discarded. Default is 0.25
+    window : float, optional
+        Data outside of the range 
+        
+        >>> [t0 ± (0.5 * t14) * window] 
+        
+        will be discarded.
+    window : float, optional
+        Data outside of the range [t0 ± (0.5 * t14) * window] will be
+        discarded.
     nlive : int, optional
         The number of live points to use in the nested sampling retrieval.
         Default is 300.
@@ -372,7 +387,8 @@ def retrieval(
     split_curve_in_dir = []
     csv_in_dir = _fits(exoplanet, exo_folder, clean)
     for i, csvfile in enumerate(csv_in_dir):
-        split_curves = split_lightcurve_file(csvfile, t0=t0, P=P) #, t14=t14)
+        split_curves = split_lightcurve_file(csvfile, t0=t0, P=P, t14=t14,
+                                             cutoff=cutoff, window=window)
         split_curves = [s + '.csv' for s in split_curves]
         split_curve_in_dir.append(split_curves)
         if clean == True:

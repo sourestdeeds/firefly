@@ -109,7 +109,7 @@ def _fits(exoplanet, exo_folder, clean):
 
 
 def _MAST_query(exoplanet, exo_folder):
-    lc = search_lightcurve(exoplanet, mission='TESS') #, radius=750)
+    lc = search_lightcurve(exoplanet, mission='TESS', radius=0.01)
     if len(lc) == 0:
         rmtree(exo_folder)
         sys.exit(f'Search result contains no data products for {exoplanet}.')
@@ -128,13 +128,31 @@ def _MAST_query(exoplanet, exo_folder):
     return sector_list
     
 
-def _retrieval(exoplanet, archive='eu', curve_sample=1, clean=False,
-               nlive=300, fit_ttv=False, detrending_list=[['nth order', 2]],
-               dynesty_sample='auto', fitting_mode='auto',
-               limb_darkening_model='quadratic', ld_fit_method='independent',
-               max_batch_parameters=25, batch_overlap=2, dlogz=None, 
-               maxiter=None, maxcall=None, dynesty_bounding='multi', 
-               normalise=True, detrend=True):
+def _retrieval(
+        # Firefly Interface
+        exoplanet, 
+        archive='eu', 
+        curve_sample=1, 
+        clean=False,
+        # TransitFit Variables
+        cutoff=0.25, 
+        window=2.5,
+        nlive=300, 
+        fit_ttv=False, 
+        detrending_list=[['nth order', 2]],
+        dynesty_sample='auto', 
+        fitting_mode='auto',
+        limb_darkening_model='quadratic', 
+        ld_fit_method='independent',
+        max_batch_parameters=25, 
+        batch_overlap=2, 
+        dlogz=None, 
+        maxiter=None, 
+        maxcall=None, 
+        dynesty_bounding='multi', 
+        normalise=True, 
+        detrend=True
+):
     
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Filter Setup
@@ -159,7 +177,7 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, clean=False,
     print(tabulate(df, tablefmt='psql', showindex=False, headers='keys'))
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # MAST Download
-    lc = search_lightcurve(exoplanet, mission='TESS')
+    lc = search_lightcurve(exoplanet, mission='TESS', radius=0.01)
     print(f'\nDownloading MAST Lightcurves for {exoplanet}.')
     lc.download_all(download_dir=exo_folder)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -167,7 +185,8 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, clean=False,
     split_curve_in_dir = []
     csv_in_dir = _fits(exoplanet, exo_folder, clean)
     for i, csvfile in enumerate(csv_in_dir):
-        split_curves = split_lightcurve_file(csvfile, t0=t0, P=P) #, t14=t14)
+        split_curves = split_lightcurve_file(csvfile, t0=t0, P=P, t14=t14, 
+                                             cutoff=cutoff, window=window)
         split_curves = [s + '.csv' for s in split_curves]
         split_curve_in_dir.append(split_curves)
         if clean == True:
