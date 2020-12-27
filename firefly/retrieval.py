@@ -178,12 +178,19 @@ def retrieval(
         The default is:
             
         >>> to=['transitfit.server@gmail.com']
-    clean : bool, optional
-        If True will delete all downloaded files and zip outputs only.
-        The default is False.
     cutoff : float, optional
-        If there are no data within t14 * cutoff of t0, a period will be
+        If there are no data within 
+        
+        >>> t14 * cutoff of t0, 
+        
+        a period will be
         discarded. Default is 0.25
+    window : float, optional
+        Data outside of the range 
+        
+        >>> [t0 ± (0.5 * t14) * window] 
+        
+        will be discarded.
     window : float, optional
         Data outside of the range [t0 ± (0.5 * t14) * window] will be
         discarded.
