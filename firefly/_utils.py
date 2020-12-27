@@ -204,20 +204,33 @@ def _retrieval(exoplanet, archive='eu', curve_sample=1, clean=False,
     plot_folder = f'{exo_folder}/plots'
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Run the retrieval
-    run_retrieval(data, priors, filters, detrending_list=detrending_list,
-                  host_T=host_T, host_logg=host_logg, host_z=host_z,
-                  host_r=host_r, dynesty_sample=dynesty_sample,
-                  fitting_mode=fitting_mode, fit_ttv=fit_ttv,
-                  results_output_folder=results_output_folder,
-                  final_lightcurve_folder=fitted_lightcurve_folder,
-                  plot_folder=plot_folder, nlive=nlive,
-                  limb_darkening_model=limb_darkening_model, 
-                  ld_fit_method=ld_fit_method,
-                  max_batch_parameters=max_batch_parameters, 
-                  batch_overlap=batch_overlap, dlogz=dlogz, 
-                  maxiter=maxiter, maxcall=maxcall, 
-                  dynesty_bounding=dynesty_bounding, 
-                  normalise=normalise, detrend=detrend)
+    run_retrieval(
+            data, 
+            priors, 
+            filters, 
+            host_T=host_T, 
+            host_logg=host_logg, 
+            host_z=host_z, 
+            host_r=host_r,
+            nlive=nlive,
+            fit_ttv=fit_ttv,
+            detrending_list=detrending_list,
+            dynesty_sample=dynesty_sample,
+            fitting_mode=fitting_mode, 
+            limb_darkening_model=limb_darkening_model, 
+            ld_fit_method=ld_fit_method,
+            max_batch_parameters=max_batch_parameters, 
+            batch_overlap=batch_overlap, 
+            dlogz=dlogz, 
+            maxiter=maxiter, 
+            maxcall=maxcall, 
+            dynesty_bounding=dynesty_bounding, 
+            normalise=normalise, 
+            detrend=detrend,
+            results_output_folder=results_output_folder,
+            final_lightcurve_folder=fitted_lightcurve_folder,
+            plot_folder=plot_folder
+        )
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Cleanup
     if clean == True:
