@@ -47,6 +47,8 @@ def auto_retrieval(
         to=['transitfit.server@gmail.com'], 
         clean=False,
         # TransitFit Variables
+        cutoff=0.25,
+        window=2.5,
         nlive=300, 
         fit_ttv=False,
         detrending_list=[['nth order', 2]],
@@ -300,7 +302,8 @@ def auto_retrieval(
     >>> firefly/WASP-43 b timestamp.gz.tar
 
     '''
-    exoplanet_list = _auto_input_check(targets, archive, curve_sample)
+    #exoplanet_list = _auto_input_check(targets, archive, curve_sample)
+    exoplanet_list = targets
     for i, exoplanet in enumerate(exoplanet_list):
         try:
             _retrieval(
@@ -310,6 +313,8 @@ def auto_retrieval(
                 curve_sample=curve_sample,
                 clean=clean,
                 # TransitFit Variables
+                cutoff=cutoff,
+                window=window,
                 nlive=nlive,
                 fit_ttv=fit_ttv,
                 detrending_list=detrending_list,
