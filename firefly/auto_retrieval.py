@@ -31,15 +31,6 @@ def _auto_input_check(targets, archive, curve_sample):
         nan = _check_nan(exoplanet, archive=archive)
         if nan == True:
             print(f'Skipping {exoplanet} due to missing prior data.')
-            # _check_nan(exoplanet, archive=archive, printing=True)
-            # verify = ''
-            # while (verify!="y" and verify!="n"):
-            #     verify = input(f'\nWARNING: {exoplanet} has missing '
-            #                        'prior entries. Proceed ([y]/n)?\n')
-            # if verify == "n":
-            #     sys.exit()
-            # elif verify == "y":
-            #     pass
             pass
         elif nan == False:
             exoplanet_list.append(exoplanet)
@@ -47,15 +38,31 @@ def _auto_input_check(targets, archive, curve_sample):
     return exoplanet_list
 
 
-def auto_retrieval(targets, archive='eu', curve_sample=1, email=False,
-                   to=['transitfit.server@gmail.com'], clean=False,
-                   nlive=300, fit_ttv=False,
-                   detrending_list=[['nth order', 2]],
-                   dynesty_sample='auto', fitting_mode='auto',
-                   limb_darkening_model='quadratic', ld_fit_method='independent',
-                   max_batch_parameters=25, batch_overlap=2, dlogz=None, 
-                   maxiter=None, maxcall=None, dynesty_bounding='multi', 
-                   normalise=True, detrend=True):
+def auto_retrieval(
+        # Firefly Interface
+        targets, 
+        archive='eu', 
+        curve_sample=1, 
+        email=False,
+        to=['transitfit.server@gmail.com'], 
+        clean=False,
+        # TransitFit Variables
+        nlive=300, 
+        fit_ttv=False,
+        detrending_list=[['nth order', 2]],
+        dynesty_sample='auto', 
+        fitting_mode='auto',
+        limb_darkening_model='quadratic', 
+        ld_fit_method='independent',
+        max_batch_parameters=25, 
+        batch_overlap=2, 
+        dlogz=None, 
+        maxiter=None, 
+        maxcall=None, 
+        dynesty_bounding='multi', 
+        normalise=True, 
+        detrend=True
+):
     '''
     Automated version of retrieval. For a single target the procedure is:
          
@@ -296,18 +303,29 @@ def auto_retrieval(targets, archive='eu', curve_sample=1, email=False,
     exoplanet_list = _auto_input_check(targets, archive, curve_sample)
     for i, exoplanet in enumerate(exoplanet_list):
         try:
-            _retrieval(exoplanet, archive=archive, nlive=nlive, clean=clean,
-                       detrending_list=detrending_list,
-                       dynesty_sample=dynesty_sample,
-                       fitting_mode=fitting_mode, fit_ttv=fit_ttv,
-                       limb_darkening_model=limb_darkening_model, 
-                       ld_fit_method=ld_fit_method,
-                       max_batch_parameters=max_batch_parameters, 
-                       batch_overlap=batch_overlap, dlogz=dlogz, 
-                       maxiter=maxiter, maxcall=maxcall, 
-                       dynesty_bounding=dynesty_bounding, 
-                       normalise=normalise, detrend=detrend,
-                       curve_sample=curve_sample)
+            _retrieval(
+                # Firefly Interface
+                exoplanet, 
+                archive=archive,
+                curve_sample=curve_sample,
+                clean=clean,
+                # TransitFit Variables
+                nlive=nlive,
+                fit_ttv=fit_ttv,
+                detrending_list=detrending_list,
+                dynesty_sample=dynesty_sample,
+                fitting_mode=fitting_mode, 
+                limb_darkening_model=limb_darkening_model, 
+                ld_fit_method=ld_fit_method,
+                max_batch_parameters=max_batch_parameters, 
+                batch_overlap=batch_overlap, 
+                dlogz=dlogz, 
+                maxiter=maxiter, 
+                maxcall=maxcall, 
+                dynesty_bounding=dynesty_bounding, 
+                normalise=normalise, 
+                detrend=detrend
+            )
             now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
             exo_folder = f'firefly/{exoplanet}'
             success = f'{os.getcwd()}/{exo_folder} {now}.gz.tar'
