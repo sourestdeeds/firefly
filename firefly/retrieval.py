@@ -53,10 +53,10 @@ def _retrieval_input_target(exoplanet, archive):
     while (verify!="y" and verify!='q' and verify!='n'):
         print(f'\nTarget search chose {exoplanet} ({tic_id}).')
         verify = input('Proceed ([y]/n)? or type q to quit.\n')
-        _nan(exoplanet, archive)
     if (verify=='q'):
         sys.exit('You chose to quit.')
     elif (verify=='y'):
+        _nan(exoplanet, archive)
         print(f'\nChecking data products from MAST for {exoplanet} ({tic_id}).')
         return highest[0]
     elif (verify=='n'):
@@ -67,10 +67,10 @@ def _retrieval_input_target(exoplanet, archive):
             tic_id = tic(exoplanet)
             print(f'\nTarget search chose {exoplanet} ({tic_id}).\n')
             verify = input('Proceed ([y]/n)? or type q to quit.\n')
-            _nan(exoplanet, archive)
         if (verify=='q'):
             sys.exit('You chose to quit.')
         elif (verify=="y"):
+            _nan(exoplanet, archive)
             print(f'\nChecking data products from MAST for {exoplanet} '
                   f'({tic_id}).')
             return highest[0]
