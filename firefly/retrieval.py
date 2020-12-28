@@ -33,11 +33,14 @@ def _nan(exoplanet, archive, printing=False):
     if nan == True:
         _check_nan(exoplanet, archive=archive, printing=True)
         verify = ''
-        while (verify!="y" and verify!="n"):
+        while (verify!="y" and verify!="n" and verify!="q"):
             verify = input(f'\nWARNING: {exoplanet} has missing '
                                 'prior entries. Proceed ([y]/n)?\n')
-        if verify == "n":
-            sys.exit()
+        if (verify=='q'):
+            sys.exit('You chose to quit.')
+        elif verify == "n":
+            exoplanet = input('Please refine your search: ')
+            _retrieval_input_target(exoplanet,archive)
         elif verify == "y":
             pass
 
