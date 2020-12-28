@@ -50,9 +50,9 @@ def _retrieval_input_target(exoplanet, archive):
     exoplanet = highest[0]
     tic_id = tic(exoplanet)
     verify = ''
-    while (verify!="y" and verify!="n" and verify!='q'):
+    while (verify!="y" and verify!='q' and verify!='n'):
         print(f'\nTarget search chose {exoplanet} ({tic_id}).')
-        verify = input('Proceed ([y]/n)?\n')
+        verify = input('Proceed ([y]/n)? or type q to quit.\n')
         _nan(exoplanet, archive)
     if (verify=='q'):
         sys.exit('You chose to quit.')
@@ -60,16 +60,15 @@ def _retrieval_input_target(exoplanet, archive):
         print(f'\nChecking data products from MAST for {exoplanet} ({tic_id}).')
         return highest[0]
     elif (verify=='n'):
-        while (verify!="y" and verify!='q' and exoplanet!='q'):
-            tess()
-            exoplanet = input('Please refine your search or type q to quit: ')
+        while (verify!="y" and verify!='q'):
+            exoplanet = input('Please refine your search: ')
             highest, ratios = _fuzzy_search(exoplanet, archive=archive)
             exoplanet = highest[0]
             tic_id = tic(exoplanet)
             print(f'\nTarget search chose {exoplanet} ({tic_id}).\n')
             verify = input('Proceed ([y]/n)? or type q to quit.\n')
             _nan(exoplanet, archive)
-        if (verify=='q' or exoplanet=='q'):
+        if (verify=='q'):
             sys.exit('You chose to quit.')
         elif (verify=="y"):
             print(f'\nChecking data products from MAST for {exoplanet} '
