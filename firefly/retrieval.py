@@ -39,8 +39,8 @@ def _nan(exoplanet, archive, printing=False):
         if (verify=='q'):
             sys.exit('You chose to quit.')
         elif verify == "n":
-            exoplanet = input('Please refine your search: ')
-            _retrieval_input_target(exoplanet,archive)
+            sys.exit('You chose to quit.')
+            # _retrieval_input_target(exoplanet,archive)
         elif verify == "y":
             pass
 
@@ -49,6 +49,7 @@ def _retrieval_input_target(exoplanet, archive):
     # Check inputs are sensible
     if not (archive == 'eu' or archive == 'nasa'):
         sys.exit('Archive data options are: \'eu\' or \'nasa\'')
+    exoplanet = input('Search for an exoplanet: ')
     highest, ratios = _fuzzy_search(exoplanet, archive=archive)
     exoplanet = highest[0]
     tic_id = tic(exoplanet)
@@ -61,7 +62,7 @@ def _retrieval_input_target(exoplanet, archive):
     elif (verify=='y'):
         _nan(exoplanet, archive)
         print(f'\nChecking data products from MAST for {exoplanet} ({tic_id}).')
-        return highest[0]
+        return exoplanet
     elif (verify=='n'):
         while (verify!="y" and verify!='q'):
             exoplanet = input('Please refine your search: ')
@@ -76,7 +77,7 @@ def _retrieval_input_target(exoplanet, archive):
             _nan(exoplanet, archive)
             print(f'\nChecking data products from MAST for {exoplanet} '
                   f'({tic_id}).')
-            return highest[0]
+            return exoplanet
 
 
 def retrieval_input_sector(sector_list):
@@ -111,7 +112,7 @@ def retrieval_input_curve_sample(split_curve_in_dir):
 
 def retrieval(
         # Firefly Interface
-        exoplanet, 
+        exoplanet='', 
         archive='nasa', 
         email=False, 
         to=['transitfit.server@gmail.com'], 
