@@ -7,6 +7,7 @@ The backend for auto_retrieval.
 """
 
 from ._archive import _eu, _nasa
+from .query import tic
 
 from transitfit import split_lightcurve_file, run_retrieval
 try:
@@ -72,6 +73,7 @@ def _fits(exoplanet, exo_folder, clean):
         for item in f:
             # Delete the fast-lc files
             if 'fast-lc.fits' in item:
+                print(f'\nDeleting {r}')
                 rmtree(r)
             # Keep the _lc files
             elif '_lc.fits' in item:
@@ -109,6 +111,8 @@ def _fits(exoplanet, exo_folder, clean):
 
 
 def _MAST_query(exoplanet, exo_folder):
+    tic_id = tic(exoplanet)
+    print(f'\nSearching MAST for {exoplanet} ({tic_id}).')
     lc = search_lightcurve(exoplanet, mission='TESS', radius=0.01)
     if len(lc) == 0:
         rmtree(exo_folder)
@@ -123,7 +127,7 @@ def _MAST_query(exoplanet, exo_folder):
             .rename(columns={'productFilename':'Product'}) 
     lc = lc[lc.t_exptime != 20].drop(['t_exptime'], axis=1)
     print(f'\nQuery from MAST returned {len(lc)} '
-          f'data products for {exoplanet}.\n')
+          f'data products for {exoplanet} ({tic_id}).\n')
     print(tabulate(lc, tablefmt='psql', showindex=False, headers='keys'))
     return sector_list
     
