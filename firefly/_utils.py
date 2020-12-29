@@ -73,7 +73,7 @@ def _fits(exoplanet, exo_folder, clean):
         for item in f:
             # Delete the fast-lc files
             if 'fast-lc.fits' in item:
-                print(f'\nDeleting {r}')
+                print('Deleting:', *f)
                 rmtree(r)
             # Keep the _lc files
             elif '_lc.fits' in item:
