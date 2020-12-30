@@ -124,7 +124,7 @@ def _fits_quick(exoplanet, exo_folder, clean):
         print(f'Search result contains no data products for {exoplanet}.')
         sys.exit(f'Search result contains no data products for {exoplanet}.')
     print(f'\nQuery from MAST returned {len(lc_links)} '
-          f'data products for {exoplanet} ({tic_id}).')
+          f'data products for {exoplanet} (TIC {tic_id}).')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Extract Time series
     for j, fitsfile in enumerate(lc_links):
