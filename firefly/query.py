@@ -34,7 +34,9 @@ def _lc(exoplanet):
         out = out.append(a)
     out.to_csv('MAST_lc.csv.gz', index=False)
     '''
-    _ = read_csv('MAST_lc.csv.gz')
+    here = os.path.dirname(os.path.abspath(__file__))
+    mast = f'{here}/data/Filters/MAST_lc.csv.gz'
+    _ = read_csv(mast)
     tic_id = tic(exoplanet).replace('TIC ', '')
     lc_links = _[_['links'].str.contains(tic_id)] .values .tolist()
     lc_links = [i for j in lc_links for i in j]
