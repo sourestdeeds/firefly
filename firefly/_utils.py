@@ -121,6 +121,7 @@ def _fits_quick(exoplanet, exo_folder, clean):
     print(f'\nSearching MAST for {exoplanet} ({tic_id}).')
     if len(lc_links) == 0:
         rmtree(exo_folder)
+        print(f'Search result contains no data products for {exoplanet}.')
         sys.exit(f'Search result contains no data products for {exoplanet}.')
     print(f'\nQuery from MAST returned {len(lc_links)} '
           f'data products for {exoplanet} ({tic_id}).')
