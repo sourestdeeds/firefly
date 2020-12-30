@@ -70,7 +70,7 @@ target = 'WASP-43 b'
 retrieval(target)
 ```
 
-## auto_retrieval
+## firefly
 
 Automated version of retrieval.
 - Targets passed are corrected for basic user input. 'wasp43b' is
@@ -107,17 +107,15 @@ Background tasks for feeding data to TransitFit include:
 
 An example use with TransitFit is the following:
 ```python
-from firefly import auto_retrieval
+from firefly import firefly
 
 # For a single target
 target = ('WASP-43 b',)
-if __name__ == '__main__':
-    auto_retrieval(target)
+firefly(target)
 
 # For a list of targets
 targets = ('WASP-43 b', 'WASP-18 b', 'WASP-91 b', 'WASP-12 b',
            'WASP-126 b', 'LHS 3844 b', 'GJ 1252 b', 'TOI-270 b')
-if __name__ == '__main__':
-    auto_retrieval(target)
+firefly(target)
 
 ```
