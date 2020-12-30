@@ -116,7 +116,7 @@ def _fits(exoplanet, exo_folder, clean):
 
 
 
-def _fits_quick(exoplanet, exo_folder, clean):
+def _fits_quick(exoplanet, exo_folder):
     print(f'\nSearching MAST for {exoplanet}.')
     lc_links, tic_id = _lc(exoplanet)
     if len(lc_links) == 0:
@@ -140,16 +140,14 @@ def _fits_quick(exoplanet, exo_folder, clean):
             write_dict.append({'Time': time[i], 'Flux': flux[i],
                                'Flux err': flux_err[i]})
         source = f'{exo_folder}/mastDownload'
-        os.makedirs(source+f'/{str(j)}', exist_ok=True)
-        csv_name = f'{exo_folder}/mastDownload/{str(j)}/reduced_{str(j)}.csv'
+        mast_name = fitsfile[-55:].replace('.fits', '')
+        os.makedirs(f'{source}/{mast_name}', exist_ok=True)
+        csv_name = f'{source}/{mast_name}/{mast_name}.csv'
         with open(csv_name, 'w') as f:
             columns = ['Time', 'Flux', 'Flux err']
             writer = DictWriter(f, columns)
             writer.writeheader()
             writer.writerows(write_dict)
-        if clean == True:
-            # os.remove(fitsfile)
-            pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Path to downloaded csv   
     csv_in_dir = []
@@ -229,7 +227,7 @@ def _retrieval(
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Split the Light curves
     split_curve_in_dir = []
-    csv_in_dir = _fits_quick(exoplanet, exo_folder, clean)
+    csv_in_dir = _fits_quick(exoplanet, exo_folder)
     for i, csvfile in enumerate(csv_in_dir):
         split_curves = split_lightcurve_file(csvfile, t0=t0, P=P, t14=t14, 
                                              cutoff=cutoff, window=window)
