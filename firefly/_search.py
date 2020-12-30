@@ -16,13 +16,13 @@ from pandas import read_csv
 def _fuzzy_search(exoplanet, archive='eu'):
     if archive == 'eu':
         _download_eu()
-        eu_csv = 'firefly/data/eu.csv'
+        eu_csv = 'firefly/data/eu.csv.gz'
         exo_list = read_csv(eu_csv, usecols=['# name']) \
                    .drop_duplicates() .values .tolist()
         exo_list = [j for i in exo_list for j in i]
     elif archive == 'nasa':
         _download_nasa()
-        nasa_csv = 'firefly/data/nasa.csv'
+        nasa_csv = 'firefly/data/nasa.csv.gz'
         exo_list = read_csv(nasa_csv, usecols=['pl_name', 'tic_id']) \
                    .dropna() .drop_duplicates('pl_name') \
                    .drop(['tic_id'], axis=1) .values .tolist()

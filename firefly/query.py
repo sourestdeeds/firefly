@@ -19,11 +19,30 @@ except:
         raise
 from tabulate import tabulate
 from shutil import rmtree
-from pandas import read_csv
+from pandas import read_csv, DataFrame
 import sys
 import os
 
 
+def _lc(exoplanet):
+    '''
+    out = DataFrame()
+    for i in range(1,32):
+        a = read_csv(f'TESS_curl/tesscurl_sector_{str(i)}_lc.sh')
+        a['links'] = a['#!/bin/sh'].str.split().str[-1]
+        a = a.drop(['#!/bin/sh'], axis=1)
+        out = out.append(a)
+    out.to_csv('MAST_lc.csv.gz', index=False)
+    '''
+    here = os.path.dirname(os.path.abspath(__file__))
+    mast = f'{here}/data/Filters/MAST_lc.csv.gz'
+    _ = read_csv(mast)
+    tic_id = tic(exoplanet).replace('TIC ', '')
+    lc_links = _[_['links'].str.contains(tic_id)] .values .tolist()
+    lc_links = [i for j in lc_links for i in j]
+    return lc_links, tic_id
+    
+    
 
 def query(target, archive='eu'):
     '''
@@ -59,7 +78,7 @@ def tess():
 
     '''
     _download_nasa()
-    nasa_csv = 'firefly/data/nasa.csv'
+    nasa_csv = 'firefly/data/nasa.csv.gz'
     df = read_csv(nasa_csv, usecols=['pl_name',
                                      'tic_id',
                                      'soltype',
@@ -91,17 +110,18 @@ def tic(exoplanet):
     TIC ID of an exoplanet target.
 
     '''
-    _download_nasa()
-    nasa_csv = 'firefly/data/nasa.csv'
-    df = read_csv(nasa_csv, usecols=['pl_name',
-                                     'tic_id',
-                                     'soltype',
-                                     'rowupdate',
-                                     'disc_facility']) .sort_values('pl_name') \
-                                    .drop_duplicates('pl_name', keep='last') 
-                                    #.sort_values('pl_name')
-    tic = 'firefly/data/tic.csv'
-    df.to_csv(tic, index=False, header=True)
+    tic = 'firefly/data/tic.csv.gz'
+    if not os.path.exists(tic):
+        _download_nasa()
+        nasa_csv = 'firefly/data/nasa.csv.gz'
+        df = read_csv(nasa_csv, usecols=['pl_name',
+                                         'tic_id',
+                                         'soltype',
+                                         'rowupdate',
+                                         'disc_facility']) .sort_values('pl_name') \
+                                        .drop_duplicates('pl_name', keep='last')
+        df.to_csv(tic, index=False, header=True)
+    df = read_csv(tic)
     tic_df = df .drop(['soltype', 'rowupdate', 'disc_facility'], axis=1).dropna() \
                  .set_index('pl_name')
     target = tic_df.loc[[exoplanet]]

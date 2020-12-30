@@ -7,7 +7,7 @@ The backend for auto_retrieval.
 """
 
 from ._archive import _eu, _nasa
-from .query import tic
+from .query import tic, _lc
 
 from transitfit import split_lightcurve_file, run_retrieval
 try:
@@ -115,6 +115,49 @@ def _fits(exoplanet, exo_folder, clean):
     return csv_in_dir
 
 
+
+def _fits_quick(exoplanet, exo_folder, clean):
+    lc_links, tic_id = _lc(exoplanet)
+    print(f'\nSearching MAST for {exoplanet} ({tic_id}).')
+    if len(lc_links) == 0:
+        rmtree(exo_folder)
+        sys.exit(f'Search result contains no data products for {exoplanet}.')
+    print(f'\nQuery from MAST returned {len(lc_links)} '
+          f'data products for {exoplanet} ({tic_id}).')
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Extract Time series
+    for j, fitsfile in enumerate(lc_links):
+        with fits.open(fitsfile) as TESS_fits:
+            time = TESS_fits[1].data['TIME'] + 2457000
+            time += TESS_fits[1].data['TIMECORR']
+            flux = TESS_fits[1].data['PDCSAP_FLUX']
+            flux_err = TESS_fits[1].data['PDCSAP_FLUX_ERR']
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Extract all light curves to a single csv file
+        write_dict = []
+        for i in range(len(time)):
+            write_dict.append({'Time': time[i], 'Flux': flux[i],
+                               'Flux err': flux_err[i]})
+        source = f'{exo_folder}/mastDownload'
+        os.makedirs(source+f'/{str(j)}', exist_ok=True)
+        csv_name = f'{exo_folder}/mastDownload/{str(j)}/reduced_{str(j)}.csv'
+        with open(csv_name, 'w') as f:
+            columns = ['Time', 'Flux', 'Flux err']
+            writer = DictWriter(f, columns)
+            writer.writeheader()
+            writer.writerows(write_dict)
+        if clean == True:
+            os.remove(fitsfile)
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Path to downloaded csv   
+    csv_in_dir = []
+    for r, d, f in os.walk(source):
+        for item in f:
+            if '.csv' in item:
+                csv_in_dir.append(os.path.join(r, item))
+    return csv_in_dir
+
+
 def _MAST_query(exoplanet, exo_folder):
     tic_id = tic(exoplanet)
     print(f'\nSearching MAST for {exoplanet} ({tic_id}).')
@@ -169,9 +212,6 @@ def _retrieval(
     os.makedirs(exo_folder, exist_ok=True)
     _TESS_filter()
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # MAST Query
-    _MAST_query(exoplanet, exo_folder)
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Download Archive
     if archive == 'eu':
         host_T, host_z, host_r, host_logg, t0, P, t14, nan  = \
@@ -185,14 +225,9 @@ def _retrieval(
           ' using the following parameters.\n')
     print(tabulate(df, tablefmt='psql', showindex=False, headers='keys'))
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # MAST Download
-    lc = search_lightcurve(exoplanet, mission='TESS', radius=0.01)
-    print(f'\nDownloading MAST Lightcurves for {exoplanet}.')
-    lc.download_all(download_dir=exo_folder)
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Split the Light curves
     split_curve_in_dir = []
-    csv_in_dir = _fits(exoplanet, exo_folder, clean)
+    csv_in_dir = _fits_quick(exoplanet, exo_folder, clean)
     for i, csvfile in enumerate(csv_in_dir):
         split_curves = split_lightcurve_file(csvfile, t0=t0, P=P, t14=t14, 
                                              cutoff=cutoff, window=window)
