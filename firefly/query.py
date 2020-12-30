@@ -26,6 +26,7 @@ import os
 
 def _lc(exoplanet):
     '''
+    # https://archive.stsci.edu/tess/bulk_downloads/bulk_downloads_ffi-tp-lc-dv.html
     out = DataFrame()
     for i in range(1,32):
         a = read_csv(f'TESS_curl/tesscurl_sector_{str(i)}_lc.sh')
