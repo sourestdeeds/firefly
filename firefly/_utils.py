@@ -118,7 +118,7 @@ def _fits(exoplanet, exo_folder, clean):
 
 def _fits_quick(exoplanet, exo_folder, clean):
     lc_links, tic_id = _lc(exoplanet)
-    print(f'\nSearching MAST for {exoplanet} ({tic_id}).')
+    print(f'\nSearching MAST for {exoplanet} (TIC {tic_id}).')
     if len(lc_links) == 0:
         rmtree(exo_folder)
         print(f'Search result contains no data products for {exoplanet}.')
