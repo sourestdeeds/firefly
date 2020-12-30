@@ -148,7 +148,8 @@ def _fits_quick(exoplanet, exo_folder, clean):
             writer.writeheader()
             writer.writerows(write_dict)
         if clean == True:
-            os.remove(fitsfile)
+            # os.remove(fitsfile)
+            pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Path to downloaded csv   
     csv_in_dir = []
