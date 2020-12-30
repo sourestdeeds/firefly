@@ -41,19 +41,19 @@
             >>> 'WASP', 'LTT', 'GJ' etc
             
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    auto_retrieval()
+    firefly()
     
         Automated version of retrieval. For a single target the procedure is:
          
-         >>> from firefly import auto_retrieval
+         >>> from firefly import firefly
              target = ('WASP-43 b',)
-             auto_retrieval(target)
+             firefly(target)
          
         For a list of targets:
              
-             >>> from firefly import auto_retrieval
+             >>> from firefly import firefly
                  targets = ('WASP-43 b', 'WASP-18 b')
-                 auto_retrieval(targets)
+                 firefly(targets)
          
         - Targets passed are corrected for basic user input. 'wasp43b' is
           interpreted as 'WASP-43 b'. List must be of the form given in the 
@@ -97,6 +97,6 @@
 name = 'firefly'
 __version__ = '0.7.2'
 
-from .auto_retrieval import auto_retrieval
+from .auto_retrieval import firefly
 from .retrieval import retrieval
 from .query import query, tess, priors, mast, tic
