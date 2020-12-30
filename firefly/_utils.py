@@ -124,7 +124,7 @@ def _fits_quick(exoplanet, exo_folder):
         print(f'Search result contains no data products for {exoplanet}.')
         sys.exit(f'Search result contains no data products for {exoplanet}.')
     print(f'\nQuery from MAST returned {len(lc_links)} '
-          f'data products for {exoplanet} (TIC {tic_id}).')
+          f'data products for {exoplanet} (TIC {tic_id}).\n')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Extract Time series
     csv_in_dir = []
@@ -155,6 +155,7 @@ def _fits_quick(exoplanet, exo_folder):
     
     df = DataFrame(fitsname, columns=['Product'])
     print(tabulate(df, tablefmt='psql', showindex=False, headers='keys'))
+    print()
     return csv_in_dir
 
 
