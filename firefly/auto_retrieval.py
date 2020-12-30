@@ -38,7 +38,7 @@ def _auto_input_check(targets, archive, curve_sample):
     return exoplanet_list
 
 
-def auto_retrieval(
+def firefly(
         # Firefly Interface
         targets, 
         archive='nasa', 
@@ -68,15 +68,15 @@ def auto_retrieval(
     '''
     Automated version of retrieval. For a single target the procedure is:
          
-         >>> from firefly import auto_retrieval
+         >>> from firefly import firefly
              target = ('WASP-43 b',)
-             auto_retrieval(target)
+             firefly(target)
          
     For a list of targets:
          
-         >>> from firefly import auto_retrieval
+         >>> from firefly import firefly
              targets = ('WASP-43 b', 'WASP-18 b')
-             auto_retrieval(targets)
+             firefly(targets)
      
     - Targets passed are corrected for basic user input; 'wasp43b' is
       interpreted as 'WASP-43 b'. List must be of the form given in the 
