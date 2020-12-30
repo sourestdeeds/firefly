@@ -127,6 +127,7 @@ def _fits_quick(exoplanet, exo_folder):
           f'data products for {exoplanet} (TIC {tic_id}).')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Extract Time series
+    csv_in_dir = []
     for j, fitsfile in enumerate(lc_links):
         with fits.open(fitsfile) as TESS_fits:
             time = TESS_fits[1].data['TIME'] + 2457000
@@ -148,13 +149,7 @@ def _fits_quick(exoplanet, exo_folder):
             writer = DictWriter(f, columns)
             writer.writeheader()
             writer.writerows(write_dict)
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # Path to downloaded csv   
-    csv_in_dir = []
-    for r, d, f in os.walk(source):
-        for item in f:
-            if '.csv' in item:
-                csv_in_dir.append(os.path.join(r, item))
+        csv_in_dir.append(f'{os.getcwd()}/{csv_name}')
     return csv_in_dir
 
 
