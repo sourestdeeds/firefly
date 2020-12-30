@@ -65,6 +65,7 @@ def _TESS_filter():
 
 
 def _fits(exoplanet, exo_folder, clean):
+    tic_id = tic(exoplanet).replace('TIC ', '')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Path to downloaded fits
     fits_in_dir = []
@@ -72,11 +73,15 @@ def _fits(exoplanet, exo_folder, clean):
     for r, d, f in os.walk(source):
         for item in f:
             # Delete the fast-lc files
-            if 'fast-lc.fits' in item:
+            if ('fast-lc.fits') in item:
+                print('Deleting:', *f)
+                rmtree(r)
+            # Check we have the correct TIC
+            elif not tic_id in item:
                 print('Deleting:', *f)
                 rmtree(r)
             # Keep the _lc files
-            elif '_lc.fits' in item:
+            elif tic_id in item:
                 fits_in_dir.append(os.path.join(r, item))
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Extract Time series
@@ -113,7 +118,7 @@ def _fits(exoplanet, exo_folder, clean):
 def _MAST_query(exoplanet, exo_folder):
     tic_id = tic(exoplanet)
     print(f'\nSearching MAST for {exoplanet} ({tic_id}).')
-    lc = search_lightcurve(exoplanet, mission='TESS', radius=0.01)
+    lc = search_lightcurve(exoplanet, mission='TESS', radius=750)
     if len(lc) == 0:
         rmtree(exo_folder)
         sys.exit(f'Search result contains no data products for {exoplanet}.')
@@ -181,7 +186,7 @@ def _retrieval(
     print(tabulate(df, tablefmt='psql', showindex=False, headers='keys'))
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # MAST Download
-    lc = search_lightcurve(exoplanet, mission='TESS', radius=0.01)
+    lc = search_lightcurve(exoplanet, mission='TESS', radius=750)
     print(f'\nDownloading MAST Lightcurves for {exoplanet}.')
     lc.download_all(download_dir=exo_folder)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
