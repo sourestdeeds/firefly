@@ -30,7 +30,7 @@ class suppress_print():
 
 def _download_eu():
     os.makedirs('firefly/data', exist_ok=True)
-    eu_csv = 'firefly/data/eu.csv'
+    eu_csv = 'firefly/data/eu.csv.gz'
     download_link = 'http://exoplanet.eu/catalog/csv'
     if not os.path.exists(eu_csv):
         print('eu.csv does not exist, downloading.')
@@ -58,7 +58,7 @@ def _download_nasa():
         'st_met,st_meterr1,pl_tranmid,pl_tranmiderr1,pl_trandur,' +\
         'pl_orbincl,pl_orbinclerr1,pl_orblper,pl_orblpererr1,soltype,rowupdate' +\
         '+from+ps&format=csv'
-    nasa_csv = 'firefly/data/nasa.csv'
+    nasa_csv = 'firefly/data/nasa.csv.gz'
     if not os.path.exists(nasa_csv):
         print('nasa.csv does not exist, downloading.')
         df = read_csv(download_link)
