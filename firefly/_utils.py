@@ -134,7 +134,7 @@ def _fits_quick(exoplanet, exo_folder, clean):
                                'Flux err': flux_err[i]})
         source = f'{exo_folder}/mastDownload'
         os.makedirs(source+f'/{str(j)}', exist_ok=True)
-        csv_name = f'{exo_folder}/mastDownload/{str(j)}/reduced.csv'
+        csv_name = f'{exo_folder}/mastDownload/{str(j)}/reduced_{str(j)}.csv'
         with open(csv_name, 'w') as f:
             columns = ['Time', 'Flux', 'Flux err']
             writer = DictWriter(f, columns)
