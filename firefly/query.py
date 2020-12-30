@@ -111,18 +111,14 @@ def tic(exoplanet):
     TIC ID of an exoplanet target.
 
     '''
-    tic = 'firefly/data/tic.csv.gz'
-    if not os.path.exists(tic):
-        _download_nasa()
-        nasa_csv = 'firefly/data/nasa.csv.gz'
-        df = read_csv(nasa_csv, usecols=['pl_name',
-                                         'tic_id',
-                                         'soltype',
-                                         'rowupdate',
-                                         'disc_facility']) .sort_values('pl_name') \
-                                        .drop_duplicates('pl_name', keep='last')
-        df.to_csv(tic, index=False, header=True)
-    df = read_csv(tic)
+    _download_nasa()
+    nasa_csv = 'firefly/data/nasa.csv.gz'
+    df = read_csv(nasa_csv, usecols=['pl_name',
+                                     'tic_id',
+                                     'soltype',
+                                     'rowupdate',
+                                     'disc_facility']) .sort_values('pl_name') \
+                                    .drop_duplicates('pl_name', keep='last')
     tic_df = df .drop(['soltype', 'rowupdate', 'disc_facility'], axis=1).dropna() \
                  .set_index('pl_name')
     target = tic_df.loc[[exoplanet]]
