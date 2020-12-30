@@ -118,7 +118,7 @@ def _fits(exoplanet, exo_folder, clean):
 def _MAST_query(exoplanet, exo_folder):
     tic_id = tic(exoplanet)
     print(f'\nSearching MAST for {exoplanet} ({tic_id}).')
-    lc = search_lightcurve(exoplanet, mission='TESS', radius=750)
+    lc = search_lightcurve(exoplanet, mission='TESS', radius=0.01)
     if len(lc) == 0:
         rmtree(exo_folder)
         sys.exit(f'Search result contains no data products for {exoplanet}.')
@@ -186,7 +186,7 @@ def _retrieval(
     print(tabulate(df, tablefmt='psql', showindex=False, headers='keys'))
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # MAST Download
-    lc = search_lightcurve(exoplanet, mission='TESS', radius=750)
+    lc = search_lightcurve(exoplanet, mission='TESS', radius=0.01)
     print(f'\nDownloading MAST Lightcurves for {exoplanet}.')
     lc.download_all(download_dir=exo_folder)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
