@@ -9,6 +9,7 @@ Automated version of retrieval.
 from ._utils import _email, _retrieval
 from ._archive import _check_nan
 from ._search import _fuzzy_search
+from .query import tess_viable
 
 from datetime import datetime
 from shutil import rmtree, make_archive
@@ -40,7 +41,7 @@ def _auto_input_check(targets, archive, curve_sample):
 
 def firefly(
         # Firefly Interface
-        targets, 
+        targets=tess_viable(k=1), 
         archive='nasa', 
         curve_sample=1, 
         email=False,
