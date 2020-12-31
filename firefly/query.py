@@ -13,15 +13,31 @@ from ._archive import _eu, _download_nasa, _nasa
 from tabulate import tabulate
 from shutil import rmtree
 from pandas import read_csv, DataFrame
+import random
 import sys
 import os
 
 
-def tess_viable():
+def tess_viable(k=10):
+    '''
+    Currently there are 377 tess targets with full prior and lightcurve sets.
+
+    Parameters
+    ----------
+    k : int, optional
+        Returns a random set of targets. The default is 10.
+
+    Returns
+    -------
+    targets : str
+        Viable tess target list.
+
+    '''
     here = os.path.dirname(os.path.abspath(__file__))
     tess = f'{here}/data/Filters/tess_viable.csv'
     targets = read_csv(tess) 
     targets = targets['Exoplanet'] .values .tolist()
+    targets = random.sample(targets, k=k)
     return targets
 
 
