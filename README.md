@@ -62,4 +62,7 @@ firefly(targets)
 targets = tess_viable(k=10)
 firefly(targets)
 
+# To simply use the default fitting settings on a random viable target
+firefly()
+
 ```
