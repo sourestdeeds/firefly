@@ -78,7 +78,7 @@ def main():
         archive='nasa', 
         curve_sample=0.01, 
         email=True,
-        to=['transitfit.server@gmail.com'], 
+        to=['your.email@server.com'], 
         clean=False,
         # TransitFit Variables
         cutoff=0.25,
