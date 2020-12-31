@@ -17,6 +17,14 @@ import sys
 import os
 
 
+def tess_viable():
+    here = os.path.dirname(os.path.abspath(__file__))
+    tess = f'{here}/data/Filters/tess_viable.csv'
+    targets = read_csv(tess) 
+    targets = targets['Exoplanet'] .values .tolist()
+    return targets
+
+
 def _lc(exoplanet):
     '''
     # https://archive.stsci.edu/tess/bulk_downloads/bulk_downloads_ffi-tp-lc-dv.html
