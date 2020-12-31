@@ -13,8 +13,6 @@ python setup.py install
 transitfit
 ```
 
-## firefly
-
 - Targets passed are corrected for basic user input. 'wasp43b' is
 interpreted as 'WASP-43 b'. List must be of the form given in the example below.
 - Initial checks for targets from the exoplanet archive are then taken to ascertain 
