@@ -10,13 +10,6 @@ Data retrievers.
 from ._search import _fuzzy_search
 from ._archive import _eu, _download_nasa, _nasa
 
-try:
-    from lightkurve import search_lightcurve
-except:
-    try:
-        from lightkurve import search_lightcurvefile as search_lightcurve
-    except:
-        raise
 from tabulate import tabulate
 from shutil import rmtree
 from pandas import read_csv, DataFrame
@@ -168,16 +161,16 @@ def mast(target, archive='eu'):
     Data printed to console.
 
     '''
+    exo_folder = f'firefly/{target}'
     highest, ratios = _fuzzy_search(target, archive=archive)
     exoplanet = highest[0]
-    lc = search_lightcurve(exoplanet, mission='TESS')
-    if len(lc) == 0:
+    print(f'\nSearching MAST for {exoplanet}.')
+    lc_links, tic_id = _lc(exoplanet)
+    if len(lc_links) == 0:
+        rmtree(exo_folder)
+        print(f'Search result contains no data products for {exoplanet}.')
         sys.exit(f'Search result contains no data products for {exoplanet}.')
-    lc = lc .table .to_pandas()[['observation', 
-                                 'productFilename', 'size', 't_exptime']] \
-            .rename(columns={'observation':'Observation'}) \
-            .rename(columns={'size':'Size'}) \
-            .rename(columns={'productFilename':'Product'}) 
-    lc = lc[lc.t_exptime != 20].drop(['t_exptime'], axis=1)
-    print(tabulate(lc, tablefmt='psql', showindex=False, headers='keys'))
+    print(f'\nQuery from MAST returned {len(lc_links)} '
+          f'data products for {exoplanet} (TIC {tic_id}).\n')
+    return lc_links
     

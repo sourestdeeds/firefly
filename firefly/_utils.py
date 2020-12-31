@@ -7,16 +7,9 @@ The backend for auto_retrieval.
 """
 
 from ._archive import _eu, _nasa
-from .query import tic, _lc
+from .query import _lc
 
 from transitfit import split_lightcurve_file, run_retrieval
-try:
-    from lightkurve import search_lightcurve
-except:
-    try:
-        from lightkurve import search_lightcurvefile as search_lightcurve
-    except:
-        raise
 from datetime import datetime
 from smtplib import SMTP_SSL
 from tabulate import tabulate
@@ -64,59 +57,7 @@ def _TESS_filter():
     df.to_csv(tess_filter_path, index=False, header=True)
 
 
-def _fits(exoplanet, exo_folder, clean):
-    tic_id = tic(exoplanet).replace('TIC ', '')
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # Path to downloaded fits
-    fits_in_dir = []
-    source = f'{exo_folder}/mastDownload/TESS/'
-    for r, d, f in os.walk(source):
-        for item in f:
-            # Delete the fast-lc files
-            if ('fast-lc.fits') in item:
-                print('Deleting:', *f)
-                rmtree(r)
-            # Check we have the correct TIC
-            elif not tic_id in item:
-                print('Deleting:', *f)
-                rmtree(r)
-            # Keep the _lc files
-            elif tic_id in item:
-                fits_in_dir.append(os.path.join(r, item))
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # Extract Time series
-    for i, fitsfile in enumerate(fits_in_dir):
-        with fits.open(fitsfile) as TESS_fits:
-            time = TESS_fits[1].data['TIME'] + 2457000
-            time += TESS_fits[1].data['TIMECORR']
-            flux = TESS_fits[1].data['PDCSAP_FLUX']
-            flux_err = TESS_fits[1].data['PDCSAP_FLUX_ERR']
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # Extract all light curves to a single csv file
-        write_dict = []
-        for i in range(len(time)):
-            write_dict.append({'Time': time[i], 'Flux': flux[i],
-                               'Flux err': flux_err[i]})
-        csv_name = os.path.splitext(fitsfile)[0] + '.csv'
-        with open(csv_name, 'w') as f:
-            columns = ['Time', 'Flux', 'Flux err']
-            writer = DictWriter(f, columns)
-            writer.writeheader()
-            writer.writerows(write_dict)
-        if clean == True:
-            os.remove(fitsfile)
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # Path to downloaded csv   
-    csv_in_dir = []
-    for r, d, f in os.walk(source):
-        for item in f:
-            if '.csv' in item:
-                csv_in_dir.append(os.path.join(r, item))
-    return csv_in_dir
-
-
-
-def _fits_quick(exoplanet, exo_folder):
+def _fits(exoplanet, exo_folder):
     print(f'\nSearching MAST for {exoplanet}.')
     lc_links, tic_id = _lc(exoplanet)
     if len(lc_links) == 0:
@@ -161,29 +102,12 @@ def _fits_quick(exoplanet, exo_folder):
     df = DataFrame(_)
     print(tabulate(df, tablefmt='psql', showindex=False, headers='keys'))
     print()
+    # csv_in_dir = []
+    # for r, d, f in os.walk(source):
+    #     for item in f:
+    #         if '.csv' in item:
+    #             csv_in_dir.append(os.path.join(r, item))
     return csv_in_dir
-
-
-def _MAST_query(exoplanet, exo_folder):
-    tic_id = tic(exoplanet)
-    print(f'\nSearching MAST for {exoplanet} ({tic_id}).')
-    lc = search_lightcurve(exoplanet, mission='TESS', radius=0.01)
-    if len(lc) == 0:
-        rmtree(exo_folder)
-        sys.exit(f'Search result contains no data products for {exoplanet}.')
-    sector_list = lc .table .to_pandas()['sequence_number'] \
-                      .drop_duplicates() .tolist()
-    sector_list = [str(sector) for sector in sector_list]
-    lc = lc .table .to_pandas()[['target_name', 'observation', 
-                                 'productFilename', 't_exptime']] \
-            .rename(columns={'target_name':'Target'}) \
-            .rename(columns={'observation':'Observation'}) \
-            .rename(columns={'productFilename':'Product'}) 
-    lc = lc[lc.t_exptime != 20].drop(['t_exptime'], axis=1)
-    print(f'\nQuery from MAST returned {len(lc)} '
-          f'data products for {exoplanet} ({tic_id}).\n')
-    print(tabulate(lc, tablefmt='psql', showindex=False, headers='keys'))
-    return sector_list
     
 
 def _retrieval(
@@ -233,7 +157,7 @@ def _retrieval(
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Split the Light curves
     split_curve_in_dir = []
-    csv_in_dir = _fits_quick(exoplanet, exo_folder)
+    csv_in_dir = _fits(exoplanet, exo_folder)
     for i, csvfile in enumerate(csv_in_dir):
         split_curves = split_lightcurve_file(csvfile, t0=t0, P=P, t14=t14, 
                                              cutoff=cutoff, window=window)

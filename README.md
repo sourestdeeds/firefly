@@ -10,69 +10,9 @@ python setup.py install
 
 #### Dependancies
 ```python
-lightkurve
 transitfit
 ```
 
-## query
-
-Performs a search from both MAST and the EU/NASA exoplanet
-archive and prints the results to the console.
-
-```python
-from firefly import query
-target = 'WASP-18 b'
-query(target)
-```
-```
-Query from MAST returned 4 data products for WASP-18 b.
-
-+----------------+--------------------------------------------------------------+----------+
-| Observation    | Product                                                      |     Size |
-|----------------+--------------------------------------------------------------+----------|
-| TESS Sector 2  | tess2018234235059-s0002-0000000100100827-0121-s_lc.fits      |  2004480 |
-| TESS Sector 3  | tess2018263035959-s0003-0000000100100827-0123-s_lc.fits      |  1998720 |
-| TESS Sector 29 | tess2020238165205-s0029-0000000100100827-0193-s_lc.fits      |  1915200 |
-| TESS Sector 30 | tess2020266004630-s0030-0000000100100827-0195-s_lc.fits      |  1998720 |
-+----------------+--------------------------------------------------------------+----------+
-
-Priors generated from the EU Archive for WASP-18 b.
-
-+-------------+----------------+----------------+-------------+----------+
-| Parameter   | Distribution   |        Input_A |     Input_B | Filter   |
-|-------------+----------------+----------------+-------------+----------|
-| P           | gaussian       |    0.941452    |   0.04      |          |
-| t0          | gaussian       |    2.45422e+06 |   0.038     |          |
-| a           | gaussian       |    0.02047     |   0.00038   |          |
-| inc         | gaussian       |   86           |   2.5       |          |
-| rp          | uniform        |    0.0486661   |   0.194664  | 0        |
-| host_T      | fixed          | 6400           | 100         |          |
-| host_z      | fixed          |    0           |   0.09      |          |
-| host_r      | fixed          |    1.23        |   0.045     |          |
-| host_logg   | fixed          |    4.35179     |   0.0347287 |          |
-+-------------+----------------+----------------+-------------+----------+
- ```
-
-## retrieval
-
-A target data retriever for confirmed/candidate TESS exoplanets.
-Generates the priors and host star variables for a chosen target.
-Downloads exoplanet archives every 10 days and stores in /data.
-Target lightcurve files are downloaded from MAST, then split into 
-separate epochs. Upon user entry of the amount of epochs to fit,
-TransitFit will fit the curves and return the results. The results
-are then zipped up and time stamped.
-
-An example use with TransitFit is the following:
-```python
-from firefly import retrieval
-target = 'WASP-43 b'
-retrieval(target)
-```
-
-## firefly
-
-Automated version of retrieval.
 - Targets passed are corrected for basic user input. 'wasp43b' is
 interpreted as 'WASP-43 b'. List must be of the form given in the example below.
 - Initial checks for targets from the exoplanet archive are then taken to ascertain 
