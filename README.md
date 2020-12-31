@@ -47,7 +47,7 @@ Background tasks for feeding data to TransitFit include:
 
 An example use with TransitFit is the following:
 ```python
-from firefly import firefly
+from firefly import firefly, tess_viable
 
 # For a single target
 target = ('WASP-43 b',)
@@ -56,6 +56,10 @@ firefly(target)
 # For a list of targets
 targets = ('WASP-43 b', 'WASP-18 b', 'WASP-91 b', 'WASP-12 b',
            'WASP-126 b', 'LHS 3844 b', 'GJ 1252 b', 'TOI-270 b')
+firefly(targets)
+
+# For a list of random viable tess targets with full prior info
+targets = tess_viable(k=10)
 firefly(targets)
 
 ```
