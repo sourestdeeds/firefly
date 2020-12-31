@@ -129,6 +129,7 @@ def _fits_quick(exoplanet, exo_folder):
     # Extract Time series
     csv_in_dir = []
     fitsname = []
+    sector_list = []
     for j, fitsfile in enumerate(lc_links):
         with fits.open(fitsfile) as TESS_fits:
             time = TESS_fits[1].data['TIME'] + 2457000
@@ -152,8 +153,12 @@ def _fits_quick(exoplanet, exo_folder):
             writer.writerows(write_dict)
         csv_in_dir.append(f'{os.getcwd()}/{csv_name}')
         fitsname.append(fitsfile[-55:])
-    
-    df = DataFrame(fitsname, columns=['Product'])
+        sector_list.append(int(fitsfile[-36:-32]))
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Print search result 
+    tess_sector = [f'TESS Sector {str(sector)}' for sector in sector_list]
+    _ = {'Sector':tess_sector, 'Product':fitsname}
+    df = DataFrame(_)
     print(tabulate(df, tablefmt='psql', showindex=False, headers='keys'))
     print()
     return csv_in_dir
