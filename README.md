@@ -66,7 +66,7 @@ firefly(targets)
 firefly()
 
 ```
-Below shows a working example with all modifyable variables.
+Below shows a working example with all variables.
 ```python
 from firefly import firefly, tess_viable
 
