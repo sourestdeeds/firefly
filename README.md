@@ -9,8 +9,13 @@ python setup.py install
 ```
 
 #### Dependancies
-```python
+```
 transitfit
+tabulate
+python-Levenshtein
+fuzzywuzzy
+numpy
+pandas
 ```
 
 - Targets passed are corrected for basic user input. 'wasp43b' is
