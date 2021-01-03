@@ -105,6 +105,66 @@ def main():
 
 main()
 ```
+#### Console Output
+```
+Target search chose HD 2685 b.
+Input checks passed.
+
+Priors generated from the NASA Archive for HD 2685 b (TIC 267263253).
+
++-------------+----------------+----------------+------------+----------+
+| Parameter   | Distribution   |        Input_A |    Input_B | Filter   |
+|-------------+----------------+----------------+------------+----------|
+| P           | gaussian       |    4.12689     |   5        |          |
+| t0          | gaussian       |    2.45868e+06 |   0.02345  |          |
+| a           | gaussian       |    0.0568      |   0.0006   |          |
+| inc         | gaussian       |   89.252       |   0.415    |          |
+| rp          | uniform        |    0.0469772   |   0.187909 | 0        |
+| host_T      | fixed          | 6844.5         | 140        |          |
+| host_z      | fixed          |    0.02        |   0.06     |          |
+| host_r      | fixed          |    1.575       |   0.055    |          |
+| host_logg   | fixed          |    4.22        |   0.195    |          |
++-------------+----------------+----------------+------------+----------+
+
+Splitting the lightcurve into seperate epochs using the following parameters.
+
++-------------+---------------+
+| Parameter   |         Value |
+|-------------+---------------|
+| t0          |   2.45868e+06 |
+| P           |   4.12689     |
+| t14         | 265.74        |
++-------------+---------------+
+
+Searching MAST for HD 2685 b.
+
+Query from MAST returned 3 data products for HD 2685 b (TIC 267263253).
+
+Downloading https://mast.stsci.edu/api/v0.1/Download/file/?uri=mast:TESS/product/tess2018206045859-s0001-0000000267263253-0120-s_lc.fits
+|==========================================| 2.0M/2.0M (100.00%)         1s
+Downloading https://mast.stsci.edu/api/v0.1/Download/file/?uri=mast:TESS/product/tess2020186164531-s0027-0000000267263253-0189-s_lc.fits
+|==========================================| 1.7M/1.7M (100.00%)         1s
+Downloading https://mast.stsci.edu/api/v0.1/Download/file/?uri=mast:TESS/product/tess2020212050318-s0028-0000000267263253-0190-s_lc.fits
+|==========================================| 1.8M/1.8M (100.00%)         1s
+
++----------------+---------------------------------------------------------+
+| Sector         | Product                                                 |
+|----------------+---------------------------------------------------------|
+| TESS Sector 1  | tess2018206045859-s0001-0000000267263253-0120-s_lc.fits |
+| TESS Sector 27 | tess2020186164531-s0027-0000000267263253-0189-s_lc.fits |
+| TESS Sector 28 | tess2020212050318-s0028-0000000267263253-0190-s_lc.fits |
++----------------+---------------------------------------------------------+
+
+Splitting up the lightcurves into seperate epochs:
+
+Light curve 6 discarded
+Light curve 3 discarded
+Light curve 6 discarded
+
+A total of 18 lightcurves were generated.
+
+A random sample of 18 lightcurves will be fitted across all TESS Sectors.
+```
 
 Parameters
 ----------
