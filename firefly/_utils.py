@@ -8,7 +8,6 @@ The backend for auto_retrieval.
 
 from ._archive import _eu, _nasa
 from .query import _lc
-
 from transitfit import split_lightcurve_file, run_retrieval
 from datetime import datetime
 from smtplib import SMTP_SSL
@@ -72,7 +71,7 @@ def _fits(exoplanet, exo_folder):
     fitsname = []
     sector_list = []
     for j, fitsfile in enumerate(lc_links):
-        with fits.open(fitsfile) as TESS_fits:
+        with fits.open(fitsfile, cache=False) as TESS_fits:
             time = TESS_fits[1].data['TIME'] + 2457000
             time += TESS_fits[1].data['TIMECORR']
             flux = TESS_fits[1].data['PDCSAP_FLUX']
