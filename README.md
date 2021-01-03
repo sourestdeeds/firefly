@@ -1,7 +1,5 @@
-# firefly
-
-A collection of tools to aid the user experience in the use of
-TransitFit for confirmed TESS targets.
+# **firefly**
+A target selector for use with TransitFit to fit TESS lightcurves.
 
 #### Installation (add later)
 ```bash
@@ -107,6 +105,7 @@ def main():
 
 main()
 ```
+
 Parameters
 ----------
     
@@ -116,7 +115,8 @@ Input is a list tuple of strings:
 ```python
 ('WASP-43 b', 'WASP-18 b', 'WASP-91 b')
 ```    
-#### archive : str, optional
+
+#### archive : {`'eu'`, `'nasa'`}, optional
 The exoplanet archive to use for priors. Supports:
 
 - 'eu'
@@ -141,42 +141,49 @@ The default is `1` to fit all lightcurves across all sectors.
 
 #### email : bool, optional
 If True will send status emails. The default is `False`.
+
 #### to : str, optional
 The email address to send status updates to.
 ```python
 to=['transitfit.server@gmail.com']
 ```
+
 #### clean : bool, optional
 If True will delete all downloaded files and zip outputs only.
 The default is `False`.
+
 #### cutoff : float, optional
 If there are no data within 
 ```python
 t14 * cutoff of t0, 
 ```
 a period will be discarded. Default is `0.25`.
+
 #### window : float, optional
 Data outside of the range 
 ```python
 [t0 ± (0.5 * t14) * window] 
 ```
 will be discarded.
+
 #### nlive : int, optional
 The number of live points to use in the nested sampling retrieval.
 Default is `1000`.
+
 #### detrending_list : array_like, shape (n_detrending_models, 2)
 A list of different detrending models. Each entry should consist
 of a method and a second parameter dependent on the method.
 Accepted methods are:
-
-- ['nth order', order]
-- ['custom', function, [global fit indices, filter fit indices, epoch fit indices]]
-- ['off', ]
+```python
+['nth order', order]
+['custom', function, [global fit indices, filter fit indices, epoch fit indices]]
+['off', ]
+```
 Function here is a custom detrending function. TransitFit assumes
 that the first argument to this function is times and that all
 other arguments are single-valued - TransitFit cannot fit
 list/array variables. If `'off'` is used, no detrending will be
-applied to the `LightCurves` using this model.
+applied to the **LightCurves** using this model.
 If a custom function is used, and some inputs to the function
 should not be fitted individually for each light curve, but should
 instead be shared either globally, within a given filter, or within
@@ -190,9 +197,11 @@ foo(times, a, b, c):
 ```
 and a should be fitted globally, then the entry in the method_list
 would be 
+```python
+['custom', foo, [1], [], []].
+```
 
-- ['custom', foo, [1], [], []].
-#### dynesty_sample : str, optional
+#### dynesty_sample : {`'unif'`, `'rwalk'`, `'rstagger'`, `'slice'`, `'rslice'`, `'hslice'`}, optional
 Method used to sample uniformly within the likelihood constraint,
 conditioned on the provided bounds. Unique methods available are:
 
@@ -212,6 +221,7 @@ the problem (from ndim).
   and `'slice'` otherwise. 
 - `'rstagger'` and `'rslice'` are provided as alternatives for
   `'rwalk'` and `'slice'`, respectively. Default is `'auto'`.
+
 #### fitting_mode : {`'auto'`, `'all'`, `'folded'`, `'batched'`}, optional
 The approach TransitFit takes towards limiting the number of parameters
 being simultaneously fitted. The available modes are:
@@ -233,9 +243,11 @@ being simultaneously fitted. The available modes are:
   overlapping batches, runs each batch and uses the weighted means of
   each batch to produce a final result.
 Default is `'auto'`.
+
 #### fit_ttv : boolean, optional
 DESCRIPTION. The default is `False`.
-#### limb_darkening_model : str, optional
+
+#### limb_darkening_model : {`'linear'`, `'quadratic'`, `'squareroot'`, `'power2'`, `'nonlinear'`}, optional
 The limb darkening model to use. Allowed models are
 
 - `'linear'`
@@ -248,6 +260,7 @@ by the method in Kipping (2013), which can be found at
 https://arxiv.org/abs/1308.0009. Use `ldc_low_lim` and `ldc_high_lim`
 to control the behaviour of unconstrained coefficients.
 Default is `'quadratic'`.
+
 #### ld_fit_method : {`'coupled'`, `'single'`, `'independent'`, `'off'`}, optional
 Determines the mode of fitting of limb darkening parameters. The
 available modes are:
@@ -265,12 +278,15 @@ available modes are:
   each filter, with no coupling to the ldtk models.
 - `'off'` : Will use the fixed value provided in the input file
 Default is `'independent'`
+
 #### max_batch_parameters : int, optional
 The maximum number of parameters to use in a single retrieval.
 Default is `25`.
+
 #### batch_overlap : int, optional
 The number of epochs to overlap in each batch. This will be adhered
 to where possible. Default is `2`.
+
 #### dlogz : float, optional
 Retrieval iteration will stop when the estimated contribution of
 the remaining prior volume to the total evidence falls below this
@@ -284,14 +300,18 @@ the remaining volume. The default is
 ```python
 1e-3 * (nlive - 1) + 0.01.
 ```
+
 #### maxiter : int or `None`, optional
 The maximum number of iterations to run. If `None`, will
 continue until stopping criterion is reached. Default is `None`.
+
 #### maxcall : int or `None`, optional
 The maximum number of likelihood calls in retrieval. If None, will
 continue until stopping criterion is reached. Default is `None`.
+
 #### dynesty_bounding : {`'none'`, `'single'`, `'multi'`, `'balls'`, `'cubes'`}, optional
 The decomposition to use in sampling. Default is `'multi'`.
+
 #### normalise : bool, optional
 If True, will assume that the light curves have not been normalised and
 will fit normalisation constants within the retrieval. The range to
@@ -301,6 +321,7 @@ fit normalisation constants c_n are automatically detected using
 ```
 as the default range, where f_min and f_max are the minimum and maximum
 flux values for a given light curve. Default is `True`.
+
 #### detrend : bool, optional
 If True, will initialise detrending fitting. Default is `True`.
 
@@ -308,6 +329,6 @@ Returns
 -------
 A whole lot of data to science!
 Zipped files are found in:
-```python
+```
 firefly/WASP-43 b timestamp.gz.tar
 ```
