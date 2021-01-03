@@ -55,7 +55,7 @@ def _download_nasa():
         'pl_name,tic_id,pl_orbper,pl_orbpererr1,pl_orbsmax,pl_orbsmaxerr1,' +\
         'pl_radj,pl_radjerr1,pl_orbeccen,pl_orbeccenerr1,disc_facility,' +\
         'st_teff,st_tefferr1,st_rad,st_raderr1,st_mass,st_masserr1,' +\
-        'st_met,st_meterr1,pl_tranmid,pl_tranmiderr1,pl_trandur,' +\
+        'st_met,st_meterr1,st_logg,st_loggerr1,pl_tranmid,pl_tranmiderr1,pl_trandur,' +\
         'pl_orbincl,pl_orbinclerr1,pl_orblper,pl_orblpererr1,soltype,rowupdate' +\
         '+from+ps&format=csv'
     nasa_csv = 'firefly/data/nasa.csv.gz'
@@ -206,6 +206,7 @@ def _nasa(exoplanet, save=True):
     i = s.loc['pl_orbincl']
     rp = s.loc['pl_radj']
     rs = s.loc['st_rad']
+    logg = s.loc['st_logg']
     # w = s.loc['pl_orblper']
     # werr = s.loc['pl_orblpererr1']
     # ecc = s.loc['pl_orbeccen']
@@ -213,14 +214,10 @@ def _nasa(exoplanet, save=True):
     # m_s = s.loc['st_mass']     
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Assign Host data to Transitfit
-    logg, err_logg = calculate_logg((s.loc['st_mass'],
-                                     s.loc['st_masserr1']),
-                                    (s.loc['st_rad'],
-                                     s.loc['st_raderr1']))
     host_T = (s.loc['st_teff'], s.loc['st_tefferr1'])
     host_z = (s.loc['st_met'], s.loc['st_meterr1'])
     host_r = (s.loc['st_rad'], s.loc['st_raderr1'])
-    host_logg = (logg, err_logg)
+    host_logg = (s.loc['st_logg'], s.loc['st_loggerr1'])
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Assign Exoplanet Priors to TransitFit
     radius_const = 0.1027626851
@@ -246,7 +243,13 @@ def _nasa(exoplanet, save=True):
         rp_m = (rp * u.R_jup).to(u.m)
         a_m = (a * u.AU).to(u.m)
         t14 = P * (rs_m * np.sin(np.radians(i)) + rp_m) / \
-                  (np.pi * a_m) * 24 * 60 
+                  (np.pi * a_m) * 24 * 60
+    if np.isnan(logg):
+        logg, err_logg = calculate_logg((s.loc['st_mass'],
+                                     s.loc['st_masserr1']),
+                                    (s.loc['st_rad'],
+                                     s.loc['st_raderr1']))
+        host_logg = (logg, err_logg)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Save the priors
     priors_csv = DataFrame(cols, columns=['Parameter', 'Distribution',
