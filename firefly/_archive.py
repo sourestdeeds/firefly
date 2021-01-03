@@ -180,7 +180,7 @@ def _nasa_full():
     df = read_csv(download_link)
     df.to_csv('firefly/data/nasa_full.csv', index=False)
         
-    
+  
 def _nasa(exoplanet, save=True):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Download NASA archive
@@ -197,8 +197,20 @@ def _nasa(exoplanet, save=True):
                  'exist in the NASA archive.')
     tic = df['tic_id'] .drop_duplicates() .values .tolist()[0]
     s = df.mean()
-    t0, P, t14 = s.loc['pl_tranmid'], s.loc['pl_orbper'], \
-        s.loc['pl_trandur'] * 60
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Values for calculation
+    t0 = s.loc['pl_tranmid']
+    P = s.loc['pl_orbper']
+    t14 = s.loc['pl_trandur'] * 60
+    a = s.loc['pl_orbsmax']
+    i = s.loc['pl_orbincl']
+    rp = s.loc['pl_radj']
+    rs = s.loc['st_rad']
+    # w = s.loc['pl_orblper']
+    # werr = s.loc['pl_orblpererr1']
+    # ecc = s.loc['pl_orbeccen']
+    # eccerr = s.loc['pl_orbeccenerr1']
+    # m_s = s.loc['st_mass']     
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Assign Host data to Transitfit
     logg, err_logg = calculate_logg((s.loc['st_mass'],
@@ -220,13 +232,25 @@ def _nasa(exoplanet, save=True):
              s.loc['pl_orbsmaxerr1'], ''],
             ['inc', 'gaussian', s.loc['pl_orbincl'],
              s.loc['pl_orbinclerr1'], ''],
+            # ['w', 'gaussian', s.loc['pl_orblper'],
+            #   s.loc['pl_orblpererr1'], ''],
+            # ['ecc', 'gaussian', s.loc['pl_orbeccen'],
+            #   s.loc['pl_orbeccenerr1'], ''],
             ['rp', 'uniform',
              0.5 * radius_const * s.loc['pl_radj'] / s.loc['st_rad'],
              2 * radius_const * s.loc['pl_radj'] / s.loc['st_rad'], 0]]
-    priors_csv = DataFrame(cols, columns=['Parameter', 'Distribution',
-                                          'Input_A', 'Input_B', 'Filter'])
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Nan checks
+    if np.isnan(t14):
+        rs_m = (rs * u.R_sun).to(u.m)
+        rp_m = (rp * u.R_jup).to(u.m)
+        a_m = (a * u.AU).to(u.m)
+        t14 = P * (rs_m * np.sin(np.radians(i)) + rp_m) / \
+                  (np.pi * a_m) * 24 * 60 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Save the priors
+    priors_csv = DataFrame(cols, columns=['Parameter', 'Distribution',
+                                          'Input_A', 'Input_B', 'Filter'])
     if save == True:
         priors = f'firefly/{exoplanet}/{exoplanet} Priors.csv'
         if not os.path.exists(priors):
@@ -243,13 +267,17 @@ def _nasa(exoplanet, save=True):
              s.loc['pl_orbsmaxerr1'], ''],
             ['inc', 'gaussian', s.loc['pl_orbincl'],
              s.loc['pl_orbinclerr1'], ''],
+            # ['w', 'gaussian', s.loc['pl_orblper'],
+            #   s.loc['pl_orblpererr1'], ''],
+            # ['ecc', 'gaussian', s.loc['pl_orbeccen'],
+            #   s.loc['pl_orbeccenerr1'], ''],
             ['rp', 'uniform',
              0.5 * radius_const * s.loc['pl_radj'] / s.loc['st_rad'],
              2 * radius_const * s.loc['pl_radj'] / s.loc['st_rad'], 0],
             ['host_T', 'fixed', host_T[0], host_T[1], ''],
             ['host_z', 'fixed', host_z[0], host_z[1], ''],
             ['host_r', 'fixed', host_r[0], host_r[1], ''],
-            ['host_logg', 'fixed', host_logg[0], host_logg[1], '']]
+            ['host_logg', 'fixed', host_logg[0], host_logg[1], '']]           
     repack = DataFrame(cols, columns=['Parameter', 'Distribution',
                                       'Input_A', 'Input_B', 'Filter'])
     nan = repack.isnull().values.any()
