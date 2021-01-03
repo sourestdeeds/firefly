@@ -99,8 +99,9 @@ def _fits(exoplanet, exo_folder):
     tess_sector = [f'TESS Sector {str(sector)}' for sector in sector_list]
     _ = {'Sector':tess_sector, 'Product':fitsname}
     df = DataFrame(_)
-    print(tabulate(df, tablefmt='psql', showindex=False, headers='keys'))
     print()
+    print(tabulate(df, tablefmt='psql', showindex=False, headers='keys'))
+    print('\nSplitting up the lightcurves into seperate epochs:\n')
     # csv_in_dir = []
     # for r, d, f in os.walk(source):
     #     for item in f:
