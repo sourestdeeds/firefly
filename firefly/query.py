@@ -53,7 +53,7 @@ def _lc(exoplanet):
     out.to_csv('MAST_lc.csv.gz', index=False)
     '''
     here = os.path.dirname(os.path.abspath(__file__))
-    mast = f'{here}/data/Filters/MAST_lc.csv.gz'
+    mast = f'{here}/data/Filters/MAST_lc.csv.xz'
     _ = read_csv(mast)
     tic_id = tic(exoplanet).replace('TIC ', '')
     lc_links = _[_['links'].str.contains(tic_id)] .values .tolist()
