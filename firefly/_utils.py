@@ -147,8 +147,14 @@ def _retrieval(
         host_T, host_z, host_r, host_logg, t0, P, t14, nan  = \
                                             _eu(exoplanet)
     elif archive == 'nasa':
-        host_T, host_z, host_r, host_logg, t0, P, t14, nan = \
-                                            _nasa(exoplanet)
+        try:
+            host_T, host_z, host_r, host_logg, t0, P, t14, nan = \
+                                                _nasa(exoplanet)
+        except Exception:
+            os.remove('firefly/data/nasa.csv.gz')
+            host_T, host_z, host_r, host_logg, t0, P, t14, nan = \
+                                                _nasa(exoplanet)
+            
     cols = [['t0', t0], ['P', P], ['t14', t14]]
     df = DataFrame(cols, columns=['Parameter', 'Value'])
     print('\nSplitting the lightcurve into seperate epochs'
