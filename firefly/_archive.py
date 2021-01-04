@@ -178,7 +178,7 @@ def _nasa_full():
     'https://exoplanetarchive.ipac.caltech.edu/' +\
     'TAP/sync?query=select+*+from+ps&format=csv' 
     df = read_csv(download_link)
-    df.to_csv('firefly/data/nasa_full.csv', index=False)
+    df.to_csv('firefly/data/nasa_full.csv.xz', index=False)
         
   
 def _nasa(exoplanet, save=True):
