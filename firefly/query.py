@@ -57,7 +57,12 @@ def _lc(exoplanet):
     _ = read_csv(mast)
     tic_id = tic(exoplanet).replace('TIC ', '')
     lc_links = _[_['links'].str.contains(tic_id)] .values .tolist()
-    lc_links = [i for j in lc_links for i in j]
+    lc_list = [i for j in lc_links for i in j]
+    lc_test = [int(i[-30:-15]) for j in lc_links for i in j]
+    lc_links = []
+    for i in range(len(lc_test)):
+        if int(tic_id) == lc_test[i]:
+            lc_links.append(lc_list[i])
     return lc_links, tic_id
     
     
