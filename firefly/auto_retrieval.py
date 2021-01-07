@@ -6,8 +6,8 @@ Automated version of retrieval.
 @author: Steven Charles-Mindoza
 """
 
-from ._utils import _email, _retrieval
-from ._archive import _check_nan
+from ._utils import _email, _retrieval, _gdrive
+from ._archive import _check_nan, suppress_print
 from ._search import _fuzzy_search
 from .query import tess_viable
 
@@ -319,6 +319,7 @@ def firefly(
     exoplanet_list = _auto_input_check(targets, archive, curve_sample)
     for i, exoplanet in enumerate(exoplanet_list):
         try:
+            archive_name = \
             _retrieval(
                 # Firefly Interface
                 exoplanet, 
@@ -344,9 +345,7 @@ def firefly(
                 normalise=normalise, 
                 detrend=detrend
             )
-            now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
-            exo_folder = f'firefly/{exoplanet}'
-            success = f'{os.getcwd()}/{exo_folder} {now}.gz.tar'
+            success = f'{os.getcwd()}/{archive_name}.gz.tar'
             print(f'\nData location: {success}\n'
                     'A new target has been fully retrieved across ' +
                     'all available TESS Sectors.')
@@ -354,7 +353,8 @@ def firefly(
                 _email(f'Success: {exoplanet}',
                        f'Data location: {success} \n\n'
                        'A new target has been fully retrieved across ' +
-                       'all available TESS Sectors.', to=to)
+                       'all available TESS Sectors.\n', to=to)
+                _gdrive(archive_name, fitting_mode)
         except KeyboardInterrupt:
             exo_folder = f'firefly/{exoplanet}'
             now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
