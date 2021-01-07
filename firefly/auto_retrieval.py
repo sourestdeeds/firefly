@@ -350,11 +350,12 @@ def firefly(
                     'A new target has been fully retrieved across ' +
                     'all available TESS Sectors.')
             if email == True:
+                link = _gdrive(archive_name, fitting_mode)
                 _email(f'Success: {exoplanet}',
                        f'Data location: {success} \n\n'
+                       f'Link: {link}\n\n'
                        'A new target has been fully retrieved across ' +
                        'all available TESS Sectors.\n', to=to)
-                _gdrive(archive_name, fitting_mode)
         except KeyboardInterrupt:
             exo_folder = f'firefly/{exoplanet}'
             now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
