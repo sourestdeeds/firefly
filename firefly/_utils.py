@@ -16,11 +16,49 @@ from astropy.io import fits
 from csv import DictWriter
 from pandas import DataFrame
 from shutil import rmtree, make_archive
+from pydrive.auth import GoogleAuth
+from pydrive.drive import GoogleDrive
 from math import ceil
 import sys
 import os
+import logging
 import random
 
+logging.getLogger('googleapiclient.discovery_cache').setLevel(logging.ERROR)
+
+def _gdrive(archive_name, fitting_mode):
+    gauth = GoogleAuth()
+    here = os.path.dirname(os.path.abspath(__file__))
+    gauth.LoadCredentialsFile(f'{here}/data/Filters/fireflycreds.txt')
+    # gauth.LocalWebserverAuth()
+    # gauth.SaveCredentialsFile('fireflycreds.txt')
+    try:
+        drive = GoogleDrive(gauth)
+    except Exception:
+        drive = GoogleDrive(gauth)
+        pass
+    # try:
+    if fitting_mode == 'all':
+        folder = drive \
+                 .ListFile({'q': "title='all' and trashed=False"}) \
+                 .GetList()[0]
+    if fitting_mode == 'folded':
+        folder = drive \
+                 .ListFile({'q': "title='folded' and trashed=False"}) \
+                 .GetList()[0]
+    if fitting_mode == 'batched':
+        folder = drive \
+                 .ListFile({'q': "title='batched' and trashed=False"}) \
+                 .GetList()[0]
+    if fitting_mode == '2_stage':
+        folder = drive \
+                 .ListFile({'q': "title='2_stage' and trashed=False"}) \
+                 .GetList()[0]
+    print('\nUploading results to googledrive.')
+    file = drive.CreateFile({'title':f'{archive_name}.tar.gz', 
+                             'parents':[{'id':folder['id']}]})
+    file.SetContentFile(f'firefly/{archive_name}.tar.gz')
+    file.Upload()
 
 
 def _email(subject, body, to):
@@ -239,9 +277,11 @@ def _retrieval(
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Archive and sort
     now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
-    make_archive(f'{exo_folder} {now}', format='gztar',
+    archive_name = f'{exoplanet} {now}'
+    archive_folder = f'firefly/{archive_name}'
+    make_archive(archive_folder, format='gztar',
                  root_dir=f'{os.getcwd()}/firefly/',
                  base_dir=f'{exoplanet}')
     rmtree(f'{exo_folder}')
-    return f'{os.getcwd()}/{exo_folder} {now}.gz.tar'
+    return archive_name
 
