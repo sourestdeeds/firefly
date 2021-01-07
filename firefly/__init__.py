@@ -95,7 +95,7 @@
 """
 
 name = 'firefly'
-__version__ = '0.7.3'
+__version__ = '0.7.4'
 
 from .auto_retrieval import firefly
 from .query import query, tess, priors, mast, tic, tess_viable
