@@ -63,7 +63,7 @@ def _gdrive(archive_name, fitting_mode):
 
 def _email(subject, body, to):
     username = 'transitfit.server@gmail.com'
-    password = 'yvoq efzi dcib dmbm'
+    password = 'spearnet1!'
     sent_from = username
     # to = to ['transitfit.server@gmail.com']
     message = f'Subject: {subject}\n\n{body}'
