@@ -112,7 +112,7 @@ def _TESS_filter():
     df.to_csv(tess_filter_path, index=False, header=True)
 
 
-def _fits(exoplanet, exo_folder):
+def _fits(exoplanet, exo_folder, cache):
     print(f'\nSearching MAST for {exoplanet}.')
     lc_links, tic_id = _lc(exoplanet)
     if len(lc_links) == 0:
@@ -127,7 +127,7 @@ def _fits(exoplanet, exo_folder):
     fitsname = []
     sector_list = []
     for j, fitsfile in enumerate(lc_links):
-        with fits.open(fitsfile, cache=False) as TESS_fits:
+        with fits.open(fitsfile, cache=cache) as TESS_fits:
             time = TESS_fits[1].data['TIME'] + 2457000
             time += TESS_fits[1].data['TIMECORR']
             flux = TESS_fits[1].data['PDCSAP_FLUX']
@@ -172,6 +172,7 @@ def _retrieval(
         archive='eu', 
         curve_sample=1, 
         clean=False,
+        cache=False,
         # TransitFit Variables
         cutoff=0.25, 
         window=2.5,
@@ -219,7 +220,7 @@ def _retrieval(
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Split the Light curves
     split_curve_in_dir = []
-    csv_in_dir = _fits(exoplanet, exo_folder)
+    csv_in_dir = _fits(exoplanet, exo_folder, cache)
     for i, csvfile in enumerate(csv_in_dir):
         split_curves = split_lightcurve_file(csvfile, t0=t0, P=P, t14=t14, 
                                              cutoff=cutoff, window=window)
