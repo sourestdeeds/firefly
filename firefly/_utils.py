@@ -30,6 +30,7 @@ def _gdrive(archive_name, fitting_mode):
     gauth = GoogleAuth()
     here = os.path.dirname(os.path.abspath(__file__))
     gauth.LoadCredentialsFile(f'{here}/data/Filters/fireflycreds.txt')
+    # gauth.LoadCredentialsFile('fireflycreds.txt')
     # gauth.LocalWebserverAuth()
     # gauth.SaveCredentialsFile('fireflycreds.txt')
     try:
@@ -59,6 +60,23 @@ def _gdrive(archive_name, fitting_mode):
                              'parents':[{'id':folder['id']}]})
     file.SetContentFile(f'firefly/{archive_name}.tar.gz')
     file.Upload()
+    
+    keys = file.keys()
+    if file['shared']:
+        link = 'https://drive.google.com/drive/folder/' + file['id'] +\
+               '?usp=sharing'
+    elif 'webContentLink' in keys:
+        link = file['webContentLink']
+    elif 'webViewLink' in keys:
+        link = file['webViewLink']
+    else:
+        link = 'No link available.'
+    
+    if 'name' in keys:
+        name = file['name']
+    else:
+        name = file['id']
+    return link
 
 
 def _email(subject, body, to):
