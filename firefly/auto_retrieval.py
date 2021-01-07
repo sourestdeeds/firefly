@@ -47,6 +47,7 @@ def firefly(
         email=False,
         to=['transitfit.server@gmail.com'], 
         clean=False,
+        cache=False,
         # TransitFit Variables
         cutoff=0.25,
         window=2.5,
@@ -152,6 +153,9 @@ def firefly(
         >>> to=['transitfit.server@gmail.com']
     clean : bool, optional
         If True will delete all downloaded files and zip outputs only.
+        The default is False.
+    cache : bool, optional
+        If True will cache lightcurve fits files in root/.astropy.
         The default is False.
     cutoff : float, optional
         If there are no data within 
@@ -326,6 +330,7 @@ def firefly(
                 archive=archive,
                 curve_sample=curve_sample,
                 clean=clean,
+                cache=cache,
                 # TransitFit Variables
                 cutoff=cutoff,
                 window=window,
