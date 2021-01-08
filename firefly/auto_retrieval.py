@@ -323,7 +323,7 @@ def firefly(
     exoplanet_list = _auto_input_check(targets, archive, curve_sample)
     for i, exoplanet in enumerate(exoplanet_list):
         try:
-            archive_name = \
+            archive_name, repack, results = \
             _retrieval(
                 # Firefly Interface
                 exoplanet, 
@@ -356,11 +356,38 @@ def firefly(
                     'all available TESS Sectors.')
             if email == True:
                 link = _gdrive(archive_name, fitting_mode)
-                _email(f'Success: {exoplanet}',
-                       f'Data location: {success} \n\n'
-                       f'Link: {link}\n\n'
-                       'A new target has been fully retrieved across ' +
-                       'all available TESS Sectors.\n', to=to)
+                _email(
+                f'Success: {exoplanet}',
+                f'Data location: {success} <br><br>'
+                f'Link: {link} <br><br>'
+                f'Priors from the Archive for {exoplanet}:<br>' +
+                repack.to_html(float_format=lambda x: '%10.5f' % x) + '<br>'
+                'TransitFit Complete Results:<br>' +
+                results.to_html(float_format=lambda x: '%10.5f' % x) + '<br>'
+                'Variables used:<br><br>'
+                f'target={exoplanet}<br>'
+                f'archive={archive}<br>'
+                f'curve_sample={str(curve_sample)}<br>'
+                f'clean={clean}<br>'
+                f'cache={cache}<br>'
+                f'cutoff={str(cutoff)}<br>'
+                f'window={str(window)}<br>'
+                f'nlive={str(nlive)}<br>'
+                f'fit_ttv={fit_ttv}<br>'
+                f'detrending_list={str(detrending_list)}<br>'
+                f'dynesty_sample={dynesty_sample}<br>'
+                f'fitting_mode={fitting_mode}<br>'
+                f'limb_darkening_model={limb_darkening_model}<br>'
+                f'ld_fit_method={ld_fit_method}<br>'
+                f'max_batch_parameters={str(max_batch_parameters)}<br>'
+                f'batch_overlap={str(batch_overlap)}<br>'
+                f'dlogz={str(dlogz)}<br>'
+                f'maxiter={str(maxiter)}<br>'
+                f'maxcall={str(maxcall)}<br>'
+                f'dynesty_bounding={dynesty_bounding}<br>'
+                f'normalise={normalise}<br>'
+                f'detrend={detrend}',
+                to=to)
         except KeyboardInterrupt:
             exo_folder = f'firefly/{exoplanet}'
             now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
