@@ -14,8 +14,9 @@ from smtplib import SMTP_SSL
 from tabulate import tabulate
 from astropy.io import fits
 from csv import DictWriter
-from pandas import DataFrame
+from pandas import DataFrame, read_csv
 from shutil import rmtree, make_archive
+from email.message import EmailMessage
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
 from math import ceil
@@ -33,25 +34,20 @@ def _gdrive(archive_name, fitting_mode):
     # gauth.LoadCredentialsFile('fireflycreds.txt')
     # gauth.LocalWebserverAuth()
     # gauth.SaveCredentialsFile('fireflycreds.txt')
-    try:
-        drive = GoogleDrive(gauth)
-    except Exception:
-        drive = GoogleDrive(gauth)
-        pass
-    # try:
+    drive = GoogleDrive(gauth)
     if fitting_mode == 'all':
         folder = drive \
                  .ListFile({'q': "title='all' and trashed=False"}) \
                  .GetList()[0]
-    if fitting_mode == 'folded':
+    elif fitting_mode == 'folded':
         folder = drive \
                  .ListFile({'q': "title='folded' and trashed=False"}) \
                  .GetList()[0]
-    if fitting_mode == 'batched':
+    elif fitting_mode == 'batched':
         folder = drive \
                  .ListFile({'q': "title='batched' and trashed=False"}) \
                  .GetList()[0]
-    if fitting_mode == '2_stage':
+    elif fitting_mode == '2_stage':
         folder = drive \
                  .ListFile({'q': "title='2_stage' and trashed=False"}) \
                  .GetList()[0]
@@ -82,15 +78,23 @@ def _gdrive(archive_name, fitting_mode):
 def _email(subject, body, to):
     username = 'transitfit.server@gmail.com'
     password = 'spearnet1!'
-    sent_from = username
-    # to = to ['transitfit.server@gmail.com']
     message = f'Subject: {subject}\n\n{body}'
+    
+    email = EmailMessage()
+    email['Subject'] = subject
+    email['From'] = 'transitfit.server@gmail.com'
+    email['To'] = to
+    email.set_content(body, subtype='html')
+    #email.add_alternative(args, kw)
+    #email.add_attachment()
+    
     try:
-        server = SMTP_SSL('smtp.gmail.com', 465)
-        server.ehlo()
-        server.login(username, password)
-        server.sendmail(sent_from, to, message)
-        server.close()
+        with SMTP_SSL('smtp.gmail.com', 465) as s:
+            #s.ehlo()
+            s.login(username, password)
+            s.send_message(email)
+        
+        #server.sendmail(sent_from, to, message)
     except BaseException:
         # Continue on conn failure
         pass
@@ -201,11 +205,11 @@ def _retrieval(
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Download Archive
     if archive == 'eu':
-        host_T, host_z, host_r, host_logg, t0, P, t14, nan  = \
+        host_T, host_z, host_r, host_logg, t0, P, t14, nan, repack  = \
                                             _eu(exoplanet)
     elif archive == 'nasa':
         try:
-            host_T, host_z, host_r, host_logg, t0, P, t14, nan = \
+            host_T, host_z, host_r, host_logg, t0, P, t14, nan, repack = \
                                                 _nasa(exoplanet)
         except Exception:
             os.remove('firefly/data/nasa.csv.gz')
@@ -287,6 +291,7 @@ def _retrieval(
             final_lightcurve_folder=fitted_lightcurve_folder,
             plot_folder=plot_folder
         )
+    results = read_csv(f'{exo_folder}/output_parameters/Complete_results.csv')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Cleanup
     if clean == True:
@@ -302,5 +307,5 @@ def _retrieval(
                  root_dir=f'{os.getcwd()}/firefly/',
                  base_dir=f'{exoplanet}')
     rmtree(f'{exo_folder}')
-    return archive_name
+    return archive_name, repack, results
 
