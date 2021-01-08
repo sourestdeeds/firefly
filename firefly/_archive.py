@@ -162,7 +162,7 @@ def _eu(exoplanet, save=True):
     nan = repack.isnull().values.any()
     print(f'\nPriors generated from the EU Archive for {exoplanet}.\n')
     print(tabulate(repack, tablefmt='psql', showindex=False, headers='keys'))
-    return host_T, host_z, host_r, host_logg, t0, P, t14, nan
+    return host_T, host_z, host_r, host_logg, t0, P, t14, nan, repack
 
 
 def _nasa_full():
@@ -207,6 +207,7 @@ def _nasa(exoplanet, save=True):
     rp = s.loc['pl_radj']
     rs = s.loc['st_rad']
     logg = s.loc['st_logg']
+    z = s.loc['st_met']
     # w = s.loc['pl_orblper']
     # werr = s.loc['pl_orblpererr1']
     # ecc = s.loc['pl_orbeccen']
@@ -250,6 +251,8 @@ def _nasa(exoplanet, save=True):
                                     (s.loc['st_rad'],
                                      s.loc['st_raderr1']))
         host_logg = (logg, err_logg)
+    if np.isnan(z):
+        host_z = (0.1, 0.1)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Save the priors
     priors_csv = DataFrame(cols, columns=['Parameter', 'Distribution',
@@ -287,7 +290,7 @@ def _nasa(exoplanet, save=True):
     print(f'\nPriors generated from the NASA Archive for {exoplanet}'
           f' ({tic}).\n')
     print(tabulate(repack, tablefmt='psql', showindex=False, headers='keys'))
-    return host_T, host_z, host_r, host_logg, t0, P, t14, nan
+    return host_T, host_z, host_r, host_logg, t0, P, t14, nan, repack
 
 
 def _check_nan(exoplanet, archive='eu', printing=False):
