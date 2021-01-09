@@ -59,8 +59,8 @@ def _gdrive(archive_name, fitting_mode):
     
     keys = file.keys()
     if file['shared']:
-        link = 'https://drive.google.com/drive/folder/' + file['id'] +\
-               '?usp=sharing'
+        link = 'https://drive.google.com/drive/file/d/' + file['id'] +\
+               'view?usp=sharing'
     elif 'webContentLink' in keys:
         link = file['webContentLink']
     elif 'webViewLink' in keys:
