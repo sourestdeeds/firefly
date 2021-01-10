@@ -236,6 +236,9 @@ def firefly(
           filter. TransitFit will fit each filter separately and produce a
           period-folded light curve for each filter, before fitting these
           simultaneously, using the `'batched'` approach if required.
+        - `'2_stage'` : Fits in 2 stages, first detrending the light curves and
+          then fitting the detrended curves simultaneously, using the
+          `'batched'` approach if required.
         - `'batched'` : Useful for large numbers of light curves with
           relatively few shared filters, so `'folded'` loses large amounts of
           multi-epoch information. This mode splits the filters into sets of
