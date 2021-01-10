@@ -355,6 +355,7 @@ def firefly(
                     'A new target has been fully retrieved across ' +
                     'all available TESS Sectors.')
             if email == True:
+                exo_folder = f'firefly/{exoplanet}'
                 link = _gdrive(archive_name, fitting_mode)
                 _email(
                 f'Success: {exoplanet}',
@@ -388,6 +389,32 @@ def firefly(
                 f'normalise={normalise}<br>'
                 f'detrend={detrend}',
                 to=to)
+                print(
+                    'Variables used:\n\n'
+                    f'target={exoplanet}\n'
+                    f'archive={archive}\n'
+                    f'curve_sample={str(curve_sample)}\n'
+                    f'clean={clean}\n'
+                    f'cache={cache}\n'
+                    f'cutoff={str(cutoff)}\n'
+                    f'window={str(window)}\n'
+                    f'nlive={str(nlive)}\n'
+                    f'fit_ttv={fit_ttv}\n'
+                    f'detrending_list={str(detrending_list)}\n'
+                    f'dynesty_sample={dynesty_sample}\n'
+                    f'fitting_mode={fitting_mode}\n'
+                    f'limb_darkening_model={limb_darkening_model}\n'
+                    f'ld_fit_method={ld_fit_method}\n'
+                    f'max_batch_parameters={str(max_batch_parameters)}\n'
+                    f'batch_overlap={str(batch_overlap)}\n'
+                    f'dlogz={str(dlogz)}\n'
+                    f'maxiter={str(maxiter)}\n'
+                    f'maxcall={str(maxcall)}\n'
+                    f'dynesty_bounding={dynesty_bounding}\n'
+                    f'normalise={normalise}\n'
+                    f'detrend={detrend}',
+                    file=open(exo_folder+'/variables.txt', 'w')
+                )
         except KeyboardInterrupt:
             exo_folder = f'firefly/{exoplanet}'
             now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
@@ -407,6 +434,32 @@ def firefly(
                             f'{now} Exception'
                 trace_back = format_exc()
                 print(trace_back, file=open(exo_folder+'/traceback.txt', 'w'))
+                print(
+                    'Variables used:\n\n'
+                    f'target={exoplanet}\n'
+                    f'archive={archive}\n'
+                    f'curve_sample={str(curve_sample)}\n'
+                    f'clean={clean}\n'
+                    f'cache={cache}\n'
+                    f'cutoff={str(cutoff)}\n'
+                    f'window={str(window)}\n'
+                    f'nlive={str(nlive)}\n'
+                    f'fit_ttv={fit_ttv}\n'
+                    f'detrending_list={str(detrending_list)}\n'
+                    f'dynesty_sample={dynesty_sample}\n'
+                    f'fitting_mode={fitting_mode}\n'
+                    f'limb_darkening_model={limb_darkening_model}\n'
+                    f'ld_fit_method={ld_fit_method}\n'
+                    f'max_batch_parameters={str(max_batch_parameters)}\n'
+                    f'batch_overlap={str(batch_overlap)}\n'
+                    f'dlogz={str(dlogz)}\n'
+                    f'maxiter={str(maxiter)}\n'
+                    f'maxcall={str(maxcall)}\n'
+                    f'dynesty_bounding={dynesty_bounding}\n'
+                    f'normalise={normalise}\n'
+                    f'detrend={detrend}',
+                    file=open(exo_folder+'/variables.txt', 'w')
+                )
                 make_archive(exception, format='gztar',
                          root_dir=f'{os.getcwd()}/firefly/',
                          base_dir=f'{exoplanet}')
