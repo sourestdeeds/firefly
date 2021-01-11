@@ -359,7 +359,11 @@ def firefly(
                     'all available TESS Sectors.')
             if email == True:
                 exo_folder = f'firefly/{exoplanet}'
-                link = _gdrive(archive_name, fitting_mode)
+                try:
+                    link = _gdrive(archive_name, fitting_mode)
+                except Exception:
+                    link = 'Googledrive needs authorising with client_secrets.json.'
+                    pass
                 _email(
                 f'Success: {exoplanet}',
                 f'Data location: {success} <br><br>'
