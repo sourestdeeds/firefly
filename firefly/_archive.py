@@ -120,7 +120,7 @@ def _eu(exoplanet, save=True):
     # Assign Exoplanet Priors to TransitFit
     radius_const = 0.1027626851
     cols = [['P', 'gaussian', s.loc['orbital_period'],
-             s.loc['orbital_period_error_max'] * 1e3, ''],
+             s.loc['orbital_period'] * 1e-3, ''],
             ['t0', 'gaussian', s.loc['tzero_tr'],
              s.loc['tzero_tr_error_max'] * 100, ''],
             ['a', 'gaussian', s.loc['semi_major_axis'],
@@ -143,7 +143,7 @@ def _eu(exoplanet, save=True):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # For printing variables only
     cols = [['P', 'gaussian', s.loc['orbital_period'],
-             s.loc['orbital_period_error_max'] * 1e3, ''],
+             s.loc['orbital_period'] * 1e-3, ''],
             ['t0', 'gaussian', s.loc['tzero_tr'],
              s.loc['tzero_tr_error_max'] * 100, ''],
             ['a', 'gaussian', s.loc['semi_major_axis'],
@@ -223,7 +223,7 @@ def _nasa(exoplanet, save=True):
     # Assign Exoplanet Priors to TransitFit
     radius_const = 0.1027626851
     cols = [['P', 'gaussian', s.loc['pl_orbper'],
-             s.loc['pl_orbpererr1'] * 1e3, ''],
+             s.loc['pl_orbper'] * 1e-3, ''],
             ['t0', 'gaussian', s.loc['pl_tranmid'],
              s.loc['pl_tranmiderr1'] * 100, ''],
             ['a', 'gaussian', s.loc['pl_orbsmax'],
@@ -266,7 +266,7 @@ def _nasa(exoplanet, save=True):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # For printing variables only
     cols = [['P', 'gaussian', s.loc['pl_orbper'],
-             s.loc['pl_orbpererr1'] * 1e3, ''],
+             s.loc['pl_orbper'] * 1e-3, ''],
             ['t0', 'gaussian', s.loc['pl_tranmid'],
              s.loc['pl_tranmiderr1'] * 100, ''],
             ['a', 'gaussian', s.loc['pl_orbsmax'],
