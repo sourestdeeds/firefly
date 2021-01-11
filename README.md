@@ -23,9 +23,6 @@ whether the prior data extracted has entries in all columns. If there are missin
 entries for a given target in the list, the user will be asked whether to proceed.
 - Iteratively takes the targets given and employs TransitFit across each TESS sector 
 for every exoplanet in the list given.
-- If more than one target is given in a list, multiple cpu's will handle the extra
-targets in seperate threads. The default for this behaviour is set to a
-quarter of the maximum cores available to the current process.
 - All available split curves are fitted with TransitFit, then the results
 are then zipped up and time stamped. Optionally sends an email upon an error or 
 full completion of a target.
@@ -83,6 +80,7 @@ def main():
         email=True,
         to=['your.email@server.com'], 
         clean=False,
+        cache=False,
         # TransitFit Variables
         cutoff=0.25,
         window=2.5,
@@ -115,7 +113,7 @@ Priors generated from the NASA Archive for HD 2685 b (TIC 267263253).
 +-------------+----------------+----------------+------------+----------+
 | Parameter   | Distribution   |        Input_A |    Input_B | Filter   |
 |-------------+----------------+----------------+------------+----------|
-| P           | gaussian       |    4.12689     |   5        |          |
+| P           | gaussian       |    4.12689     |   0.004126 |          |
 | t0          | gaussian       |    2.45868e+06 |   0.02345  |          |
 | a           | gaussian       |    0.0568      |   0.0006   |          |
 | inc         | gaussian       |   89.252       |   0.415    |          |
