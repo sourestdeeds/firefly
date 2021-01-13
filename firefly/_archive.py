@@ -128,8 +128,8 @@ def _eu(exoplanet, save=True):
             ['inc', 'gaussian', s.loc['inclination'],
              s.loc['inclination_error_max'], ''],
             ['rp', 'uniform',
-             0.5 * radius_const * s.loc['radius'] / s.loc['star_radius'],
-             2 * radius_const * s.loc['radius'] / s.loc['star_radius'], 0]]
+             0.9 * radius_const * s.loc['radius'] / s.loc['star_radius'],
+             1.2 * radius_const * s.loc['radius'] / s.loc['star_radius'], 0]]
     priors_csv = DataFrame(cols, columns=['Parameter', 'Distribution',
                                           'Input_A', 'Input_B', 'Filter'])
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -151,8 +151,8 @@ def _eu(exoplanet, save=True):
             ['inc', 'gaussian', s.loc['inclination'],
              s.loc['inclination_error_max'], ''],
             ['rp', 'uniform',
-             0.5 * radius_const * s.loc['radius'] / s.loc['star_radius'],
-             2 * radius_const * s.loc['radius'] / s.loc['star_radius'], 0],
+             0.9 * radius_const * s.loc['radius'] / s.loc['star_radius'],
+             1.2 * radius_const * s.loc['radius'] / s.loc['star_radius'], 0],
             ['host_T', 'fixed', host_T[0], host_T[1], ''],
             ['host_z', 'fixed', host_z[0], host_z[1], ''],
             ['host_r', 'fixed', host_r[0], host_r[1], ''],
@@ -235,8 +235,8 @@ def _nasa(exoplanet, save=True):
             # ['ecc', 'gaussian', s.loc['pl_orbeccen'],
             #   s.loc['pl_orbeccenerr1'], ''],
             ['rp', 'uniform',
-             0.5 * radius_const * s.loc['pl_radj'] / s.loc['st_rad'],
-             2 * radius_const * s.loc['pl_radj'] / s.loc['st_rad'], 0]]
+             0.9 * radius_const * s.loc['pl_radj'] / s.loc['st_rad'],
+             1.2 * radius_const * s.loc['pl_radj'] / s.loc['st_rad'], 0]]
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Nan checks
     if np.isnan(t14):
@@ -278,8 +278,8 @@ def _nasa(exoplanet, save=True):
             # ['ecc', 'gaussian', s.loc['pl_orbeccen'],
             #   s.loc['pl_orbeccenerr1'], ''],
             ['rp', 'uniform',
-             0.5 * radius_const * s.loc['pl_radj'] / s.loc['st_rad'],
-             2 * radius_const * s.loc['pl_radj'] / s.loc['st_rad'], 0],
+             0.9 * radius_const * s.loc['pl_radj'] / s.loc['st_rad'],
+             1.2 * radius_const * s.loc['pl_radj'] / s.loc['st_rad'], 0],
             ['host_T', 'fixed', host_T[0], host_T[1], ''],
             ['host_z', 'fixed', host_z[0], host_z[1], ''],
             ['host_r', 'fixed', host_r[0], host_r[1], ''],
