@@ -187,7 +187,8 @@ def _nasa(exoplanet, save=True):
     nasa_csv = _download_nasa()
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Read in nasa.csv
-    exo_archive = read_csv(nasa_csv, index_col='pl_name')
+    exo_archive = read_csv(nasa_csv, index_col='pl_name') \
+                  .drop(['soltype', 'rowupdate', 'tic_id', 'disc_facility'], axis=1)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Pick Out Chosen Exoplanet Priors
     try:
@@ -196,7 +197,12 @@ def _nasa(exoplanet, save=True):
         sys.exit('The chosen target is either spelt incorrectly, or does not '
                  'exist in the NASA archive.')
     tic = df['tic_id'] .drop_duplicates() .values .tolist()[0]
-    s = df.head(n=2)
+    # Only keep IQR of data
+    Q1 = df.quantile(0.25)
+    Q3 = df.quantile(0.75)
+    IQR = Q3 - Q1
+    trueList = ~((df < (Q1 - 1.5 * IQR)) |(df > (Q3 + 1.5 * IQR)))
+    df = df[trueList]
     s = df.mean()
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Values for calculation
