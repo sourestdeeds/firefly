@@ -187,8 +187,8 @@ def _nasa(exoplanet, save=True):
     nasa_csv = _download_nasa()
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Read in nasa.csv
-    exo_archive = read_csv(nasa_csv, index_col='pl_name') \
-                  .drop(['soltype', 'rowupdate', 'tic_id', 'disc_facility'], axis=1)
+    exo_archive = read_csv(nasa_csv, index_col='pl_name') 
+                  # .drop(['soltype', 'rowupdate', 'tic_id', 'disc_facility'], axis=1)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Pick Out Chosen Exoplanet Priors
     try:
