@@ -188,7 +188,7 @@ def _nasa(exoplanet, save=True):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Read in nasa.csv
     exo_archive = read_csv(nasa_csv, index_col='pl_name') 
-                  # .drop(['soltype', 'rowupdate', 'tic_id', 'disc_facility'], axis=1)
+                  #.drop(['soltype', 'rowupdate', 'tic_id', 'disc_facility'], axis=1)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Pick Out Chosen Exoplanet Priors
     try:
@@ -203,10 +203,11 @@ def _nasa(exoplanet, save=True):
     IQR = Q3 - Q1
     trueList = ~((df < (Q1 - 1.5 * IQR)) |(df > (Q3 + 1.5 * IQR)))
     df = df[trueList]
+    t0 = df['pl_tranmid'] .dropna()[0]
     s = df.mean()
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Values for calculation
-    t0 = s.loc['pl_tranmid']
+    #t0 = s.loc['pl_tranmid']
     P = s.loc['pl_orbper']
     t14 = s.loc['pl_trandur'] * 60
     a = s.loc['pl_orbsmax']
@@ -231,7 +232,7 @@ def _nasa(exoplanet, save=True):
     radius_const = 0.1027626851
     cols = [['P', 'gaussian', s.loc['pl_orbper'],
              s.loc['pl_orbper'] * 1e-3, ''],
-            ['t0', 'gaussian', s.loc['pl_tranmid'],
+            ['t0', 'gaussian', t0,
              7e-3, ''],
             ['a', 'gaussian', s.loc['pl_orbsmax'],
              s.loc['pl_orbsmax'] * 0.1, ''],
@@ -274,7 +275,7 @@ def _nasa(exoplanet, save=True):
     # For printing variables only
     cols = [['P', 'gaussian', s.loc['pl_orbper'],
              s.loc['pl_orbper'] * 1e-3, ''],
-            ['t0', 'gaussian', s.loc['pl_tranmid'],
+            ['t0', 'gaussian', t0,
              7e-3, ''],
             ['a', 'gaussian', s.loc['pl_orbsmax'],
              s.loc['pl_orbsmax'] * 0.1, ''],
