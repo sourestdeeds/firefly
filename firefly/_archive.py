@@ -128,8 +128,8 @@ def _eu(exoplanet, save=True):
             ['inc', 'gaussian', s.loc['inclination'],
              s.loc['inclination'] * 0.1, ''],
             ['rp', 'uniform',
-             0.7 * radius_const * s.loc['radius'] / s.loc['star_radius'],
-             1.3 * radius_const * s.loc['radius'] / s.loc['star_radius'], 0]]
+             0.9 * radius_const * s.loc['radius'] / s.loc['star_radius'],
+             1.1 * radius_const * s.loc['radius'] / s.loc['star_radius'], 0]]
     priors_csv = DataFrame(cols, columns=['Parameter', 'Distribution',
                                           'Input_A', 'Input_B', 'Filter'])
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -151,8 +151,8 @@ def _eu(exoplanet, save=True):
             ['inc', 'gaussian', s.loc['inclination'],
              s.loc['inclination'] * 0.1, ''],
             ['rp', 'uniform',
-             0.7 * radius_const * s.loc['radius'] / s.loc['star_radius'],
-             1.3 * radius_const * s.loc['radius'] / s.loc['star_radius'], 0],
+             0.9 * radius_const * s.loc['radius'] / s.loc['star_radius'],
+             1.1 * radius_const * s.loc['radius'] / s.loc['star_radius'], 0],
             ['host_T', 'fixed', host_T[0], host_T[1], ''],
             ['host_z', 'fixed', host_z[0], host_z[1], ''],
             ['host_r', 'fixed', host_r[0], host_r[1], ''],
@@ -196,6 +196,7 @@ def _nasa(exoplanet, save=True):
         sys.exit('The chosen target is either spelt incorrectly, or does not '
                  'exist in the NASA archive.')
     tic = df['tic_id'] .drop_duplicates() .values .tolist()[0]
+    s = df.head(n=2)
     s = df.mean()
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Values for calculation
@@ -235,8 +236,8 @@ def _nasa(exoplanet, save=True):
             # ['ecc', 'gaussian', s.loc['pl_orbeccen'],
             #   s.loc['pl_orbeccenerr1'], ''],
             ['rp', 'uniform',
-             0.7 * radius_const * s.loc['pl_radj'] / s.loc['st_rad'],
-             1.3 * radius_const * s.loc['pl_radj'] / s.loc['st_rad'], 0]]
+             0.9 * radius_const * s.loc['pl_radj'] / s.loc['st_rad'],
+             1.1 * radius_const * s.loc['pl_radj'] / s.loc['st_rad'], 0]]
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Nan checks
     if np.isnan(t14):
@@ -278,8 +279,8 @@ def _nasa(exoplanet, save=True):
             # ['ecc', 'gaussian', s.loc['pl_orbeccen'],
             #   s.loc['pl_orbeccenerr1'], ''],
             ['rp', 'uniform',
-             0.7 * radius_const * s.loc['pl_radj'] / s.loc['st_rad'],
-             1.3 * radius_const * s.loc['pl_radj'] / s.loc['st_rad'], 0],
+             0.9 * radius_const * s.loc['pl_radj'] / s.loc['st_rad'],
+             1.1 * radius_const * s.loc['pl_radj'] / s.loc['st_rad'], 0],
             ['host_T', 'fixed', host_T[0], host_T[1], ''],
             ['host_z', 'fixed', host_z[0], host_z[1], ''],
             ['host_r', 'fixed', host_r[0], host_r[1], ''],
