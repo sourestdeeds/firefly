@@ -99,7 +99,10 @@ def _nasa(exoplanet, save=True):
     # Only keep IQR of data
     df = _IQR(df)
     # Fix t0 on first centred transit
-    t0 = df['pl_tranmid'] .dropna()[0]
+    try:
+        t0 = df['pl_tranmid'] .dropna()[0]
+    except IndexError:
+        sys.exit()
     # Average the rest
     s = df.mean()
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -148,8 +151,10 @@ def _nasa(exoplanet, save=True):
             ['t0', 'gaussian', t0, 7e-3, ''],
             ['a', 'gaussian', a, a * 0.1, ''],
             ['inc', 'gaussian', i, i * 0.1, ''],
-            ['w', 'gaussian', w, w * 0.1, ''],
-            ['ecc', 'gaussian', ecc, ecc * 0.1, ''],
+            ['w', ['fixed' if w==90 else 'gaussian'][0], w, 
+             ['' if w==90 else w * 0.1][0], ''],
+            ['ecc', ['fixed' if ecc==0 else 'gaussian'][0], ecc, 
+             ['' if ecc==0 else ecc * 0.1][0], ''],
             ['rp', 'uniform',
              0.9 * radius_const * s.loc['pl_radj'] / s.loc['st_rad'],
              1.1 * radius_const * s.loc['pl_radj'] / s.loc['st_rad'], 0]]
@@ -169,8 +174,10 @@ def _nasa(exoplanet, save=True):
             ['t0', 'gaussian', t0, 7e-3, ''],
             ['a', 'gaussian', a, a * 0.1, ''],
             ['inc', 'gaussian', i, i * 0.1, ''],
-            ['w', 'gaussian', w, w * 0.1, ''],
-            ['ecc', 'gaussian', ecc, ecc * 0.1, ''],
+            ['w', ['fixed' if w==90 else 'gaussian'][0], w, 
+             ['' if w==90 else w * 0.1][0], ''],
+            ['ecc', ['fixed' if ecc==0 else 'gaussian'][0], ecc, 
+             ['' if ecc==0 else ecc * 0.1][0], ''],
             ['rp', 'uniform',
              0.9 * radius_const * s.loc['pl_radj'] / s.loc['st_rad'],
              1.1 * radius_const * s.loc['pl_radj'] / s.loc['st_rad'], 0],
