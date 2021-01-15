@@ -35,7 +35,7 @@ def _download_nasa():
         'https://exoplanetarchive.ipac.caltech.edu/' +\
         'TAP/sync?query=select+' +\
         'pl_name,tic_id,pl_orbper,pl_orbsmax,' +\
-        'pl_radj,,pl_orbeccen,' +\
+        'pl_radj,pl_orbeccen,' +\
         'st_teff,st_tefferr1,st_rad,st_raderr1,st_mass,st_masserr1,' +\
         'st_met,st_meterr1,st_logg,st_loggerr1,pl_tranmid,pl_trandur,' +\
         'pl_orbincl,pl_orblper,soltype,rowupdate,disc_facility' +\
