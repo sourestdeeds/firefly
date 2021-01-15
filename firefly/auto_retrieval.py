@@ -6,8 +6,8 @@ Automated version of retrieval.
 @author: Steven Charles-Mindoza
 """
 
-from ._utils import _email, _retrieval, _gdrive
-from ._archive import _check_nan, suppress_print
+from ._utils import _email, _retrieval
+from ._archive import _check_nan
 from ._search import _fuzzy_search
 from .query import tess_viable
 
@@ -19,17 +19,15 @@ import os
 
 
 
-def _auto_input_check(targets, archive, curve_sample):
-    if not (archive == 'eu' or archive == 'nasa'):
-        sys.exit('Archive data options for dtype are: \'eu\' or \'nasa\'')
+def _auto_input_check(targets, curve_sample):
     if not (0 < curve_sample <= 1):
         sys.exit('The curve sample must be in the range 0 < curve_sample <= 1.')
     exoplanet_list = []
     for i, exoplanet in enumerate(targets):
-        highest, ratios = _fuzzy_search(exoplanet, archive=archive)
+        highest, ratios = _fuzzy_search(exoplanet)
         exoplanet = highest[0]
         print(f'Target search chose {highest[0]}.')
-        nan = _check_nan(exoplanet, archive=archive)
+        nan = _check_nan(exoplanet)
         if nan == True:
             print(f'Skipping {exoplanet} due to missing prior data.')
             pass
@@ -42,7 +40,6 @@ def _auto_input_check(targets, archive, curve_sample):
 def firefly(
         # Firefly Interface
         targets=tess_viable(k=1), 
-        archive='nasa', 
         curve_sample=1, 
         email=False,
         to=['transitfit.server@gmail.com'], 
@@ -123,12 +120,6 @@ def firefly(
         Input is a list tuple of strings:
             
         >>> ('WASP-43 b', 'WASP-18 b', 'WASP-91 b')
-    archive : str, optional
-        The exoplanet archive to use for priors. Supports:
-        
-        - 'eu'
-        - 'nasa'
-        The default is 'eu'.
     curve_sample : int {0 < curve_sample <= 1}, optional
         The fraction of curves generated to fit against. For example, setting
         
@@ -323,14 +314,13 @@ def firefly(
     >>> firefly/WASP-43 b timestamp.gz.tar
 
     '''
-    exoplanet_list = _auto_input_check(targets, archive, curve_sample)
+    exoplanet_list = _auto_input_check(targets, curve_sample)
     for i, exoplanet in enumerate(exoplanet_list):
         try:
             archive_name, repack, results = \
             _retrieval(
                 # Firefly Interface
                 exoplanet, 
-                archive=archive,
                 curve_sample=curve_sample,
                 clean=clean,
                 cache=cache,
@@ -359,22 +349,15 @@ def firefly(
                     'all available TESS Sectors.')
             if email == True:
                 exo_folder = f'firefly/{exoplanet}'
-                try:
-                    link = _gdrive(archive_name, fitting_mode)
-                except Exception:
-                    link = 'Googledrive needs authorising with client_secrets.json.'
-                    pass
                 _email(
                 f'Success: {exoplanet}',
                 f'Data location: {success} <br><br>'
-                f'Link: {link} <br><br>'
                 f'Priors from the Archive for {exoplanet}:<br>' +
                 repack.to_html(float_format=lambda x: '%10.5f' % x) + '<br>'
                 'TransitFit Complete Results:<br>' +
                 results.to_html(float_format=lambda x: '%10.5f' % x) + '<br>'
                 'Variables used:<br><br>'
                 f'target={exoplanet}<br>'
-                f'archive={archive}<br>'
                 f'curve_sample={str(curve_sample)}<br>'
                 f'clean={clean}<br>'
                 f'cache={cache}<br>'
@@ -418,7 +401,6 @@ def firefly(
                 print(
                     'Variables used:\n\n'
                     f'target={exoplanet}\n'
-                    f'archive={archive}\n'
                     f'curve_sample={str(curve_sample)}\n'
                     f'clean={clean}\n'
                     f'cache={cache}\n'
