@@ -8,11 +8,11 @@ Data retrievers.
 
 
 from ._search import _fuzzy_search
-from ._archive import _eu, _download_nasa, _nasa
+from ._archive import _download_nasa, _nasa
 
 from tabulate import tabulate
 from shutil import rmtree
-from pandas import read_csv, DataFrame
+from pandas import read_csv
 import random
 import sys
 import os
@@ -148,7 +148,7 @@ def tic(exoplanet):
     return tic_id
 
 
-def priors(target, archive='eu'):
+def priors(target):
     '''
     Performs a query for prior information.
 
@@ -164,17 +164,14 @@ def priors(target, archive='eu'):
     Data printed to console.
 
     '''
-    highest, ratios = _fuzzy_search(target, archive=archive)
+    highest, ratios = _fuzzy_search(target)
     exoplanet = highest[0]
     temp = f'firefly/{exoplanet}'
     os.makedirs(temp, exist_ok=True)
-    if archive == 'eu':
-        _eu(exoplanet)
-    elif archive == 'nasa':
-        _nasa(exoplanet)
+    _nasa(exoplanet)
     rmtree(temp)
 
-def mast(target, archive='eu'):
+def mast(target):
     '''
     Performs a query for data products from MAST.
 
@@ -191,7 +188,7 @@ def mast(target, archive='eu'):
 
     '''
     exo_folder = f'firefly/{target}'
-    highest, ratios = _fuzzy_search(target, archive=archive)
+    highest, ratios = _fuzzy_search(target)
     exoplanet = highest[0]
     print(f'\nSearching MAST for {exoplanet}.')
     lc_links, tic_id = _lc(exoplanet)
