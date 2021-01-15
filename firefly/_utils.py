@@ -6,7 +6,7 @@ The backend for auto_retrieval.
 @author: Steven Charles-Mindoza
 """
 
-from ._archive import _eu, _nasa
+from ._archive import _nasa
 from .query import _lc
 from transitfit import split_lightcurve_file, run_retrieval
 from datetime import datetime
@@ -17,68 +17,16 @@ from csv import DictWriter
 from pandas import DataFrame, read_csv
 from shutil import rmtree, make_archive
 from email.message import EmailMessage
-from pydrive.auth import GoogleAuth
-from pydrive.drive import GoogleDrive
 from math import ceil
 import sys
 import os
-import logging
 import random
 
-logging.getLogger('googleapiclient.discovery_cache').setLevel(logging.ERROR)
-
-def _gdrive(archive_name, fitting_mode):
-    gauth = GoogleAuth()
-    here = os.path.dirname(os.path.abspath(__file__))
-    gauth.LoadCredentialsFile(f'{here}/data/Filters/fireflycreds.txt')
-    # gauth.LoadCredentialsFile('fireflycreds.txt')
-    # gauth.LocalWebserverAuth()
-    # gauth.SaveCredentialsFile('fireflycreds.txt')
-    drive = GoogleDrive(gauth)
-    if fitting_mode == 'all':
-        folder = drive \
-                 .ListFile({'q': "title='all' and trashed=False"}) \
-                 .GetList()[0]
-    elif fitting_mode == 'folded':
-        folder = drive \
-                 .ListFile({'q': "title='folded' and trashed=False"}) \
-                 .GetList()[0]
-    elif fitting_mode == 'batched':
-        folder = drive \
-                 .ListFile({'q': "title='batched' and trashed=False"}) \
-                 .GetList()[0]
-    elif fitting_mode == '2_stage':
-        folder = drive \
-                 .ListFile({'q': "title='2_stage' and trashed=False"}) \
-                 .GetList()[0]
-    print('\nUploading results to googledrive.')
-    file = drive.CreateFile({'title':f'{archive_name}.tar.gz', 
-                             'parents':[{'id':folder['id']}]})
-    file.SetContentFile(f'firefly/{archive_name}.tar.gz')
-    file.Upload()
-    
-    keys = file.keys()
-    if file['shared']:
-        link = 'https://drive.google.com/file/d/' + file['id'] +\
-               'view?usp=sharing'
-    elif 'webContentLink' in keys:
-        link = file['webContentLink']
-    elif 'webViewLink' in keys:
-        link = file['webViewLink']
-    else:
-        link = 'No link available.'
-    
-    if 'name' in keys:
-        name = file['name']
-    else:
-        name = file['id']
-    return link
 
 
 def _email(subject, body, to):
     username = 'transitfit.server@gmail.com'
     password = 'spearnet1!'
-    message = f'Subject: {subject}\n\n{body}'
     
     email = EmailMessage()
     email['Subject'] = subject
@@ -86,15 +34,11 @@ def _email(subject, body, to):
     email['To'] = to
     email.set_content(body, subtype='html')
     #email.add_alternative(args, kw)
-    #email.add_attachment()
-    
+    #email.add_attachment()  
     try:
         with SMTP_SSL('smtp.gmail.com', 465) as s:
-            #s.ehlo()
             s.login(username, password)
             s.send_message(email)
-        
-        #server.sendmail(sent_from, to, message)
     except BaseException:
         # Continue on conn failure
         pass
@@ -173,7 +117,6 @@ def _fits(exoplanet, exo_folder, cache):
 def _retrieval(
         # Firefly Interface
         exoplanet, 
-        archive='eu', 
         curve_sample=1, 
         clean=False,
         cache=False,
@@ -204,18 +147,13 @@ def _retrieval(
     _TESS_filter()
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Download Archive
-    if archive == 'eu':
-        host_T, host_z, host_r, host_logg, t0, P, t14, nan, repack  = \
-                                            _eu(exoplanet)
-    elif archive == 'nasa':
-        try:
-            host_T, host_z, host_r, host_logg, t0, P, t14, nan, repack = \
-                                                _nasa(exoplanet)
-        except Exception:
-            os.remove('firefly/data/nasa.csv.gz')
-            host_T, host_z, host_r, host_logg, t0, P, t14, nan = \
-                                                _nasa(exoplanet)
-            
+    try:
+        host_T, host_z, host_r, host_logg, t0, P, t14, nan, repack = \
+                                            _nasa(exoplanet)
+    except Exception:
+        os.remove('firefly/data/nasa.csv.gz')
+        host_T, host_z, host_r, host_logg, t0, P, t14, nan = \
+                                            _nasa(exoplanet)     
     cols = [['t0', t0], ['P', P], ['t14', t14]]
     df = DataFrame(cols, columns=['Parameter', 'Value'])
     print('\nSplitting the lightcurve into seperate epochs'
@@ -303,7 +241,6 @@ def _retrieval(
     print(
         'Variables used:\n\n'
         f'target={exoplanet}\n'
-        f'archive={archive}\n'
         f'curve_sample={str(curve_sample)}\n'
         f'clean={clean}\n'
         f'cache={cache}\n'
