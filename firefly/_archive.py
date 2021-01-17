@@ -11,7 +11,6 @@ from transitfit import calculate_logg
 from datetime import datetime, timedelta
 from tabulate import tabulate
 from pandas import DataFrame, read_csv
-import astropy.units as u
 import numpy as np
 import sys
 import os
@@ -71,6 +70,16 @@ def _nasa_full():
     df = read_csv(download_link)
     df.to_csv('firefly/data/nasa_full.csv.xz', index=False)
 
+    
+def estimate_t14(Rp, Rs, a, P):
+    '''
+    Estimates t14 in minutes, if P is in days
+    '''
+    AU = 1.495978707e11
+    R_sun = 6.957e8
+    R_jup = 71492000
+    return (Rp * R_jup + Rs * R_sun)/(np.pi * a * AU) * P * 24 * 60
+
 
 def _IQR(df):
     # Only keep IQR of data
@@ -108,16 +117,17 @@ def _nasa(exoplanet, save=True):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Values for calculation
     P = s.loc['pl_orbper']
-    t14 = s.loc['pl_trandur'] * 60
     a = s.loc['pl_orbsmax']
     i = s.loc['pl_orbincl']
+    w = s.loc['pl_orblper']
+    ecc = s.loc['pl_orbeccen']
     rp = s.loc['pl_radj']
     rs = s.loc['st_rad']
     z = s.loc['st_met']
-    w = s.loc['pl_orblper']
-    ecc = s.loc['pl_orbeccen']
     m_s = s.loc['st_mass']  
     logg = s.loc['st_logg']
+    T = s.loc['st_teff']
+    t14 = s.loc['pl_trandur'] * 60
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Assign Host data to Transitfit
     host_T = (s.loc['st_teff'], s.loc['st_tefferr1'])
@@ -127,11 +137,7 @@ def _nasa(exoplanet, save=True):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Nan checks
     if np.isnan(t14):
-        rs_m = (rs * u.R_sun).to(u.m)
-        rp_m = (rp * u.R_jup).to(u.m)
-        a_m = (a * u.AU).to(u.m)
-        t14 = P * (rs_m * np.sin(np.radians(i)) + rp_m) / \
-                  (np.pi * a_m) * 24 * 60
+        t14 = estimate_t14(rp, rs, a, P)
     elif np.isnan(logg):
         logg, err_logg = calculate_logg((s.loc['st_mass'],
                                      s.loc['st_masserr1']),
@@ -156,8 +162,8 @@ def _nasa(exoplanet, save=True):
             ['ecc', ['fixed' if ecc==0 else 'gaussian'][0], ecc, 
              ['' if ecc==0 else ecc * 0.1][0], ''],
             ['rp', 'uniform',
-             0.9 * radius_const * s.loc['pl_radj'] / s.loc['st_rad'],
-             1.1 * radius_const * s.loc['pl_radj'] / s.loc['st_rad'], 0]]
+             0.9 * radius_const * rp / rs,
+             1.1 * radius_const * rp / rs, 0]]
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Save the priors
     priors_csv = DataFrame(cols, columns=['Parameter', 'Distribution',
@@ -179,8 +185,8 @@ def _nasa(exoplanet, save=True):
             ['ecc', ['fixed' if ecc==0 else 'gaussian'][0], ecc, 
              ['' if ecc==0 else ecc * 0.1][0], ''],
             ['rp', 'uniform',
-             0.9 * radius_const * s.loc['pl_radj'] / s.loc['st_rad'],
-             1.1 * radius_const * s.loc['pl_radj'] / s.loc['st_rad'], 0],
+             0.9 * radius_const * rp / rs,
+             1.1 * radius_const * rp / rs, 0],
             ['host_T', 'fixed', host_T[0], host_T[1], ''],
             ['host_z', 'fixed', host_z[0], host_z[1], ''],
             ['host_r', 'fixed', host_r[0], host_r[1], ''],
