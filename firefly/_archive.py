@@ -111,7 +111,8 @@ def _nasa(exoplanet, save=True):
     try:
         t0 = df['pl_tranmid'] .dropna()[0]
     except IndexError:
-        sys.exit()
+        sys.exit('No value for t0 was found in the NASA Archive'
+                 f' for {exoplanet}.')
     # Average the rest
     s = df.mean()
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
