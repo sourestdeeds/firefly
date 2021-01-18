@@ -154,7 +154,7 @@ def _nasa(exoplanet, save=True):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Assign Exoplanet Priors to TransitFit
     radius_const = 0.1027626851
-    cols = [['P', 'gaussian', P, P * 1e-3, ''],
+    cols = [['P', 'gaussian', P, P * 1e-5 ''],
             ['t0', 'gaussian', t0, 7e-3, ''],
             ['a', 'gaussian', a, a * 0.1, ''],
             ['inc', 'gaussian', i, i * 0.1, ''],
@@ -177,7 +177,7 @@ def _nasa(exoplanet, save=True):
             pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # For printing variables only
-    cols = [['P', 'gaussian', P, P * 1e-3, ''],
+    cols = [['P', 'gaussian', P, P * 1e-5, ''],
             ['t0', 'gaussian', t0, 7e-3, ''],
             ['a', 'gaussian', a, a * 0.1, ''],
             ['inc', 'gaussian', i, i * 0.1, ''],
