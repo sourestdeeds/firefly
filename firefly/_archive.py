@@ -108,11 +108,7 @@ def _nasa(exoplanet, save=True):
     # Only keep IQR of data
     df = _IQR(df)
     # Fix t0 on first centred transit
-    try:
-        t0 = df['pl_tranmid'] .dropna()[0]
-    except IndexError:
-        sys.exit('No value for t0 was found in the NASA Archive'
-                 f' for {exoplanet}.')
+    t0 = df['pl_tranmid'] .min()
     # Average the rest
     s = df.mean()
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
