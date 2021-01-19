@@ -24,7 +24,7 @@ class suppress_print():
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         sys.stdout.close()
-        sys.stdout = self.original_stdout     
+        sys.stdout = self.original_stdout
         
     
 
@@ -35,8 +35,8 @@ def _download_nasa():
         'TAP/sync?query=select+' +\
         'pl_name,tic_id,pl_orbper,pl_orbsmax,' +\
         'pl_radj,pl_orbeccen,' +\
-        'st_teff,st_tefferr1,st_rad,st_raderr1,st_mass,st_masserr1,' +\
-        'st_met,st_meterr1,st_logg,st_loggerr1,pl_tranmid,pl_trandur,' +\
+        'st_teff,st_rad,st_mass,' +\
+        'st_met,st_logg,pl_tranmid,pl_trandur,' +\
         'pl_orbincl,pl_orblper,soltype,rowupdate,disc_facility' +\
         '+from+ps&format=csv'
     nasa_csv = 'firefly/data/nasa.csv.gz'
@@ -66,11 +66,11 @@ def _nasa_full():
     '''
     download_link =  \
     'https://exoplanetarchive.ipac.caltech.edu/' +\
-    'TAP/sync?query=select+*+from+ps&format=csv' 
+    'TAP/sync?query=select+*+from+ps&format=csv'
     df = read_csv(download_link)
     df.to_csv('firefly/data/nasa_full.csv.xz', index=False)
 
-    
+
 def estimate_t14(Rp, Rs, a, P):
     '''
     Estimates t14 in minutes, if P is in days
@@ -96,7 +96,7 @@ def _nasa(exoplanet, save=True):
     nasa_csv = _download_nasa()
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Read in nasa.csv
-    exo_archive = read_csv(nasa_csv, index_col='pl_name') 
+    exo_archive = read_csv(nasa_csv, index_col='pl_name')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Pick Out Chosen Exoplanet Priors
     try:
@@ -104,11 +104,11 @@ def _nasa(exoplanet, save=True):
     except KeyError:
         sys.exit('The chosen target is either spelt incorrectly, or does not '
                  'exist in the NASA archive.')
-    tic = df['tic_id'] .drop_duplicates() .values .tolist()[0]
+    tic = df['tic_id'] .drop_duplicates() .max()
+    # Fix t0 on most recent centred transit
+    t0 = df['pl_tranmid'] .max()
     # Only keep IQR of data
     df = _IQR(df)
-    # Fix t0 on first centred transit
-    t0 = df['pl_tranmid'] .min()
     # Average the rest
     s = df.mean()
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -121,25 +121,22 @@ def _nasa(exoplanet, save=True):
     rp = s.loc['pl_radj']
     rs = s.loc['st_rad']
     z = s.loc['st_met']
-    m_s = s.loc['st_mass']  
+    ms = s.loc['st_mass']
     logg = s.loc['st_logg']
     T = s.loc['st_teff']
     t14 = s.loc['pl_trandur'] * 60
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Assign Host data to Transitfit
-    host_T = (s.loc['st_teff'], s.loc['st_tefferr1'])
-    host_z = (s.loc['st_met'], s.loc['st_meterr1'])
-    host_r = (s.loc['st_rad'], s.loc['st_raderr1'])
-    host_logg = (s.loc['st_logg'], s.loc['st_loggerr1'])
+    host_T = (T, T * 1e-2)
+    host_z = (z, z * 1e-2)
+    host_r = (rs, rs * 1e-2)
+    host_logg = (logg, logg * 1e-2)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Nan checks
     if np.isnan(t14):
         t14 = estimate_t14(rp, rs, a, P)
     elif np.isnan(logg):
-        logg, err_logg = calculate_logg((s.loc['st_mass'],
-                                     s.loc['st_masserr1']),
-                                    (s.loc['st_rad'],
-                                     s.loc['st_raderr1']))
+        logg, err_logg = calculate_logg((ms, ms * 1e-2), (rs, rs * 1e-2))
         host_logg = (logg, err_logg)
     elif np.isnan(z):
         host_z = (0, 0.1)
@@ -150,13 +147,13 @@ def _nasa(exoplanet, save=True):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Assign Exoplanet Priors to TransitFit
     radius_const = 0.1027626851
-    cols = [['P', 'gaussian', P, P * 1e-5, ''],
+    cols = [['P', 'gaussian', P, P * 1e-4, ''],
             ['t0', 'gaussian', t0, 7e-3, ''],
             ['a', 'gaussian', a, a * 1e-2, ''],
             ['inc', 'gaussian', i, i * 1e-2, ''],
-            ['w', ['fixed' if w==90 else 'gaussian'][0], w, 
+            ['w', ['fixed' if w==90 else 'gaussian'][0], w,
              ['' if w==90 else w * 1e-2][0], ''],
-            ['ecc', ['fixed' if ecc==0 else 'gaussian'][0], ecc, 
+            ['ecc', ['fixed' if ecc==0 else 'gaussian'][0], ecc,
              ['' if ecc==0 else ecc * 1e-2][0], ''],
             ['rp', 'uniform',
              0.9 * radius_const * rp / rs,
@@ -173,13 +170,13 @@ def _nasa(exoplanet, save=True):
             pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # For printing variables only
-    cols = [['P', 'gaussian', P, P * 1e-5, ''],
+    cols = [['P', 'gaussian', P, P * 1e-4, ''],
             ['t0', 'gaussian', t0, 7e-3, ''],
             ['a', 'gaussian', a, a * 1e-2, ''],
             ['inc', 'gaussian', i, i * 1e-2, ''],
-            ['w', ['fixed' if w==90 else 'gaussian'][0], w, 
+            ['w', ['fixed' if w==90 else 'gaussian'][0], w,
              ['' if w==90 else w * 1e-2][0], ''],
-            ['ecc', ['fixed' if ecc==0 else 'gaussian'][0], ecc, 
+            ['ecc', ['fixed' if ecc==0 else 'gaussian'][0], ecc,
              ['' if ecc==0 else ecc * 1e-2][0], ''],
             ['rp', 'uniform',
              0.9 * radius_const * rp / rs,
@@ -187,7 +184,7 @@ def _nasa(exoplanet, save=True):
             ['host_T', 'fixed', host_T[0], host_T[1], ''],
             ['host_z', 'fixed', host_z[0], host_z[1], ''],
             ['host_r', 'fixed', host_r[0], host_r[1], ''],
-            ['host_logg', 'fixed', host_logg[0], host_logg[1], '']]           
+            ['host_logg', 'fixed', host_logg[0], host_logg[1], '']]
     repack = DataFrame(cols, columns=['Parameter', 'Distribution',
                                       'Input_A', 'Input_B', 'Filter'])
     nan = repack.isnull().values.any()
