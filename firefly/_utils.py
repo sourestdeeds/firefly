@@ -230,6 +230,44 @@ def _retrieval(
         )
     results = read_csv(f'{exo_folder}/output_parameters/Complete_results.csv')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Save Best Values
+    master = read_csv(f'{exo_folder}/output_parameters/Complete_results.csv',
+                      index_col='Parameter')
+    master = master[['Best', 'Error']]
+    P = master['Best'].iloc[0]
+    Perr = float(master['Error'].iloc[0])
+    t0 = master['Best'].iloc[1]
+    t0err = float(master['Error'].iloc[1])
+    a = master['Best'].iloc[2]
+    aerr = float(master['Error'].iloc[2])
+    rp = master['Best'].iloc[3]
+    rperr = float(master['Error'].iloc[3])
+    inc = master['Best'].iloc[4]
+    incerr = float(master['Error'].iloc[4])
+    ecc = master['Best'].iloc[5]
+    try:
+        eccerr = float(master['Error'].iloc[5])
+    except ValueError:
+        eccerr = float()
+    w = master['Best'].iloc[6]
+    try:
+        werr = float(master['Error'].iloc[6])
+    except ValueError:
+        werr = float()
+    
+    data = {'Exoplanet':exoplanet, 'P':P, 'Perr':Perr, 't0':t0, 't0err':t0err,
+            'a':a, 'aerr':aerr, 'rp':rp, 'rperr':rperr, 'inc':inc,
+            'incerr':incerr, 'ecc':ecc,'eccerr':eccerr, 
+            'w':w, 'werr':werr}
+    df = DataFrame(data, index=[0])
+    summary_master = 'firefly/summary_master.csv'
+    if not os.path.exists(summary_master):
+        df.to_csv(summary_master, index=False)
+    else:
+        add = read_csv(summary_master)
+        add = add.append(df)
+        add.to_csv(summary_master, index=False)   
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Cleanup
     if clean == True:
         rmtree(f'{exo_folder}/mastDownload')
