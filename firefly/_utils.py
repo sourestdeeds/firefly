@@ -254,19 +254,6 @@ def _retrieval(
         werr = float(master['Error'].iloc[6])
     except ValueError:
         werr = float()
-    
-    data = {'Exoplanet':exoplanet, 'P':P, 'Perr':Perr, 't0':t0, 't0err':t0err,
-            'a':a, 'aerr':aerr, 'rp':rp, 'rperr':rperr, 'inc':inc,
-            'incerr':incerr, 'ecc':ecc,'eccerr':eccerr, 
-            'w':w, 'werr':werr}
-    df = DataFrame(data, index=[0])
-    summary_master = 'firefly/summary_master.csv'
-    if not os.path.exists(summary_master):
-        df.to_csv(summary_master, index=False)
-    else:
-        add = read_csv(summary_master)
-        add = add.append(df)
-        add.to_csv(summary_master, index=False)   
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Cleanup
     if clean == True:
@@ -301,6 +288,19 @@ def _retrieval(
         file=open(exo_folder+'/variables.txt', 'w')
     )
     now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
+    data = {'Exoplanet':exoplanet, 'P':P, 'Perr':Perr, 't0':t0, 't0err':t0err,
+            'a':a, 'aerr':aerr, 'rp':rp, 'rperr':rperr, 'inc':inc,
+            'incerr':incerr, 'ecc':ecc,'eccerr':eccerr, 
+            'w':w, 'werr':werr, 'Date':now}
+    df = DataFrame(data, index=[0])
+    summary_master = 'firefly/summary_master.csv'
+    if not os.path.exists(summary_master):
+        df.to_csv(summary_master, index=False)
+    else:
+        add = read_csv(summary_master)
+        add = add.append(df)
+        add.to_csv(summary_master, index=False)   
+    
     archive_name = f'{exoplanet} {now}'
     archive_folder = f'firefly/{archive_name}'
     make_archive(archive_folder, format='gztar',
