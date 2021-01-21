@@ -293,7 +293,7 @@ def _retrieval(
             'incerr':incerr, 'ecc':ecc,'eccerr':eccerr, 
             'w':w, 'werr':werr, 'Date':now}
     df = DataFrame(data, index=[0])
-    summary_master = 'firefly/summary_master.csv'
+    summary_master = 'firefly/data/summary_master.csv'
     if not os.path.exists(summary_master):
         df.to_csv(summary_master, index=False)
     else:
