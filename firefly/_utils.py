@@ -302,7 +302,8 @@ def _retrieval(
         add.to_csv(summary_master, index=False)   
     
     archive_name = f'{exoplanet} {now}'
-    archive_folder = f'firefly/{archive_name}'
+    os.makedirs(f'firefly/{fitting_mode}', exist_ok=True)
+    archive_folder = f'firefly/{fitting_mode}/{archive_name}'
     make_archive(archive_folder, format='gztar',
                  root_dir=f'{os.getcwd()}/firefly/',
                  base_dir=f'{exoplanet}')
