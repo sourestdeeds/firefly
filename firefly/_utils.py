@@ -299,7 +299,7 @@ def _retrieval(
     else:
         add = read_csv(summary_master)
         add = add.append(df)
-        add.to_csv(summary_master, index=False)   
+        add .sort_values('Exoplanet') .to_csv(summary_master, index=False)   
     
     archive_name = f'{exoplanet} {now}'
     os.makedirs(f'firefly/{fitting_mode}', exist_ok=True)
