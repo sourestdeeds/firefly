@@ -288,7 +288,7 @@ def _retrieval(
         file=open(exo_folder+'/variables.txt', 'w')
     )
     now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
-    data = {'Exoplanet':exoplanet, 'P':P, 'Perr':Perr, 't0':t0, 't0err':t0err,
+    data = {'Exoplanet':exoplanet, 'Transits':len(df), 'P':P, 'Perr':Perr, 't0':t0, 't0err':t0err,
             'a':a, 'aerr':aerr, 'rp':rp, 'rperr':rperr, 'inc':inc,
             'incerr':incerr, 'ecc':ecc,'eccerr':eccerr, 
             'w':w, 'werr':werr, 'Date':now}
