@@ -6,8 +6,7 @@ The backend for auto_retrieval.
 @author: Steven Charles-Mindoza
 """
 
-from ._archive import _nasa
-from .query import _lc
+from ._archive import _nasa, _lc
 from transitfit import split_lightcurve_file, run_retrieval
 from datetime import datetime
 from smtplib import SMTP_SSL
