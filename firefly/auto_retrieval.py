@@ -7,8 +7,7 @@ Automated version of retrieval.
 """
 
 from ._utils import _email, _retrieval
-from ._archive import _check_nan, _search
-from .archive import tess_viable
+from ._archive import _check_nan, _search, tess_viable
 
 from datetime import datetime
 from shutil import rmtree, make_archive
