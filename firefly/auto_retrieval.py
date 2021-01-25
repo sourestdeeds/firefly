@@ -7,8 +7,7 @@ Automated version of retrieval.
 """
 
 from ._utils import _email, _retrieval
-from ._archive import _check_nan
-from ._search import _fuzzy_search
+from ._archive import _check_nan, _search
 from .query import tess_viable
 
 from datetime import datetime
@@ -24,7 +23,7 @@ def _auto_input_check(targets, curve_sample):
         sys.exit('The curve sample must be in the range 0 < curve_sample <= 1.')
     exoplanet_list = []
     for i, exoplanet in enumerate(targets):
-        highest, ratios = _fuzzy_search(exoplanet)
+        highest, ratios = _search(exoplanet)
         exoplanet = highest[0]
         print(f'Target search chose {highest[0]}.')
         nan = _check_nan(exoplanet)
