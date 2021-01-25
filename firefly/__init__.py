@@ -98,4 +98,4 @@ name = 'firefly'
 __version__ = '0.7.6'
 
 from .auto_retrieval import firefly
-from .archive import tess_viable
+from ._archive import tess_viable
