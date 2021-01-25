@@ -97,7 +97,7 @@ def _download_nasa():
     download_link =  \
         'https://exoplanetarchive.ipac.caltech.edu/' +\
         'TAP/sync?query=select+' +\
-        'pl_name,tic_id,pl_orbper,pl_orbsmax,pl_radj,pl_orbeccen,pl_massj,' +\
+        'pl_name,tic_id,pl_orbper,pl_orbsmax,pl_radj,pl_orbeccen,' +\
         'st_teff,st_rad,st_mass,st_met,st_logg,pl_tranmid,pl_trandur,' +\
         'pl_orbincl,pl_orblper,soltype,rowupdate,disc_facility' +\
         '+from+ps&format=csv'
@@ -184,7 +184,6 @@ def _nasa(exoplanet, save=True):
     rs = s.loc['st_rad']
     z = s.loc['st_met']
     ms = s.loc['st_mass']
-    mp = s.loc['pl_massj']
     logg = s.loc['st_logg']
     T = s.loc['st_teff']
     t14 = s.loc['pl_trandur'] * 60
@@ -199,14 +198,13 @@ def _nasa(exoplanet, save=True):
     G = 6.67408e-11
     AU = 1.495978707e11
     sol = 1.98847e30
-    jup = 1.898e27
     # P
     if (np.isnan(P) and not np.isnan(a)):
         P = 2 * np.pi * np.sqrt((a * AU)**3 / 
-                                (G * ms * sol * + mp * jup)) * 0.98 / (60 * 60 * 24)
+                                (G * 0.963 * ms * sol)) / (60 * 60 * 24)
     # a
     elif (np.isnan(a) and not np.isnan(P)):
-        a = (((P * 24 * 60 * 60)**2 * G * (ms * sol + mp * jup) / 
+        a = (((P * 24 * 60 * 60)**2 * G * ms * sol / 
               (4 * np.pi**2))**(1 / 3)) / AU
     # t14
     elif np.isnan(t14):
