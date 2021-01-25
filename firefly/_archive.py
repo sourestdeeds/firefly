@@ -11,7 +11,9 @@ from transitfit import calculate_logg
 from datetime import datetime, timedelta
 from tabulate import tabulate
 from pandas import DataFrame, read_csv
+from fuzzywuzzy import process
 import numpy as np
+import random
 import sys
 import os
 
@@ -26,6 +28,68 @@ class suppress_print():
         sys.stdout.close()
         sys.stdout = self.original_stdout
         
+
+def _search(exoplanet):
+    _download_nasa()
+    nasa_csv = 'firefly/data/nasa.csv.gz'
+    global exo
+    exo = read_csv(nasa_csv)
+    exo_list = exo[['pl_name', 'tic_id']] \
+              .dropna() .drop_duplicates('pl_name') \
+              .drop(['tic_id'], axis=1) .values .tolist()
+    exo_list = [j for i in exo_list for j in i]
+    
+    ratios = process.extract(exoplanet,exo_list)
+    highest = process.extractOne(exoplanet,exo_list)
+    return highest, ratios
+
+
+def _tic(exoplanet):
+    '''
+    Returns a dataframe of all planet names and tic ID's.
+
+    Parameters
+    ----------
+    None
+
+    Returns
+    -------
+    TIC ID of an exoplanet target.
+
+    '''
+    df = exo[['pl_name','tic_id','soltype','rowupdate','disc_facility']] \
+        .sort_values('pl_name') \
+        .drop_duplicates('pl_name', keep='last')
+    tic_df = df .drop(['soltype', 'rowupdate', 'disc_facility'], axis=1).dropna() \
+                .set_index('pl_name')
+    target = tic_df.loc[[exoplanet]]
+    tic_id = target['tic_id'] .values .tolist()[0]
+    return tic_id
+
+
+def _lc(exoplanet):
+    '''
+    # https://archive.stsci.edu/tess/bulk_downloads/bulk_downloads_ffi-tp-lc-dv.html
+    out = DataFrame()
+    for i in range(1,32):
+        a = read_csv(f'TESS_curl/tesscurl_sector_{str(i)}_lc.sh')
+        a['links'] = a['#!/bin/sh'].str.split().str[-1]
+        a = a.drop(['#!/bin/sh'], axis=1)
+        out = out.append(a)
+    out.to_csv('MAST_lc.csv.gz', index=False)
+    '''
+    here = os.path.dirname(os.path.abspath(__file__))
+    mast = f'{here}/data/Filters/MAST_lc.csv.xz'
+    _ = read_csv(mast)
+    tic_id = _tic(exoplanet).replace('TIC ', '')
+    lc_links = _[_['links'].str.contains(tic_id)] .values .tolist()
+    lc_list = [i for j in lc_links for i in j]
+    lc_test = [int(i[-30:-15]) for j in lc_links for i in j]
+    lc_links = []
+    for i in range(len(lc_test)):
+        if int(tic_id) == lc_test[i]:
+            lc_links.append(lc_list[i])
+    return lc_links, tic_id
     
 
 def _download_nasa():
@@ -33,10 +97,8 @@ def _download_nasa():
     download_link =  \
         'https://exoplanetarchive.ipac.caltech.edu/' +\
         'TAP/sync?query=select+' +\
-        'pl_name,tic_id,pl_orbper,pl_orbsmax,' +\
-        'pl_radj,pl_orbeccen,' +\
-        'st_teff,st_rad,st_mass,' +\
-        'st_met,st_logg,pl_tranmid,pl_trandur,' +\
+        'pl_name,tic_id,pl_orbper,pl_orbsmax,pl_radj,pl_orbeccen,' +\
+        'st_teff,st_rad,st_mass,st_met,st_logg,pl_tranmid,pl_trandur,' +\
         'pl_orbincl,pl_orblper,soltype,rowupdate,disc_facility' +\
         '+from+ps&format=csv'
     nasa_csv = 'firefly/data/nasa.csv.gz'
@@ -93,10 +155,10 @@ def _IQR(df):
 def _nasa(exoplanet, save=True):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Download NASA archive
-    nasa_csv = _download_nasa()
+    _download_nasa()
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Read in nasa.csv
-    exo_archive = read_csv(nasa_csv, index_col='pl_name')
+    exo_archive = exo.set_index('pl_name')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Pick Out Chosen Exoplanet Priors
     try:
@@ -192,6 +254,30 @@ def _nasa(exoplanet, save=True):
           f' ({tic}).\n')
     print(tabulate(repack, tablefmt='psql', showindex=False, headers='keys'))
     return host_T, host_z, host_r, host_logg, t0, P, t14, nan, repack
+
+
+def tess_viable(k=10):
+    '''
+    Currently there are 377 tess targets with full prior and lightcurve sets.
+
+    Parameters
+    ----------
+    k : int, optional
+        Returns a random set of targets. The default is 10.
+
+    Returns
+    -------
+    targets : str
+        Viable tess target list.
+
+    '''
+    here = os.path.dirname(os.path.abspath(__file__))
+    tess = f'{here}/data/Filters/tess_viable.csv'
+    targets = read_csv(tess) 
+    targets = targets['Exoplanet'] .values .tolist()
+    targets = random.sample(targets, k=k)
+    return targets
+
 
 
 def _check_nan(exoplanet, printing=False):
