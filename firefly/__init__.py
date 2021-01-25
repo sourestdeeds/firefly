@@ -16,31 +16,6 @@
     Functions
     ---------
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    retrieval()
-    
-        A target data retriever for confirmed/candidate TESS exoplanets.
-        Generates the priors and host star variables for a chosen target.
-        Downloads exoplanet archives every 10 days and stores in /data.
-        Target lightcurve files are downloaded from MAST, then split into 
-        separate epochs. Upon user entry of the amount of epochs to fit,
-        TransitFit will fit the curves and return the results. The results
-        are then zipped up and time stamped.
-    
-        An example use with TransitFit is the following:
-    
-            >>> from firefly import retrieval
-            >>> exoplanet = 'WASP-43 b'
-            >>> retrieval(exoplanet)
-            
-        Input is capable of handling:
-        
-            >>> 'wasp43b', 'WASp43b' etc
-            
-        Forces corrections based on classifier: 
-        
-            >>> 'WASP', 'LTT', 'GJ' etc
-            
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     firefly()
     
         Automated version of retrieval. For a single target the procedure is:
@@ -98,4 +73,4 @@ name = 'firefly'
 __version__ = '0.7.6'
 
 from .auto_retrieval import firefly
-from ._archive import tess_viable
+from ._archive import tess_viable, generate_tess_viable
