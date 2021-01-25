@@ -32,8 +32,11 @@ class suppress_print():
 def _search(exoplanet):
     _download_nasa()
     nasa_csv = 'firefly/data/nasa.csv.gz'
-    global exo
+    here = os.path.dirname(os.path.abspath(__file__))
+    mast_csv = f'{here}/data/Filters/MAST_lc.csv.xz'
+    global exo, mast
     exo = read_csv(nasa_csv)
+    mast = read_csv(mast_csv)
     exo_list = exo[['pl_name', 'tic_id']] \
               .dropna() .drop_duplicates('pl_name') \
               .drop(['tic_id'], axis=1) .values .tolist()
@@ -78,11 +81,8 @@ def _lc(exoplanet):
         out = out.append(a)
     out.to_csv('MAST_lc.csv.gz', index=False)
     '''
-    here = os.path.dirname(os.path.abspath(__file__))
-    mast = f'{here}/data/Filters/MAST_lc.csv.xz'
-    _ = read_csv(mast)
     tic_id = _tic(exoplanet).replace('TIC ', '')
-    lc_links = _[_['links'].str.contains(tic_id)] .values .tolist()
+    lc_links = mast[mast['links'].str.contains(tic_id)] .values .tolist()
     lc_list = [i for j in lc_links for i in j]
     lc_test = [int(i[-30:-15]) for j in lc_links for i in j]
     lc_links = []
