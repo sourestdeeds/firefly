@@ -305,7 +305,7 @@ def generate_tess_viable():
             products.append(len(lc_links))
     data = {'Exoplanet':viable, 'Products':products}
     df = DataFrame(data).sort_values('Exoplanet')
-    df.to_csv('{here}/data/Filters/tess_viable.csv', index=False)
+    df.to_csv(f'{here}/data/Filters/tess_viable.csv', index=False)
     
 
 
