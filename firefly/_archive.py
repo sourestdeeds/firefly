@@ -279,6 +279,36 @@ def tess_viable(k=10):
     return targets
 
 
+def generate_tess_viable():
+    _download_nasa()
+    here = os.path.dirname(os.path.abspath(__file__))
+    nasa_csv = 'firefly/data/nasa.csv.gz'
+    mast_csv = f'{here}/data/Filters/MAST_lc.csv.xz'
+    global exo, mast
+    exo = read_csv(nasa_csv)
+    mast = read_csv(mast_csv)
+    exo_list = exo[['pl_name', 'tic_id']] \
+              .dropna() .drop_duplicates('pl_name') \
+              .drop(['tic_id'], axis=1) .values .tolist()
+    exo_list = [j for i in exo_list for j in i]
+    
+    viable = []
+    products = []
+    for i, exoplanet in enumerate(exo_list):
+        lc_links, tic_id = _lc(exoplanet)
+        nan = _check_nan(exoplanet)
+        if (len(lc_links)==0 or nan==True):
+            pass
+        else:
+            print(f'{exoplanet} viable.')
+            viable.append(exoplanet)
+            products.append(len(lc_links))
+    data = {'Exoplanet':viable, 'Products':products}
+    df = DataFrame(data).sort_values('Exoplanet')
+    df.to_csv('{here}/data/Filters/tess_viable.csv', index=False)
+    
+
+
 
 def _check_nan(exoplanet, printing=False):
     if printing == False:
