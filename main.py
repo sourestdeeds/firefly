@@ -2,7 +2,7 @@ from firefly import firefly, tess_viable
 
 
 def main():
-    targets, all_targets=tess_viable(k=5)
+    targets, all_targets = tess_viable(k=5)
     firefly(
         # Firefly Interface
         targets, 
