@@ -13,9 +13,10 @@ from smtplib import SMTP_SSL
 from tabulate import tabulate
 from astropy.io import fits
 from csv import DictWriter
-from pandas import DataFrame, read_csv
+from pandas import DataFrame, read_csv, Categorical
 from shutil import rmtree, make_archive
 from email.message import EmailMessage
+from natsort import natsorted
 from math import ceil
 import sys
 import os
@@ -288,7 +289,7 @@ def _retrieval(
     )
     now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
     data = {'Exoplanet':exoplanet, 'Transits':int(len(df)), 'P':P, 'Perr':Perr, 't0':t0, 't0err':t0err,
-            'a':a, 'aerr':aerr, 'rp':rp, 'rperr':rperr, 'inc':inc,
+            'a/r*':a, 'aerr':aerr, 'rp':rp, 'rperr':rperr, 'inc':inc,
             'incerr':incerr, 'ecc':ecc,'eccerr':eccerr, 
             'w':w, 'werr':werr, 'Date':now}
     df = DataFrame(data, index=[0])
@@ -298,7 +299,12 @@ def _retrieval(
     else:
         add = read_csv(summary_master)
         add = add.append(df)
-        add .sort_values('Exoplanet') .to_csv(summary_master, index=False)   
+        add['Exoplanet'] = \
+            Categorical(add['Exoplanet'], 
+            ordered=True, 
+            categories=natsorted(add['Exoplanet'].unique()))
+        add = add.sort_values('Exoplanet')
+        add .to_csv(summary_master, index=False)   
     
     archive_name = f'{exoplanet} {now}'
     os.makedirs(f'firefly/{fitting_mode}', exist_ok=True)
