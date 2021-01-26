@@ -102,7 +102,7 @@ def _download_nasa():
     download_link =  \
         'https://exoplanetarchive.ipac.caltech.edu/' +\
         'TAP/sync?query=select+' +\
-        'pl_name,tic_id,pl_orbper,pl_orbsmax,pl_radj,pl_orbeccen,' +\
+        'pl_name,tic_id,pl_orbper,pl_orbsmax,pl_radj,pl_orbeccen,ttv_flag,' +\
         'st_teff,st_rad,st_mass,st_met,st_logg,pl_tranmid,pl_trandur,' +\
         'pl_orbincl,pl_orblper,soltype,rowupdate,disc_facility' +\
         '+from+ps&format=csv'
@@ -297,13 +297,16 @@ def tess_viable(k=10, survey=None):
     '''
     here = os.path.dirname(os.path.abspath(__file__))
     tess = f'{here}/data/Filters/tess_viable.csv'
+    tess_ttv = f'{here}/data/Filters/tess_ttv_viable.csv'
     targets = read_csv(tess) 
-    targets = targets['Exoplanet'] .values .tolist()
+    ttv_targets = read_csv(tess_ttv)
     if survey != None:
         targets = [s for s in targets if survey in s]
+        ttv_targets = [s for s in ttv_targets if survey in s]
     all_targets = natsorted(targets)
+    ttv_targets = natsorted(ttv_targets)
     targets = random.sample(targets, k=k)
-    return targets, all_targets
+    return targets, all_targets, ttv_targets
 
 
 def generate_tess_viable():
@@ -314,6 +317,7 @@ def generate_tess_viable():
     global exo, mast
     exo = read_csv(nasa_csv)
     mast = read_csv(mast_csv)
+    
     exo_list = exo[['pl_name', 'tic_id']] \
               .dropna() .drop_duplicates('pl_name') \
               .drop(['tic_id'], axis=1) .values .tolist()
@@ -333,6 +337,31 @@ def generate_tess_viable():
     data = {'Exoplanet':viable, 'Products':products}
     df = DataFrame(data).sort_values('Exoplanet')
     df.to_csv(f'{here}/data/Filters/tess_viable.csv', index=False)
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # TTV
+    ttv_list = exo[['pl_name', 'tic_id', 'ttv_flag']] 
+    ttv_list = ttv_list[ttv_list!=0] . dropna() \
+              .drop_duplicates('pl_name') \
+              .drop(['tic_id', 'ttv_flag'], axis=1) .values .tolist()
+    ttv_list = [j for i in ttv_list for j in i]
+    ttv_list = natsorted(ttv_list)
+    # ttv_list = [s for s in ttv_list if 'Kepler' not in s]
+    # ttv_list = [s for s in ttv_list if 'K2' not in s]
+    # ttv_list = [s for s in ttv_list if 'KOI' not in s]
+    viable_ttv = []
+    products_ttv = []
+    for i, exoplanet in enumerate(ttv_list):
+        lc_links, tic_id = _lc(exoplanet)
+        nan = _check_nan(exoplanet)
+        if (len(lc_links)==0 or nan==True):
+            pass
+        else:
+            print(f'{exoplanet} viable.')
+            viable_ttv.append(exoplanet)
+            products_ttv.append(len(lc_links))            
+    data = {'Exoplanet':viable_ttv, 'Products':products_ttv}
+    df = DataFrame(data).sort_values('Exoplanet')
+    df.to_csv(f'{here}/data/Filters/tess_ttv_viable.csv', index=False)
     
 
 
