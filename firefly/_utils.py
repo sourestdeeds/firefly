@@ -235,7 +235,10 @@ def _retrieval(
                       index_col='Parameter')
     master = master[['Best', 'Error']]
     P = master['Best'].iloc[0]
-    Perr = float(master['Error'].iloc[0])
+    try:
+        Perr = float(master['Error'].iloc[0])
+    except ValueError:
+        Perr = float()
     t0 = master['Best'].iloc[1]
     t0err = float(master['Error'].iloc[1])
     a = master['Best'].iloc[2]
