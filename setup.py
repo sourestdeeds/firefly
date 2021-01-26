@@ -38,6 +38,7 @@ setuptools.setup( name='firefly',
                                     'tabulate',
                                     'fuzzywuzzy',
                                     'python-Levenshtein',
+                                    'natsort',
                                     'transitfit'],
                   python_requires='>=3.6',
                   include_package_data=True )
