@@ -28,16 +28,19 @@ class suppress_print():
     def __exit__(self, exc_type, exc_val, exc_tb):
         sys.stdout.close()
         sys.stdout = self.original_stdout
-        
 
-def _search(exoplanet):
+
+def _load_csv():
     _download_nasa()
-    nasa_csv = 'firefly/data/nasa.csv.gz'
     here = os.path.dirname(os.path.abspath(__file__))
+    nasa_csv = 'firefly/data/nasa.csv.gz'
     mast_csv = f'{here}/data/Filters/MAST_lc.csv.xz'
     global exo, mast
     exo = read_csv(nasa_csv)
-    mast = read_csv(mast_csv)
+    mast = read_csv(mast_csv)        
+    
+
+def _search(exoplanet):
     exo_list = exo[['pl_name', 'tic_id']] \
               .dropna() .drop_duplicates('pl_name') \
               .drop(['tic_id'], axis=1) .values .tolist()
