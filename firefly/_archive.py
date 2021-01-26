@@ -294,7 +294,6 @@ def tess_viable(k=10, survey=None):
     '''
     here = os.path.dirname(os.path.abspath(__file__))
     tess = f'{here}/data/Filters/tess_viable.csv'
-    tess = 'firefly/data/tess_viable.csv'
     targets = read_csv(tess) 
     targets = targets['Exoplanet'] .values .tolist()
     if survey != None:
