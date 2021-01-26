@@ -108,13 +108,13 @@ def _download_nasa():
         '+from+ps&format=csv'
     nasa_csv = 'firefly/data/nasa.csv.gz'
     if not os.path.exists(nasa_csv):
-        print('nasa.csv does not exist, downloading.')
+        print('Caching the NASA Exoplanet Archive.')
         df = read_csv(download_link)
         df.to_csv(nasa_csv, index=False)
     ten_days_ago = datetime.now() - timedelta(days=10)
     filetime = datetime.fromtimestamp(os.path.getctime(nasa_csv))
     if filetime < ten_days_ago:
-        print('nasa.csv is 10 days old, updating.')
+        print('NASA Archive is 10 days old. Updating.')
         df = read_csv(download_link)
         df.to_csv(nasa_csv, index=False)
     else:
