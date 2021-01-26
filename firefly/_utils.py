@@ -307,11 +307,19 @@ def _retrieval(
         add .to_csv(summary_master, index=False)   
     
     archive_name = f'{exoplanet} {now}'
-    os.makedirs(f'firefly/{fitting_mode}', exist_ok=True)
-    archive_folder = f'firefly/{fitting_mode}/{archive_name}'
-    make_archive(archive_folder, format='gztar',
-                 root_dir=f'{os.getcwd()}/firefly/',
-                 base_dir=f'{exoplanet}')
+    if fit_ttv==True:
+        os.makedirs(f'firefly/ttv', exist_ok=True)
+        os.makedirs(f'firefly/ttv/{fitting_mode}', exist_ok=True)
+        archive_folder = f'firefly/ttv/{fitting_mode}/{archive_name}'
+        make_archive(archive_folder, format='gztar',
+                     root_dir=f'{os.getcwd()}/firefly/',
+                     base_dir=f'{exoplanet}')
+    else:
+        os.makedirs(f'firefly/{fitting_mode}', exist_ok=True)
+        archive_folder = f'firefly/{fitting_mode}/{archive_name}'
+        make_archive(archive_folder, format='gztar',
+                     root_dir=f'{os.getcwd()}/firefly/',
+                     base_dir=f'{exoplanet}')
     rmtree(f'{exo_folder}')
     return archive_name, repack, results
 
