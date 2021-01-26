@@ -197,18 +197,24 @@ def _nasa(exoplanet, save=True):
     host_logg = (logg, logg * 1e-2)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Nan checks
-    G = 6.67408e-11
-    AU = 1.495978707e11
-    sol = 1.98847e30
+    # G = 6.67408e-11
+    # AU = 1.495978707e11
+    # sol = 1.98847e30
     # P
-    if (np.isnan(P) and not np.isnan(a)):
-        # Added small correction factor to star mass
-        P = 2 * np.pi * np.sqrt((a * AU)**3 / 
-                                (G * 0.963 * ms * sol)) / (60 * 60 * 24)
-    # a
-    elif (np.isnan(a) and not np.isnan(P)):
-        a = (((P * 24 * 60 * 60)**2 * G * ms * sol / 
-              (4 * np.pi**2))**(1 / 3)) / AU
+    # if (np.isnan(P) and not np.isnan(a)):
+    #     # Added small correction factor to star mass
+    #     P = 2 * np.pi * np.sqrt((a * AU)**3 / 
+    #                             (G * 0.963 * ms * sol)) / (60 * 60 * 24)
+    # # a
+    # elif (np.isnan(a) and not np.isnan(P)):
+    #     a = (((P * 24 * 60 * 60)**2 * G * ms * sol / 
+    #           (4 * np.pi**2))**(1 / 3)) / AU
+    # w
+    if np.isnan(w):
+        w = 90
+    # ecc
+    elif np.isnan(ecc):
+        ecc = 0
     # t14
     elif np.isnan(t14):
         t14 = estimate_t14(rp, rs, a, P)
@@ -219,12 +225,6 @@ def _nasa(exoplanet, save=True):
     # z
     elif (np.isnan(z) or z==0):
         host_z = (0, 0.1)
-    # w
-    elif np.isnan(w):
-        w = 90
-    # ecc
-    elif np.isnan(ecc):
-        ecc = 0
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Assign Exoplanet Priors to TransitFit
     radius_const = 0.1027626851
