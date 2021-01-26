@@ -275,7 +275,7 @@ def _nasa(exoplanet, save=True):
     return host_T, host_z, host_r, host_logg, t0, P, t14, nan, repack
 
 
-def tess_viable(k=10):
+def tess_viable(k=10, survey=None):
     '''
     Currently there are 377 tess targets with full prior and lightcurve sets.
 
@@ -283,6 +283,8 @@ def tess_viable(k=10):
     ----------
     k : int, optional
         Returns a random set of targets. The default is 10.
+    survey : str, optional
+        Choice of survey to filter by. The default is None.
 
     Returns
     -------
@@ -292,8 +294,11 @@ def tess_viable(k=10):
     '''
     here = os.path.dirname(os.path.abspath(__file__))
     tess = f'{here}/data/Filters/tess_viable.csv'
+    tess = 'firefly/data/tess_viable.csv'
     targets = read_csv(tess) 
     targets = targets['Exoplanet'] .values .tolist()
+    if survey != None:
+        targets = [s for s in targets if survey in s]
     all_targets = natsorted(targets)
     targets = random.sample(targets, k=k)
     return targets, all_targets
