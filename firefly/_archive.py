@@ -298,8 +298,8 @@ def tess_viable(k=10, survey=None):
     here = os.path.dirname(os.path.abspath(__file__))
     tess = f'{here}/data/Filters/tess_viable.csv'
     tess_ttv = f'{here}/data/Filters/tess_ttv_viable.csv'
-    targets = read_csv(tess) 
-    ttv_targets = read_csv(tess_ttv)
+    targets = read_csv(tess)['Exoplanet'] 
+    ttv_targets = read_csv(tess_ttv)['Exoplanet']
     if survey != None:
         targets = [s for s in targets if survey in s]
         ttv_targets = [s for s in ttv_targets if survey in s]
