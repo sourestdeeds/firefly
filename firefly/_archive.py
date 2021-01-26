@@ -12,6 +12,7 @@ from datetime import datetime, timedelta
 from tabulate import tabulate
 from pandas import DataFrame, read_csv
 from fuzzywuzzy import process
+from natsort import natsorted
 import numpy as np
 import random
 import sys
@@ -41,6 +42,7 @@ def _search(exoplanet):
               .dropna() .drop_duplicates('pl_name') \
               .drop(['tic_id'], axis=1) .values .tolist()
     exo_list = [j for i in exo_list for j in i]
+    exo_list = natsorted(exo_list)
     
     ratios = process.extract(exoplanet,exo_list)
     highest = process.extractOne(exoplanet,exo_list)
@@ -200,6 +202,7 @@ def _nasa(exoplanet, save=True):
     sol = 1.98847e30
     # P
     if (np.isnan(P) and not np.isnan(a)):
+        # Added small correction factor to star mass
         P = 2 * np.pi * np.sqrt((a * AU)**3 / 
                                 (G * 0.963 * ms * sol)) / (60 * 60 * 24)
     # a
@@ -291,8 +294,9 @@ def tess_viable(k=10):
     tess = f'{here}/data/Filters/tess_viable.csv'
     targets = read_csv(tess) 
     targets = targets['Exoplanet'] .values .tolist()
+    all_targets = natsorted(targets)
     targets = random.sample(targets, k=k)
-    return targets
+    return targets, all_targets
 
 
 def generate_tess_viable():
