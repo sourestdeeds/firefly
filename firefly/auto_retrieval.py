@@ -7,7 +7,7 @@ Automated version of retrieval.
 """
 
 from ._utils import _email, _retrieval
-from ._archive import _check_nan, _search, tess_viable
+from ._archive import _check_nan, _search
 
 from datetime import datetime
 from shutil import rmtree, make_archive
@@ -37,7 +37,7 @@ def _auto_input_check(targets, curve_sample):
 
 def firefly(
         # Firefly Interface
-        targets=tess_viable(k=1), 
+        targets, 
         curve_sample=1, 
         email=False,
         to=['transitfit.server@gmail.com'], 
