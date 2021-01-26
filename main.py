@@ -2,10 +2,10 @@ from firefly import firefly, tess_viable
 
 
 def main():
-    exoplanet=tess_viable(k=5)
+    targets, all_targets=tess_viable(k=5)
     firefly(
         # Firefly Interface
-        exoplanet, 
+        targets, 
         curve_sample=0.01, 
         email=True,
         to=['transitfit.server@gmail.com'], 
