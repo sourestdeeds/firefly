@@ -305,7 +305,11 @@ def tess_viable(k=10, survey=None):
         ttv_targets = [s for s in ttv_targets if survey in s]
     all_targets = natsorted(targets)
     ttv_targets = natsorted(ttv_targets)
-    targets = random.sample(targets, k=k)
+    try:
+        targets = random.sample(targets, k=k)
+    except ValueError:
+        k = len(targets)
+        targets = random.sample(targets, k=k)
     return targets, all_targets, ttv_targets
 
 
