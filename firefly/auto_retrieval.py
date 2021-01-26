@@ -7,7 +7,7 @@ Automated version of retrieval.
 """
 
 from ._utils import _email, _retrieval
-from ._archive import _check_nan, _search
+from ._archive import _check_nan, _search, _load_csv
 
 from datetime import datetime
 from shutil import rmtree, make_archive
@@ -20,6 +20,7 @@ import os
 def _auto_input_check(targets, curve_sample):
     if not (0 < curve_sample <= 1):
         sys.exit('The curve sample must be in the range 0 < curve_sample <= 1.')
+    _load_csv()
     exoplanet_list = []
     for i, exoplanet in enumerate(targets):
         highest, ratios = _search(exoplanet)
