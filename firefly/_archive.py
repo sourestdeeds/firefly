@@ -10,9 +10,10 @@ Exoplanet archive tools.
 from transitfit import calculate_logg
 from datetime import datetime, timedelta
 from tabulate import tabulate
-from pandas import DataFrame, read_csv
+from pandas import DataFrame, read_csv, Categorical
 from fuzzywuzzy import process
 from natsort import natsorted
+from math import ceil
 import numpy as np
 import random
 import sys
@@ -313,7 +314,7 @@ def tess_viable(k=10, survey=None):
     return targets, all_targets, ttv_targets
 
 
-def generate_tess_viable():
+def gen_tess_viable():
     _download_nasa()
     here = os.path.dirname(os.path.abspath(__file__))
     nasa_csv = 'firefly/data/nasa.csv.gz'
@@ -329,6 +330,8 @@ def generate_tess_viable():
     
     viable = []
     products = []
+    period = []
+    epochs = []
     for i, exoplanet in enumerate(exo_list):
         lc_links, tic_id = _lc(exoplanet)
         nan = _check_nan(exoplanet)
@@ -336,11 +339,33 @@ def generate_tess_viable():
             pass
         else:
             print(f'{exoplanet} viable.')
+            host_T, host_z, host_r, host_logg, t0, P, t14, nan, repack = \
+                                            _nasa(exoplanet, save=False)
+            epoch = ceil((0.8 * 27.4 / P) * len(lc_links))
             viable.append(exoplanet)
             products.append(len(lc_links))
-    data = {'Exoplanet':viable, 'Products':products}
-    df = DataFrame(data).sort_values('Exoplanet')
+            period.append(P)
+            epochs.append(epoch)
+    data = {'Exoplanet':viable, 'Products':products, 'Period':period, 
+            'Epochs':epochs}
+    df = DataFrame(data)
+    df['Exoplanet'] = \
+            Categorical(df['Exoplanet'], 
+            ordered=True, 
+            categories=natsorted(df['Exoplanet'].unique()))
+    df = df.sort_values('Exoplanet')
     df.to_csv(f'{here}/data/Filters/tess_viable.csv', index=False)
+
+
+
+def gen_tess_viable_ttv():
+    _download_nasa()
+    here = os.path.dirname(os.path.abspath(__file__))
+    nasa_csv = 'firefly/data/nasa.csv.gz'
+    mast_csv = f'{here}/data/Filters/MAST_lc.csv.xz'
+    global exo, mast
+    exo = read_csv(nasa_csv)
+    mast = read_csv(mast_csv)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # TTV
     ttv_list = exo[['pl_name', 'tic_id', 'ttv_flag']] 
@@ -354,6 +379,8 @@ def generate_tess_viable():
     # ttv_list = [s for s in ttv_list if 'KOI' not in s]
     viable_ttv = []
     products_ttv = []
+    period_ttv = []
+    epochs_ttv = []
     for i, exoplanet in enumerate(ttv_list):
         lc_links, tic_id = _lc(exoplanet)
         nan = _check_nan(exoplanet)
@@ -361,10 +388,21 @@ def generate_tess_viable():
             pass
         else:
             print(f'{exoplanet} viable.')
+            host_T, host_z, host_r, host_logg, t0, P, t14, nan, repack = \
+                                            _nasa(exoplanet, save=False)
+            epoch_ttv = ceil((0.8 * 27.4 / P) * len(lc_links))
             viable_ttv.append(exoplanet)
-            products_ttv.append(len(lc_links))            
-    data = {'Exoplanet':viable_ttv, 'Products':products_ttv}
-    df = DataFrame(data).sort_values('Exoplanet')
+            products_ttv.append(len(lc_links))   
+            period_ttv.append(P)
+            epochs_ttv.append(epoch_ttv)
+    data = {'Exoplanet':viable_ttv, 'Products':products_ttv, 
+            'Period':period_ttv, 'Epochs':epochs_ttv}
+    df = DataFrame(data)
+    df['Exoplanet'] = \
+            Categorical(df['Exoplanet'], 
+            ordered=True, 
+            categories=natsorted(df['Exoplanet'].unique()))
+    df = df.sort_values('Exoplanet')
     df.to_csv(f'{here}/data/Filters/tess_ttv_viable.csv', index=False)
     
 
