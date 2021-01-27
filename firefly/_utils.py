@@ -307,11 +307,13 @@ def _retrieval(
             ordered=True, 
             categories=natsorted(add['Exoplanet'].unique()))
         add = add.sort_values('Exoplanet')
-        add .to_csv(summary_master, index=False)   
-    
+        add .to_csv(summary_master, index=False)
+    if clean==True:   
+        rmtree(f'{exo_folder}/output_parameters/quicksaves')
+        rmtree(f'{exo_folder}/output_parameters/filter_0_parameters/quicksaves')
     archive_name = f'{exoplanet} {now}'
     if fit_ttv==True:
-        os.makedirs(f'firefly/ttv', exist_ok=True)
+        os.makedirs('firefly/ttv', exist_ok=True)
         os.makedirs(f'firefly/ttv/{fitting_mode}', exist_ok=True)
         archive_folder = f'firefly/ttv/{fitting_mode}/{archive_name}'
         make_archive(archive_folder, format='gztar',
@@ -325,4 +327,5 @@ def _retrieval(
                      base_dir=f'{exoplanet}')
     rmtree(f'{exo_folder}')
     return archive_name, repack, results
+
 
