@@ -66,11 +66,10 @@ def _tic(exoplanet):
     TIC ID of an exoplanet target.
 
     '''
-    df = exo[['pl_name','tic_id','soltype','rowupdate','disc_facility']] \
+    df = exo[['pl_name','tic_id']] \
         .sort_values('pl_name') \
         .drop_duplicates('pl_name', keep='last')
-    tic_df = df .drop(['soltype', 'rowupdate', 'disc_facility'], axis=1).dropna() \
-                .set_index('pl_name')
+    tic_df = df .dropna() .set_index('pl_name')
     target = tic_df.loc[[exoplanet]]
     tic_id = target['tic_id'] .values .tolist()[0]
     return tic_id
@@ -101,11 +100,10 @@ def _lc(exoplanet):
 def _download_nasa():
     os.makedirs('firefly/data', exist_ok=True)
     download_link =  \
-        'https://exoplanetarchive.ipac.caltech.edu/' +\
-        'TAP/sync?query=select+' +\
-        'pl_name,tic_id,pl_orbper,pl_orbsmax,pl_radj,pl_orbeccen,ttv_flag,' +\
+        'https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+' +\
+        'pl_name,tic_id,ttv_flag,pl_orbper,pl_orbsmax,pl_radj,pl_orbeccen,' +\
         'st_teff,st_rad,st_mass,st_met,st_logg,pl_tranmid,pl_trandur,' +\
-        'pl_orbincl,pl_orblper,soltype,rowupdate,disc_facility' +\
+        'pl_orbincl,pl_orblper' +\
         '+from+ps&format=csv'
     nasa_csv = 'firefly/data/nasa.csv.gz'
     if not os.path.exists(nasa_csv):
