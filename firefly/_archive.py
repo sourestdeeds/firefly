@@ -32,10 +32,11 @@ class suppress_print():
 
 
 def _load_csv():
-    _download_nasa()
-    _download_eu()
-    _download_oec()
-    _download_org()
+    '''
+    Coverts all 4 archives to have the same column structure.
+
+    '''
+    _download_archive()
     here = os.path.dirname(os.path.abspath(__file__))
     nasa_csv = 'firefly/data/nasa.csv.gz'
     eu_csv = 'firefly/data/eu.csv.gz'
@@ -139,90 +140,47 @@ def _lc(exoplanet):
         if int(tic_id) == lc_test[i]:
             lc_links.append(lc_list[i])
     return lc_links, tic_id
-    
 
-def _download_nasa():
+
+def _download_archive():
     os.makedirs('firefly/data', exist_ok=True)
-    download_link =  \
+    download_links = [ \
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        # NASA
         'https://exoplanetarchive.ipac.caltech.edu/' +\
         'TAP/sync?query=select+' +\
         'pl_name,tic_id,pl_orbper,pl_orbsmax,pl_radj,pl_orbeccen,ttv_flag,' +\
         'st_teff,st_rad,st_mass,st_met,st_logg,pl_tranmid,pl_trandur,' +\
         'st_tefferr1,st_raderr1,st_meterr1,st_loggerr1,' +\
         'pl_orbincl,pl_orblper' +\
-        '+from+ps&format=csv'
-    nasa_csv = 'firefly/data/nasa.csv.gz'
-    if not os.path.exists(nasa_csv):
-        print('Caching the NASA Exoplanet Archive.')
-        df = read_csv(download_link)
-        df.to_csv(nasa_csv, index=False)
-    ten_days_ago = datetime.now() - timedelta(days=10)
-    filetime = datetime.fromtimestamp(os.path.getctime(nasa_csv))
-    if filetime < ten_days_ago:
-        print('NASA Archive is 10 days old. Updating.')
-        df = read_csv(download_link)
-        df.to_csv(nasa_csv, index=False)
-    else:
-        pass
-    return nasa_csv
-
-
-def _download_eu():
-    os.makedirs('firefly/data', exist_ok=True)
-    eu_csv = 'firefly/data/eu.csv.gz'
-    download_link = 'http://exoplanet.eu/catalog/csv'
-    if not os.path.exists(eu_csv):
-        print('Caching the EU Exoplanet Archive.')
-        df = read_csv(download_link)
-        df.to_csv(eu_csv, index=False)
-    ten_days_ago = datetime.now() - timedelta(days=10)
-    filetime = datetime.fromtimestamp(os.path.getctime(eu_csv))
-    if filetime < ten_days_ago:
-        print('EU Archive is 10 days old. Updating.')
-        df = read_csv(download_link)
-        df.to_csv(eu_csv, index=False)
-    else:
-        pass
-    return eu_csv
-
-
-def _download_oec():
-    os.makedirs('firefly/data', exist_ok=True)
-    oec_csv = 'firefly/data/oec.csv.gz'
-    download_link = 'https://raw.githubusercontent.com/OpenExoplanetCatalogue/' + \
-                    'oec_tables/master/comma_separated/open_exoplanet_catalogue.txt'
-    if not os.path.exists(oec_csv):
-        print('Caching the OEC Exoplanet Archive.')
-        df = read_csv(download_link)
-        df.to_csv(oec_csv, index=False)
-    ten_days_ago = datetime.now() - timedelta(days=10)
-    filetime = datetime.fromtimestamp(os.path.getctime(oec_csv))
-    if filetime < ten_days_ago:
-        print('OEC Archive is 10 days old. Updating.')
-        df = read_csv(download_link)
-        df.to_csv(oec_csv, index=False)
-    else:
-        pass
-    return oec_csv
-
-
-def _download_org():
-    os.makedirs('firefly/data', exist_ok=True)
-    org_csv = 'firefly/data/org.csv.gz'
-    download_link = 'http://exoplanets.org/csv-files/exoplanets.csv'
-    if not os.path.exists(org_csv):
-        print('Caching the ORG Exoplanet Archive.')
-        df = read_csv(download_link)
-        df.to_csv(org_csv, index=False)
-    ten_days_ago = datetime.now() - timedelta(days=10)
-    filetime = datetime.fromtimestamp(os.path.getctime(org_csv))
-    if filetime < ten_days_ago:
-        print('ORG Archive is 10 days old. Updating.')
-        df = read_csv(download_link)
-        df.to_csv(org_csv, index=False)
-    else:
-        pass
-    return org_csv
+        '+from+ps&format=csv',
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        # EU
+        'http://exoplanet.eu/catalog/csv',
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        # OEC
+        'https://raw.githubusercontent.com/OpenExoplanetCatalogue/' + \
+        'oec_tables/master/comma_separated/open_exoplanet_catalogue.txt',
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        # ORG
+        'http://exoplanets.org/csv-files/exoplanets.csv'
+    ]
+    archive = ['nasa', 'eu', 'oec', 'org']
+    for i, download_link in enumerate(download_links):
+        i = archive[i]
+        csv = f'firefly/data/{i}.csv.gz'
+        if not os.path.exists(csv):
+            print(f'Caching the {i.upper()} Exoplanet Archive.')
+            df = read_csv(download_link)
+            df.to_csv(csv, index=False)
+        ten_days_ago = datetime.now() - timedelta(days=10)
+        filetime = datetime.fromtimestamp(os.path.getctime(csv))
+        if filetime < ten_days_ago:
+            print('{i.upper()} Archive is 10 days old. Updating.')
+            df = read_csv(download_link)
+            df.to_csv(csv, index=False)
+        else:
+            pass
 
 
 def _nasa_full():
@@ -263,10 +221,7 @@ def _IQR(df):
 def _nasa(exoplanet, save=True):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Download NASA archive
-    _download_nasa()
-    _download_eu()
-    _download_oec()
-    _download_org()
+    _download_archive()
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Read in nasa.csv
     archive_list = [exo_nasa, exo_eu, exo_oec, exo_org]
@@ -425,7 +380,7 @@ def tess_viable(k=10, survey=None):
 
 
 def gen_tess_viable():
-    _download_nasa()
+    _download_archive()
     here = os.path.dirname(os.path.abspath(__file__))
     nasa_csv = 'firefly/data/nasa.csv.gz'
     mast_csv = f'{here}/data/Filters/MAST_lc.csv.xz'
@@ -469,7 +424,7 @@ def gen_tess_viable():
 
 
 def gen_tess_viable_ttv():
-    _download_nasa()
+    _download_archive()
     here = os.path.dirname(os.path.abspath(__file__))
     nasa_csv = 'firefly/data/nasa.csv.gz'
     mast_csv = f'{here}/data/Filters/MAST_lc.csv.xz'
