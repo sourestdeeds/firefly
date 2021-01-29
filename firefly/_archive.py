@@ -98,6 +98,20 @@ def _search(exoplanet):
     return highest, ratios
 
 
+def _search_all(exoplanet):
+    archive_list = [exo_nasa, exo_eu, exo_oec, exo_org]
+    exo_archive = concat(archive_list)# .set_index('pl_name')
+    exo_list = exo_archive[['pl_name']] \
+              .dropna() .drop_duplicates('pl_name') \
+              .values .tolist()
+    exo_list = [j for i in exo_list for j in i]
+    exo_list = natsorted(exo_list)
+    
+    ratios = process.extract(exoplanet,exo_list)
+    highest = process.extractOne(exoplanet,exo_list)
+    return highest, ratios
+
+
 def _tic(exoplanet):
     '''
     Returns a dataframe of all planet names and tic ID's.
@@ -218,10 +232,27 @@ def _IQR(df):
     return df[trueList]
   
     
-def _priors(exoplanet, save=True):
+def priors(exoplanet, save=False, user=True):
+    '''
+    Generates priors from 4 exoplanet archives, nasa, eu, oec and exoplanets.org
+
+    Parameters
+    ----------
+    exoplanet : str, 'wasp43b'
+        The exoplanet to create a prior object for.
+    save : bool, optional
+        Internal use only. The default is False.
+    user : bool, optional
+        Internal use only. The default is True.
+
+    '''
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Download NASA archive
     _download_archive()
+    if user==True:
+        _load_csv()
+        highest, ratios = _search_all(exoplanet)
+        exoplanet = highest[0]
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Read in nasa.csv
     archive_list = [exo_nasa, exo_eu, exo_oec, exo_org]
@@ -233,7 +264,10 @@ def _priors(exoplanet, save=True):
     except KeyError:
         sys.exit('The chosen target is either spelt incorrectly, or does not '
                  'exist in the NASA archive.')
-    tic = df['tic_id'] .drop_duplicates() .dropna()[0]
+    try:
+        tic = df['tic_id'] .drop_duplicates() .dropna()[0]
+    except IndexError:
+        tic = 'N/A'
     # Fix t0 on most recent centred transit
     t0 = df['pl_tranmid'] .max()
     # Only keep IQR of data
@@ -341,7 +375,8 @@ def _priors(exoplanet, save=True):
     print(f'\nPriors generated from the NASA Archive for {exoplanet}'
           f' ({tic}).\n')
     print(tabulate(repack, tablefmt='psql', showindex=False, headers='keys'))
-    return host_T, host_z, host_r, host_logg, t0, P, t14, nan, repack
+    if user==False:
+        return host_T, host_z, host_r, host_logg, t0, P, t14, nan, repack
 
 
 def tess_viable(k=10, survey=None):
@@ -399,7 +434,7 @@ def gen_tess_viable():
         else:
             print(f'{exoplanet} viable.')
             host_T, host_z, host_r, host_logg, t0, P, t14, nan, repack = \
-                                            _priors(exoplanet, save=False)
+                                                priors(exoplanet, user=False)
             epoch = ceil((0.8 * 27.4 / P) * len(lc_links))
             viable.append(exoplanet)
             products.append(len(lc_links))
@@ -439,7 +474,7 @@ def gen_tess_viable_ttv():
         else:
             print(f'{exoplanet} viable.')
             host_T, host_z, host_r, host_logg, t0, P, t14, nan, repack = \
-                                            _priors(exoplanet, save=False)
+                                            priors(exoplanet, user=False)
             epoch_ttv = ceil((0.8 * 27.4 / P) * len(lc_links))
             viable_ttv.append(exoplanet)
             products_ttv.append(len(lc_links))   
@@ -462,9 +497,9 @@ def gen_tess_viable_ttv():
 def _check_nan(exoplanet, printing=False):
     if printing == False:
         with suppress_print():
-            nan = _priors(exoplanet, save=False)
+            nan = priors(exoplanet, user=False)
             nan = nan[7]
     elif printing == True:
-        nan = _priors(exoplanet, save=False)
+        nan = priors(exoplanet, user=False)
         nan = nan[7]
     return nan
