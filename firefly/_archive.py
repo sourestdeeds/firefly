@@ -218,7 +218,7 @@ def _IQR(df):
     return df[trueList]
   
     
-def _nasa(exoplanet, save=True):
+def _priors(exoplanet, save=True):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Download NASA archive
     _download_archive()
@@ -381,14 +381,8 @@ def tess_viable(k=10, survey=None):
 
 def gen_tess_viable():
     _download_archive()
-    here = os.path.dirname(os.path.abspath(__file__))
-    nasa_csv = 'firefly/data/nasa.csv.gz'
-    mast_csv = f'{here}/data/Filters/MAST_lc.csv.xz'
-    global exo, mast
-    exo = read_csv(nasa_csv)
-    mast = read_csv(mast_csv)
-    
-    exo_list = exo[['pl_name', 'tic_id']] \
+    _load_csv() 
+    exo_list = exo_nasa[['pl_name', 'tic_id']] \
               .dropna() .drop_duplicates('pl_name') \
               .drop(['tic_id'], axis=1) .values .tolist()
     exo_list = [j for i in exo_list for j in i]
@@ -399,13 +393,13 @@ def gen_tess_viable():
     epochs = []
     for i, exoplanet in enumerate(exo_list):
         lc_links, tic_id = _lc(exoplanet)
-        nan = _check_nan(exoplanet)
-        if (len(lc_links)==0 or nan==True):
+        is_nan = _check_nan(exoplanet)
+        if (len(lc_links)==0 or is_nan):
             pass
         else:
             print(f'{exoplanet} viable.')
             host_T, host_z, host_r, host_logg, t0, P, t14, nan, repack = \
-                                            _nasa(exoplanet, save=False)
+                                            _priors(exoplanet, save=False)
             epoch = ceil((0.8 * 27.4 / P) * len(lc_links))
             viable.append(exoplanet)
             products.append(len(lc_links))
@@ -419,42 +413,33 @@ def gen_tess_viable():
             ordered=True, 
             categories=natsorted(df['Exoplanet'].unique()))
     df = df.sort_values('Exoplanet')
+    here = os.path.dirname(os.path.abspath(__file__))
     df.to_csv(f'{here}/data/Filters/tess_viable.csv', index=False)
 
 
 
 def gen_tess_viable_ttv():
     _download_archive()
-    here = os.path.dirname(os.path.abspath(__file__))
-    nasa_csv = 'firefly/data/nasa.csv.gz'
-    mast_csv = f'{here}/data/Filters/MAST_lc.csv.xz'
-    global exo, mast
-    exo = read_csv(nasa_csv)
-    mast = read_csv(mast_csv)
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # TTV
-    ttv_list = exo[['pl_name', 'tic_id', 'ttv_flag']] 
+    _load_csv()
+    ttv_list = exo_nasa[['pl_name', 'tic_id', 'ttv_flag']] 
     ttv_list = ttv_list[ttv_list!=0] . dropna() \
               .drop_duplicates('pl_name') \
               .drop(['tic_id', 'ttv_flag'], axis=1) .values .tolist()
     ttv_list = [j for i in ttv_list for j in i]
     ttv_list = natsorted(ttv_list)
-    # ttv_list = [s for s in ttv_list if 'Kepler' not in s]
-    # ttv_list = [s for s in ttv_list if 'K2' not in s]
-    # ttv_list = [s for s in ttv_list if 'KOI' not in s]
     viable_ttv = []
     products_ttv = []
     period_ttv = []
     epochs_ttv = []
     for i, exoplanet in enumerate(ttv_list):
         lc_links, tic_id = _lc(exoplanet)
-        nan = _check_nan(exoplanet)
-        if (len(lc_links)==0 or nan==True):
+        is_nan = _check_nan(exoplanet)
+        if (len(lc_links)==0 or is_nan):
             pass
         else:
             print(f'{exoplanet} viable.')
             host_T, host_z, host_r, host_logg, t0, P, t14, nan, repack = \
-                                            _nasa(exoplanet, save=False)
+                                            _priors(exoplanet, save=False)
             epoch_ttv = ceil((0.8 * 27.4 / P) * len(lc_links))
             viable_ttv.append(exoplanet)
             products_ttv.append(len(lc_links))   
@@ -468,6 +453,7 @@ def gen_tess_viable_ttv():
             ordered=True, 
             categories=natsorted(df['Exoplanet'].unique()))
     df = df.sort_values('Exoplanet')
+    here = os.path.dirname(os.path.abspath(__file__))
     df.to_csv(f'{here}/data/Filters/tess_ttv_viable.csv', index=False)
     
 
@@ -476,9 +462,9 @@ def gen_tess_viable_ttv():
 def _check_nan(exoplanet, printing=False):
     if printing == False:
         with suppress_print():
-            nan = _nasa(exoplanet, save=False)
+            nan = _priors(exoplanet, save=False)
             nan = nan[7]
     elif printing == True:
-        nan = _nasa(exoplanet, save=False)
+        nan = _priors(exoplanet, save=False)
         nan = nan[7]
     return nan
