@@ -372,8 +372,8 @@ def priors(exoplanet, save=False, user=True):
     repack = DataFrame(cols, columns=['Parameter', 'Distribution',
                                       'Input A', 'Input B', 'Filter'])
     nan = repack.isnull().values.any()
-    print(f'\nPriors generated from the NASA Archive for {exoplanet}'
-          f' ({tic}).\n')
+    print('\nPriors generated from the NASA, EU, OEC and ORG Archives for'
+          f' {exoplanet} ({tic}).\n')
     print(tabulate(repack, tablefmt='psql', showindex=False, headers='keys'))
     if user==False:
         return host_T, host_z, host_r, host_logg, t0, P, t14, nan, repack
@@ -381,7 +381,7 @@ def priors(exoplanet, save=False, user=True):
 
 def tess_viable(k=10, survey=None):
     '''
-    Currently there are 377 tess targets with full prior and lightcurve sets.
+    Currently there are 420 tess targets with full prior and lightcurve sets.
 
     Parameters
     ----------
