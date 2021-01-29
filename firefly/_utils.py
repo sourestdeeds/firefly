@@ -6,7 +6,7 @@ The backend for auto_retrieval.
 @author: Steven Charles-Mindoza
 """
 
-from ._archive import _priors, _lc
+from ._archive import priors, _lc
 from transitfit import split_lightcurve_file, run_retrieval
 from datetime import datetime
 from smtplib import SMTP_SSL
@@ -148,11 +148,11 @@ def _retrieval(
     # Download Archive
     try:
         host_T, host_z, host_r, host_logg, t0, P, t14, nan, repack = \
-                                            _priors(exoplanet)
+                                    priors(exoplanet, save=True, user=False)
     except Exception:
         os.remove('firefly/data/nasa.csv.gz')
         host_T, host_z, host_r, host_logg, t0, P, t14, nan, repack = \
-                                            _priors(exoplanet)     
+                                    priors(exoplanet, save=True, user=False)  
     cols = [['t0', t0], ['P', P], ['t14', t14]]
     df = DataFrame(cols, columns=['Parameter', 'Value'])
     print('\nSplitting the lightcurve into seperate epochs'
@@ -192,7 +192,7 @@ def _retrieval(
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Paths to data, priors, and filter info:
     data = data_path
-    priors = f'{exo_folder}/{exoplanet} Priors.csv'
+    priors_csv = f'{exo_folder}/{exoplanet} Priors.csv'
     filters = 'firefly/data/TESS_filter_path.csv'
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Output folders
@@ -203,7 +203,7 @@ def _retrieval(
     # Run the retrieval
     run_retrieval(
             data, 
-            priors, 
+            priors_csv, 
             filters, 
             host_T=host_T, 
             host_logg=host_logg, 
