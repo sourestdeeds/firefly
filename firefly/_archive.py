@@ -100,9 +100,11 @@ def _lc(exoplanet):
 def _download_nasa():
     os.makedirs('firefly/data', exist_ok=True)
     download_link =  \
-        'https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+' +\
-        'pl_name,tic_id,ttv_flag,pl_orbper,pl_orbsmax,pl_radj,pl_orbeccen,' +\
+        'https://exoplanetarchive.ipac.caltech.edu/' +\
+        'TAP/sync?query=select+' +\
+        'pl_name,tic_id,pl_orbper,pl_orbsmax,pl_radj,pl_orbeccen,ttv_flag,' +\
         'st_teff,st_rad,st_mass,st_met,st_logg,pl_tranmid,pl_trandur,' +\
+        'st_tefferr1,st_raderr1,st_meterr1,st_loggerr1,' +\
         'pl_orbincl,pl_orblper' +\
         '+from+ps&format=csv'
     nasa_csv = 'firefly/data/nasa.csv.gz'
@@ -186,17 +188,21 @@ def _nasa(exoplanet, save=True):
     ecc = s.loc['pl_orbeccen']
     rp = s.loc['pl_radj']
     rs = s.loc['st_rad']
+    rserr = s.loc['st_raderr1']
     z = s.loc['st_met']
+    zerr =  s.loc['st_meterr1']
     ms = s.loc['st_mass']
     logg = s.loc['st_logg']
+    loggerr = s.loc['st_loggerr1']
     T = s.loc['st_teff']
+    Terr =  s.loc['st_tefferr1']
     t14 = s.loc['pl_trandur'] * 60
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Assign Host data to Transitfit
-    host_T = (T, T * 1e-2)
-    host_z = (z, np.abs(z * 1e-2))
-    host_r = (rs, rs * 1e-2)
-    host_logg = (logg, logg * 1e-2)
+    host_T = (T, Terr)
+    host_z = (z, zerr)
+    host_r = (rs, rserr)
+    host_logg = (logg, loggerr)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Nan checks
     # G = 6.67408e-11
