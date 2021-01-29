@@ -10,7 +10,7 @@ Exoplanet archive tools.
 from transitfit import calculate_logg
 from datetime import datetime, timedelta
 from tabulate import tabulate
-from pandas import DataFrame, read_csv, Categorical
+from pandas import DataFrame, read_csv, Categorical, concat
 from fuzzywuzzy import process
 from natsort import natsorted
 from math import ceil
@@ -33,16 +33,60 @@ class suppress_print():
 
 def _load_csv():
     _download_nasa()
+    _download_eu()
+    _download_oec()
+    _download_org()
     here = os.path.dirname(os.path.abspath(__file__))
     nasa_csv = 'firefly/data/nasa.csv.gz'
+    eu_csv = 'firefly/data/eu.csv.gz'
+    oec_csv = 'firefly/data/oec.csv.gz'
+    org_csv = 'firefly/data/org.csv.gz'
     mast_csv = f'{here}/data/Filters/MAST_lc.csv.xz'
-    global exo, mast
-    exo = read_csv(nasa_csv)
+    global exo_nasa, exo_eu, exo_oec, exo_org, mast
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # NASA
+    exo_nasa = read_csv(nasa_csv)
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # EU
+    col_subset_eu = ['# name', 'orbital_period', 'semi_major_axis', 'radius',
+                     'eccentricity', 'inclination', 'tzero_tr', 'star_teff', 
+                     'star_teff_error_max', 'star_radius', 
+                     'star_radius_error_max', 'star_mass',
+                     'star_metallicity', 'star_metallicity_error_max']
+    exo_eu = read_csv(eu_csv, usecols=col_subset_eu)
+    exo_eu.columns = ['pl_name', 'pl_radj', 'pl_orbper', 'pl_orbsmax',
+                      'pl_orbeccen', 'pl_orbincl', 'pl_tranmid', 'st_met',
+                      'st_meterr1', 'st_mass','st_rad',
+                      'st_raderr1', 'st_teff', 'st_tefferr1']  
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # OEC
+    col_subset_oec = ['name', 'radius', 'period',
+                     'semimajoraxis', 'eccentricity', 'periastron', 'inclination', 
+                     'hoststar_mass', 'hoststar_radius', 
+                     'hoststar_metallicity', 'hoststar_temperature']
+    exo_oec = read_csv(oec_csv, usecols=col_subset_oec)
+    exo_oec.columns = ['pl_name', 'pl_radj', 'pl_orbper', 'pl_orbsmax',
+                      'pl_orbeccen', 'pl_orblper','pl_orbincl', 'st_mass',
+                      'st_rad', 'st_met', 'st_teff']  
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # ORG
+    col_subset_org = ['NAME', 'R', 'PER',
+                     'SEP', 'ECC', 'I', 'TT',
+                     'MSTAR', 'RSTAR', 'RSTARUPPER',
+                     'FE', 'FEUPPER', 'LOGG', 'LOGGUPPER',
+                     'TEFF', 'TEFFUPPER']
+    exo_org = read_csv(org_csv, usecols=col_subset_org)
+    exo_org.columns = ['pl_orbeccen', 'st_met', 'st_meterr1', 'pl_orbincl',
+                      'st_logg', 'st_loggerr1','st_mass', 'pl_name',
+                      'pl_orbper', 'pl_radj', 'st_rad', 'st_raderr1', 'pl_orbsmax',
+                      'st_teff', 'st_tefferr1', 'pl_tranmid']  
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # MAST
     mast = read_csv(mast_csv)        
     
 
 def _search(exoplanet):
-    exo_list = exo[['pl_name', 'tic_id']] \
+    exo_list = exo_nasa[['pl_name', 'tic_id']] \
               .dropna() .drop_duplicates('pl_name') \
               .drop(['tic_id'], axis=1) .values .tolist()
     exo_list = [j for i in exo_list for j in i]
@@ -66,7 +110,7 @@ def _tic(exoplanet):
     TIC ID of an exoplanet target.
 
     '''
-    df = exo[['pl_name','tic_id']] \
+    df = exo_nasa[['pl_name','tic_id']] \
         .sort_values('pl_name') \
         .drop_duplicates('pl_name', keep='last')
     tic_df = df .dropna() .set_index('pl_name')
@@ -123,6 +167,64 @@ def _download_nasa():
     return nasa_csv
 
 
+def _download_eu():
+    os.makedirs('firefly/data', exist_ok=True)
+    eu_csv = 'firefly/data/eu.csv.gz'
+    download_link = 'http://exoplanet.eu/catalog/csv'
+    if not os.path.exists(eu_csv):
+        print('Caching the EU Exoplanet Archive.')
+        df = read_csv(download_link)
+        df.to_csv(eu_csv, index=False)
+    ten_days_ago = datetime.now() - timedelta(days=10)
+    filetime = datetime.fromtimestamp(os.path.getctime(eu_csv))
+    if filetime < ten_days_ago:
+        print('EU Archive is 10 days old. Updating.')
+        df = read_csv(download_link)
+        df.to_csv(eu_csv, index=False)
+    else:
+        pass
+    return eu_csv
+
+
+def _download_oec():
+    os.makedirs('firefly/data', exist_ok=True)
+    oec_csv = 'firefly/data/oec.csv.gz'
+    download_link = 'https://raw.githubusercontent.com/OpenExoplanetCatalogue/' + \
+                    'oec_tables/master/comma_separated/open_exoplanet_catalogue.txt'
+    if not os.path.exists(oec_csv):
+        print('Caching the OEC Exoplanet Archive.')
+        df = read_csv(download_link)
+        df.to_csv(oec_csv, index=False)
+    ten_days_ago = datetime.now() - timedelta(days=10)
+    filetime = datetime.fromtimestamp(os.path.getctime(oec_csv))
+    if filetime < ten_days_ago:
+        print('OEC Archive is 10 days old. Updating.')
+        df = read_csv(download_link)
+        df.to_csv(oec_csv, index=False)
+    else:
+        pass
+    return oec_csv
+
+
+def _download_org():
+    os.makedirs('firefly/data', exist_ok=True)
+    org_csv = 'firefly/data/org.csv.gz'
+    download_link = 'http://exoplanets.org/csv-files/exoplanets.csv'
+    if not os.path.exists(org_csv):
+        print('Caching the ORG Exoplanet Archive.')
+        df = read_csv(download_link)
+        df.to_csv(org_csv, index=False)
+    ten_days_ago = datetime.now() - timedelta(days=10)
+    filetime = datetime.fromtimestamp(os.path.getctime(org_csv))
+    if filetime < ten_days_ago:
+        print('ORG Archive is 10 days old. Updating.')
+        df = read_csv(download_link)
+        df.to_csv(org_csv, index=False)
+    else:
+        pass
+    return org_csv
+
+
 def _nasa_full():
     '''
     Downloads the entire NASA Exoplanet Archive
@@ -151,8 +253,8 @@ def estimate_t14(Rp, Rs, a, P):
 
 def _IQR(df):
     # Only keep IQR of data
-    Q1 = df.quantile(0.25)
-    Q3 = df.quantile(0.75)
+    Q1 = df.quantile(0.45)
+    Q3 = df.quantile(0.55)
     IQR = Q3 - Q1
     trueList = ~((df < (Q1 - 1.5 * IQR)) | (df > (Q3 + 1.5 * IQR)))
     return df[trueList]
@@ -162,9 +264,13 @@ def _nasa(exoplanet, save=True):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Download NASA archive
     _download_nasa()
+    _download_eu()
+    _download_oec()
+    _download_org()
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Read in nasa.csv
-    exo_archive = exo.set_index('pl_name')
+    archive_list = [exo_nasa, exo_eu, exo_oec, exo_org]
+    exo_archive = concat(archive_list).set_index('pl_name')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Pick Out Chosen Exoplanet Priors
     try:
@@ -172,7 +278,7 @@ def _nasa(exoplanet, save=True):
     except KeyError:
         sys.exit('The chosen target is either spelt incorrectly, or does not '
                  'exist in the NASA archive.')
-    tic = df['tic_id'] .drop_duplicates() .max()
+    tic = df['tic_id'] .drop_duplicates() .dropna()[0]
     # Fix t0 on most recent centred transit
     t0 = df['pl_tranmid'] .max()
     # Only keep IQR of data
