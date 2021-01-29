@@ -6,7 +6,7 @@ The backend for auto_retrieval.
 @author: Steven Charles-Mindoza
 """
 
-from ._archive import _nasa, _lc
+from ._archive import _priors, _lc
 from transitfit import split_lightcurve_file, run_retrieval
 from datetime import datetime
 from smtplib import SMTP_SSL
@@ -148,11 +148,11 @@ def _retrieval(
     # Download Archive
     try:
         host_T, host_z, host_r, host_logg, t0, P, t14, nan, repack = \
-                                            _nasa(exoplanet)
+                                            _priors(exoplanet)
     except Exception:
         os.remove('firefly/data/nasa.csv.gz')
         host_T, host_z, host_r, host_logg, t0, P, t14, nan, repack = \
-                                            _nasa(exoplanet)     
+                                            _priors(exoplanet)     
     cols = [['t0', t0], ['P', P], ['t14', t14]]
     df = DataFrame(cols, columns=['Parameter', 'Value'])
     print('\nSplitting the lightcurve into seperate epochs'
