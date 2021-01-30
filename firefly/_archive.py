@@ -316,17 +316,17 @@ def priors(exoplanet, save=False, user=True):
     if np.isnan(w):
         w = 90
     # ecc
-    elif np.isnan(ecc):
+    if np.isnan(ecc):
         ecc = 0
     # t14
-    elif np.isnan(t14):
+    if np.isnan(t14):
         t14 = estimate_t14(rp, rs, a, P)
     # logg
-    elif np.isnan(logg):
+    if np.isnan(logg):
         logg, err_logg = calculate_logg((ms, ms * 1e-2), (rs, rs * 1e-2))
         host_logg = (logg, err_logg)
     # z
-    elif (np.isnan(z) or z==0):
+    if (np.isnan(z) or z==0):
         host_z = (0, 0.1)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Assign Exoplanet Priors to TransitFit
