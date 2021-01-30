@@ -116,6 +116,7 @@ def _fits(exoplanet, exo_folder, cache):
 def _retrieval(
         # Firefly Interface
         exoplanet,
+        sigma=3,
         curve_sample=1, 
         clean=False,
         cache=False,
@@ -149,15 +150,19 @@ def _retrieval(
     # Download Archive
     try:
         host_T, host_z, host_r, host_logg, t0, P, t14, nan, repack = \
-                            priors(exoplanet, save=True, user=False)
+                            priors(exoplanet, sigma=sigma, save=True, user=False)
     except Exception:
-        os.remove('firefly/data/nasa.csv.gz')
+        archive = ['nasa', 'eu', 'oec', 'org']
+        for i, file in enumerate(archive):
+            os.remove(f'firefly/data/{file}.csv.gz')
         host_T, host_z, host_r, host_logg, t0, P, t14, nan, repack = \
-                            priors(exoplanet, save=True, user=False)
+                            priors(exoplanet, sigma=sigma, save=True, user=False)
     if auto==False:
         answer = ''
         while answer!='y':
             answer = input('Modify your priors file, type y to proceed. ')
+            if answer=='q':
+                sys.exit('Exiting..')
     cols = [['t0', t0], ['P', P], ['t14', t14]]
     df = DataFrame(cols, columns=['Parameter', 'Value'])
     print('\nSplitting the lightcurve into seperate epochs'
