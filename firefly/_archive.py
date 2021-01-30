@@ -225,8 +225,8 @@ def estimate_t14(Rp, Rs, a, P):
 
 def _IQR(df):
     # Only keep IQR of data
-    Q1 = df.quantile(0.45)
-    Q3 = df.quantile(0.55)
+    Q1 = df.quantile(0.25)
+    Q3 = df.quantile(0.75)
     IQR = Q3 - Q1
     trueList = ~((df < (Q1 - 1.5 * IQR)) | (df > (Q3 + 1.5 * IQR)))
     return df[trueList]
