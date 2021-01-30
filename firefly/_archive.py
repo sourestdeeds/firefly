@@ -50,25 +50,25 @@ def _load_csv():
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # EU
     col_subset_eu = ['# name', 'orbital_period', 'semi_major_axis', 'radius',
-                     'eccentricity', 'inclination', 'tzero_tr', 'star_teff', 
-                     'star_teff_error_max', 'star_radius', 
+                     'eccentricity', 'inclination', 'tzero_tr', 'star_teff',
+                     'star_teff_error_max', 'star_radius',
                      'star_radius_error_max', 'star_mass',
                      'star_metallicity', 'star_metallicity_error_max']
     exo_eu = read_csv(eu_csv, usecols=col_subset_eu)
     exo_eu.columns = ['pl_name', 'pl_radj', 'pl_orbper', 'pl_orbsmax',
                       'pl_orbeccen', 'pl_orbincl', 'pl_tranmid', 'st_met',
                       'st_meterr1', 'st_mass','st_rad',
-                      'st_raderr1', 'st_teff', 'st_tefferr1']  
+                      'st_raderr1', 'st_teff', 'st_tefferr1']
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # OEC
     col_subset_oec = ['name', 'radius', 'period',
-                     'semimajoraxis', 'eccentricity', 'periastron', 'inclination', 
-                     'hoststar_mass', 'hoststar_radius', 
+                     'semimajoraxis', 'eccentricity', 'periastron', 'inclination',
+                     'hoststar_mass', 'hoststar_radius',
                      'hoststar_metallicity', 'hoststar_temperature']
     exo_oec = read_csv(oec_csv, usecols=col_subset_oec)
     exo_oec.columns = ['pl_name', 'pl_radj', 'pl_orbper', 'pl_orbsmax',
                       'pl_orbeccen', 'pl_orblper','pl_orbincl', 'st_mass',
-                      'st_rad', 'st_met', 'st_teff']  
+                      'st_rad', 'st_met', 'st_teff']
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # ORG
     col_subset_org = ['NAME', 'R', 'PER',
@@ -80,10 +80,10 @@ def _load_csv():
     exo_org.columns = ['pl_orbeccen', 'st_met', 'st_meterr1', 'pl_orbincl',
                       'st_logg', 'st_loggerr1','st_mass', 'pl_name',
                       'pl_orbper', 'pl_radj', 'st_rad', 'st_raderr1', 'pl_orbsmax',
-                      'st_teff', 'st_tefferr1', 'pl_tranmid']  
+                      'st_teff', 'st_tefferr1', 'pl_tranmid']
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # MAST
-    mast = read_csv(mast_csv)        
+    mast = read_csv(mast_csv)
     
 
 def _search(exoplanet):
@@ -187,10 +187,10 @@ def _download_archive():
             print(f'Caching the {i.upper()} Exoplanet Archive.')
             df = read_csv(download_link)
             df.to_csv(csv, index=False)
-        ten_days_ago = datetime.now() - timedelta(days=10)
+        ten_days_ago = datetime.now() - timedelta(days=2)
         filetime = datetime.fromtimestamp(os.path.getctime(csv))
         if filetime < ten_days_ago:
-            print('{i.upper()} Archive is 10 days old. Updating.')
+            print(f'{i.upper()} Archive is 2 days old. Updating.')
             df = read_csv(download_link)
             df.to_csv(csv, index=False)
         else:
@@ -306,11 +306,11 @@ def priors(exoplanet, save=False, user=True):
     # P
     # if (np.isnan(P) and not np.isnan(a)):
     #     # Added small correction factor to star mass
-    #     P = 2 * np.pi * np.sqrt((a * AU)**3 / 
+    #     P = 2 * np.pi * np.sqrt((a * AU)**3 /
     #                             (G * 0.963 * ms * sol)) / (60 * 60 * 24)
     # # a
     # elif (np.isnan(a) and not np.isnan(P)):
-    #     a = (((P * 24 * 60 * 60)**2 * G * ms * sol / 
+    #     a = (((P * 24 * 60 * 60)**2 * G * ms * sol /
     #           (4 * np.pi**2))**(1 / 3)) / AU
     # w
     if np.isnan(w):
@@ -399,7 +399,7 @@ def tess_viable(k=10, survey=None):
     here = os.path.dirname(os.path.abspath(__file__))
     tess = f'{here}/data/Filters/tess_viable.csv'
     tess_ttv = f'{here}/data/Filters/tess_ttv_viable.csv'
-    targets = read_csv(tess)['Exoplanet'] 
+    targets = read_csv(tess)['Exoplanet']
     ttv_targets = read_csv(tess_ttv)['Exoplanet']
     if survey != None:
         targets = [s for s in targets if survey in s]
@@ -416,7 +416,7 @@ def tess_viable(k=10, survey=None):
 
 def gen_tess_viable():
     _download_archive()
-    _load_csv() 
+    _load_csv()
     exo_list = exo_nasa[['pl_name', 'tic_id']] \
               .dropna() .drop_duplicates('pl_name') \
               .drop(['tic_id'], axis=1) .values .tolist()
@@ -440,12 +440,12 @@ def gen_tess_viable():
             products.append(len(lc_links))
             period.append(P)
             epochs.append(epoch)
-    data = {'Exoplanet':viable, 'Products':products, 'Period':period, 
+    data = {'Exoplanet':viable, 'Products':products, 'Period':period,
             'Epochs':epochs}
     df = DataFrame(data)
     df['Exoplanet'] = \
-            Categorical(df['Exoplanet'], 
-            ordered=True, 
+            Categorical(df['Exoplanet'],
+            ordered=True,
             categories=natsorted(df['Exoplanet'].unique()))
     df = df.sort_values('Exoplanet')
     here = os.path.dirname(os.path.abspath(__file__))
@@ -456,7 +456,7 @@ def gen_tess_viable():
 def gen_tess_viable_ttv():
     _download_archive()
     _load_csv()
-    ttv_list = exo_nasa[['pl_name', 'tic_id', 'ttv_flag']] 
+    ttv_list = exo_nasa[['pl_name', 'tic_id', 'ttv_flag']]
     ttv_list = ttv_list[ttv_list!=0] . dropna() \
               .drop_duplicates('pl_name') \
               .drop(['tic_id', 'ttv_flag'], axis=1) .values .tolist()
@@ -477,23 +477,21 @@ def gen_tess_viable_ttv():
                                             priors(exoplanet, user=False)
             epoch_ttv = ceil((0.8 * 27.4 / P) * len(lc_links))
             viable_ttv.append(exoplanet)
-            products_ttv.append(len(lc_links))   
+            products_ttv.append(len(lc_links))
             period_ttv.append(P)
             epochs_ttv.append(epoch_ttv)
-    data = {'Exoplanet':viable_ttv, 'Products':products_ttv, 
+    data = {'Exoplanet':viable_ttv, 'Products':products_ttv,
             'Period':period_ttv, 'Epochs':epochs_ttv}
     df = DataFrame(data)
     df['Exoplanet'] = \
-            Categorical(df['Exoplanet'], 
-            ordered=True, 
+            Categorical(df['Exoplanet'],
+            ordered=True,
             categories=natsorted(df['Exoplanet'].unique()))
     df = df.sort_values('Exoplanet')
     here = os.path.dirname(os.path.abspath(__file__))
     df.to_csv(f'{here}/data/Filters/tess_ttv_viable.csv', index=False)
     
-
-
-
+    
 def _check_nan(exoplanet, printing=False):
     if printing == False:
         with suppress_print():
