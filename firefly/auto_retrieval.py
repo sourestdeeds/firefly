@@ -38,12 +38,13 @@ def _auto_input_check(targets, curve_sample):
 
 def firefly(
         # Firefly Interface
-        targets, 
+        targets,
         curve_sample=1, 
         email=False,
         to=['transitfit.server@gmail.com'], 
         clean=False,
         cache=False,
+        auto=True,
         # TransitFit Variables
         cutoff=0.25,
         window=2.5,
@@ -147,6 +148,10 @@ def firefly(
     cache : bool, optional
         If True will cache lightcurve fits files in root/.astropy.
         The default is False.
+    auto : bool, optional
+        If False will allow the user to modify the generated priors file
+        before proceeding.
+        The default is True.
     cutoff : float, optional
         If there are no data within 
         
@@ -323,6 +328,7 @@ def firefly(
                 curve_sample=curve_sample,
                 clean=clean,
                 cache=cache,
+                auto=auto,
                 # TransitFit Variables
                 cutoff=cutoff,
                 window=window,
