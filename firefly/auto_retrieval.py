@@ -17,9 +17,13 @@ import os
 
 
 
-def _auto_input_check(targets, curve_sample):
+def _auto_input_check(targets, curve_sample, sigma):
     if not (0 < curve_sample <= 1):
         sys.exit('The curve sample must be in the range 0 < curve_sample <= 1.')
+    if not (1 <= sigma <= 3):
+        sys.exit('Please enter a value of sigma in the range of 1 to 3.')
+    if not isinstance(sigma, int):
+        sys.exit('Please enter a value of sigma as an integer in the range of 1 to 3.')
     _load_csv()
     exoplanet_list = []
     for i, exoplanet in enumerate(targets):
@@ -39,6 +43,7 @@ def _auto_input_check(targets, curve_sample):
 def firefly(
         # Firefly Interface
         targets,
+        sigma=3,
         curve_sample=1, 
         email=False,
         to=['transitfit.server@gmail.com'], 
@@ -136,6 +141,10 @@ def firefly(
         
         will fit using only 1 lightcurve from each sector. 
         The default is 1 to fit all lightcurves across all sectors.
+    sigma : int, optional
+        Takes either 1, 2 or 3 as an int input. Defines how much of the central
+        data to keep. 3 sigma keeps the most, 1 discards major outliers.
+        The default is 3.
     email : bool, optional
         If True will send status emails. The default is False.
     to : str, optional
@@ -318,13 +327,14 @@ def firefly(
     >>> firefly/WASP-43 b timestamp.gz.tar
 
     '''
-    exoplanet_list = _auto_input_check(targets, curve_sample)
+    exoplanet_list = _auto_input_check(targets, curve_sample, sigma)
     for i, exoplanet in enumerate(exoplanet_list):
         try:
             archive_name, repack, results = \
             _retrieval(
                 # Firefly Interface
                 exoplanet, 
+                sigma=sigma,
                 curve_sample=curve_sample,
                 clean=clean,
                 cache=cache,
