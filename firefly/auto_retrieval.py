@@ -25,19 +25,14 @@ def _auto_input_check(targets, curve_sample, sigma):
     if not isinstance(sigma, int):
         sys.exit('Please enter a value of sigma as an integer in the range of 1 to 3.')
     _load_csv()
-    exoplanet_list = []
-    for i, exoplanet in enumerate(targets):
-        highest, ratios = _search(exoplanet)
-        exoplanet = highest[0]
-        print(f'Target search chose {highest[0]}.')
-        nan = _check_nan(exoplanet)
-        if nan == True:
-            print(f'Skipping {exoplanet} due to missing prior data.')
-            pass
-        elif nan == False:
-            exoplanet_list.append(exoplanet)
-    print('Input checks passed.')
-    return exoplanet_list
+    targets = ''.join(targets)
+    highest, ratios = _search(targets)
+    exoplanet = highest[0]
+    print(f'Target search chose {exoplanet}.')
+    nan = _check_nan(exoplanet)
+    if nan == True:
+        sys.exit(f'Skipping {exoplanet} due to missing prior data.')
+    return exoplanet
 
 
 def firefly(
@@ -327,122 +322,121 @@ def firefly(
     >>> firefly/WASP-43 b timestamp.gz.tar
 
     '''
-    exoplanet_list = _auto_input_check(targets, curve_sample, sigma)
-    for i, exoplanet in enumerate(exoplanet_list):
+    exoplanet = _auto_input_check(targets, curve_sample=curve_sample, sigma=sigma)
+    try:
+        archive_name, repack, results = \
+        _retrieval(
+            # Firefly Interface
+            exoplanet, 
+            sigma=sigma,
+            curve_sample=curve_sample,
+            clean=clean,
+            cache=cache,
+            auto=auto,
+            # TransitFit Variables
+            cutoff=cutoff,
+            window=window,
+            nlive=nlive,
+            fit_ttv=fit_ttv,
+            detrending_list=detrending_list,
+            dynesty_sample=dynesty_sample,
+            fitting_mode=fitting_mode, 
+            limb_darkening_model=limb_darkening_model, 
+            ld_fit_method=ld_fit_method,
+            max_batch_parameters=max_batch_parameters, 
+            batch_overlap=batch_overlap, 
+            dlogz=dlogz, 
+            maxiter=maxiter, 
+            maxcall=maxcall, 
+            dynesty_bounding=dynesty_bounding, 
+            normalise=normalise, 
+            detrend=detrend
+        )
+        success = f'{os.getcwd()}/firefly/{archive_name}.gz.tar'
+        print(f'\nData location: {success}\n'
+                'A new target has been fully retrieved across ' +
+                'all available TESS Sectors.')
+        if email == True:
+            exo_folder = f'firefly/{exoplanet}'
+            _email(
+            f'Success: {exoplanet}',
+            f'Data location: {success} <br><br>'
+            f'Priors from the Archive for {exoplanet}:<br>' +
+            repack.to_html(float_format=lambda x: '%10.5f' % x) + '<br>'
+            'TransitFit Complete Results:<br>' +
+            results.to_html(float_format=lambda x: '%10.5f' % x) + '<br>'
+            'Variables used:<br><br>'
+            f'target={exoplanet}<br>'
+            f'curve_sample={str(curve_sample)}<br>'
+            f'clean={clean}<br>'
+            f'cache={cache}<br>'
+            f'cutoff={str(cutoff)}<br>'
+            f'window={str(window)}<br>'
+            f'nlive={str(nlive)}<br>'
+            f'fit_ttv={fit_ttv}<br>'
+            f'detrending_list={str(detrending_list)}<br>'
+            f'dynesty_sample={dynesty_sample}<br>'
+            f'fitting_mode={fitting_mode}<br>'
+            f'limb_darkening_model={limb_darkening_model}<br>'
+            f'ld_fit_method={ld_fit_method}<br>'
+            f'max_batch_parameters={str(max_batch_parameters)}<br>'
+            f'batch_overlap={str(batch_overlap)}<br>'
+            f'dlogz={str(dlogz)}<br>'
+            f'maxiter={str(maxiter)}<br>'
+            f'maxcall={str(maxcall)}<br>'
+            f'dynesty_bounding={dynesty_bounding}<br>'
+            f'normalise={normalise}<br>'
+            f'detrend={detrend}',
+            to=to)
+    except KeyboardInterrupt:
+        exo_folder = f'firefly/{exoplanet}'
+        now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
+        keyboard = f'firefly/KeyboardInterrupt/{exoplanet} ' +\
+                   f'{now} KeyboardInterrupt'
+        make_archive(keyboard, format='gztar',
+                 root_dir=f'{os.getcwd()}/firefly/',
+                 base_dir=f'{exoplanet}')
+        rmtree(exo_folder)
+        raise
+        sys.exit()
+    except BaseException:
         try:
-            archive_name, repack, results = \
-            _retrieval(
-                # Firefly Interface
-                exoplanet, 
-                sigma=sigma,
-                curve_sample=curve_sample,
-                clean=clean,
-                cache=cache,
-                auto=auto,
-                # TransitFit Variables
-                cutoff=cutoff,
-                window=window,
-                nlive=nlive,
-                fit_ttv=fit_ttv,
-                detrending_list=detrending_list,
-                dynesty_sample=dynesty_sample,
-                fitting_mode=fitting_mode, 
-                limb_darkening_model=limb_darkening_model, 
-                ld_fit_method=ld_fit_method,
-                max_batch_parameters=max_batch_parameters, 
-                batch_overlap=batch_overlap, 
-                dlogz=dlogz, 
-                maxiter=maxiter, 
-                maxcall=maxcall, 
-                dynesty_bounding=dynesty_bounding, 
-                normalise=normalise, 
-                detrend=detrend
-            )
-            success = f'{os.getcwd()}/firefly/{archive_name}.gz.tar'
-            print(f'\nData location: {success}\n'
-                    'A new target has been fully retrieved across ' +
-                    'all available TESS Sectors.')
-            if email == True:
-                exo_folder = f'firefly/{exoplanet}'
-                _email(
-                f'Success: {exoplanet}',
-                f'Data location: {success} <br><br>'
-                f'Priors from the Archive for {exoplanet}:<br>' +
-                repack.to_html(float_format=lambda x: '%10.5f' % x) + '<br>'
-                'TransitFit Complete Results:<br>' +
-                results.to_html(float_format=lambda x: '%10.5f' % x) + '<br>'
-                'Variables used:<br><br>'
-                f'target={exoplanet}<br>'
-                f'curve_sample={str(curve_sample)}<br>'
-                f'clean={clean}<br>'
-                f'cache={cache}<br>'
-                f'cutoff={str(cutoff)}<br>'
-                f'window={str(window)}<br>'
-                f'nlive={str(nlive)}<br>'
-                f'fit_ttv={fit_ttv}<br>'
-                f'detrending_list={str(detrending_list)}<br>'
-                f'dynesty_sample={dynesty_sample}<br>'
-                f'fitting_mode={fitting_mode}<br>'
-                f'limb_darkening_model={limb_darkening_model}<br>'
-                f'ld_fit_method={ld_fit_method}<br>'
-                f'max_batch_parameters={str(max_batch_parameters)}<br>'
-                f'batch_overlap={str(batch_overlap)}<br>'
-                f'dlogz={str(dlogz)}<br>'
-                f'maxiter={str(maxiter)}<br>'
-                f'maxcall={str(maxcall)}<br>'
-                f'dynesty_bounding={dynesty_bounding}<br>'
-                f'normalise={normalise}<br>'
-                f'detrend={detrend}',
-                to=to)
-        except KeyboardInterrupt:
             exo_folder = f'firefly/{exoplanet}'
             now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
-            keyboard = f'firefly/KeyboardInterrupt/{exoplanet} ' +\
-                       f'{now} KeyboardInterrupt'
-            make_archive(keyboard, format='gztar',
+            exception = f'firefly/Exception/{exoplanet} ' +\
+                        f'{now} Exception'
+            trace_back = format_exc()
+            print(trace_back, file=open(exo_folder+'/traceback.txt', 'w'))
+            print(
+                'Variables used:\n\n'
+                f'target={exoplanet}\n'
+                f'curve_sample={str(curve_sample)}\n'
+                f'clean={clean}\n'
+                f'cache={cache}\n'
+                f'cutoff={str(cutoff)}\n'
+                f'window={str(window)}\n'
+                f'nlive={str(nlive)}\n'
+                f'fit_ttv={fit_ttv}\n'
+                f'detrending_list={str(detrending_list)}\n'
+                f'dynesty_sample={dynesty_sample}\n'
+                f'fitting_mode={fitting_mode}\n'
+                f'limb_darkening_model={limb_darkening_model}\n'
+                f'ld_fit_method={ld_fit_method}\n'
+                f'max_batch_parameters={str(max_batch_parameters)}\n'
+                f'batch_overlap={str(batch_overlap)}\n'
+                f'dlogz={str(dlogz)}\n'
+                f'maxiter={str(maxiter)}\n'
+                f'maxcall={str(maxcall)}\n'
+                f'dynesty_bounding={dynesty_bounding}\n'
+                f'normalise={normalise}\n'
+                f'detrend={detrend}',
+                file=open(exo_folder+'/variables.txt', 'w')
+            )
+            make_archive(exception, format='gztar',
                      root_dir=f'{os.getcwd()}/firefly/',
                      base_dir=f'{exoplanet}')
             rmtree(exo_folder)
-            raise
-            sys.exit()
-        except BaseException:
-            try:
-                exo_folder = f'firefly/{exoplanet}'
-                now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
-                exception = f'firefly/Exception/{exoplanet} ' +\
-                            f'{now} Exception'
-                trace_back = format_exc()
-                print(trace_back, file=open(exo_folder+'/traceback.txt', 'w'))
-                print(
-                    'Variables used:\n\n'
-                    f'target={exoplanet}\n'
-                    f'curve_sample={str(curve_sample)}\n'
-                    f'clean={clean}\n'
-                    f'cache={cache}\n'
-                    f'cutoff={str(cutoff)}\n'
-                    f'window={str(window)}\n'
-                    f'nlive={str(nlive)}\n'
-                    f'fit_ttv={fit_ttv}\n'
-                    f'detrending_list={str(detrending_list)}\n'
-                    f'dynesty_sample={dynesty_sample}\n'
-                    f'fitting_mode={fitting_mode}\n'
-                    f'limb_darkening_model={limb_darkening_model}\n'
-                    f'ld_fit_method={ld_fit_method}\n'
-                    f'max_batch_parameters={str(max_batch_parameters)}\n'
-                    f'batch_overlap={str(batch_overlap)}\n'
-                    f'dlogz={str(dlogz)}\n'
-                    f'maxiter={str(maxiter)}\n'
-                    f'maxcall={str(maxcall)}\n'
-                    f'dynesty_bounding={dynesty_bounding}\n'
-                    f'normalise={normalise}\n'
-                    f'detrend={detrend}',
-                    file=open(exo_folder+'/variables.txt', 'w')
-                )
-                make_archive(exception, format='gztar',
-                         root_dir=f'{os.getcwd()}/firefly/',
-                         base_dir=f'{exoplanet}')
-                rmtree(exo_folder)
-                if email == True:
-                    _email(f'Exception: {exoplanet}', trace_back, to=to)
-            except:
-                pass
+            if email == True:
+                _email(f'Exception: {exoplanet}', trace_back, to=to)
+        except:
+            pass
