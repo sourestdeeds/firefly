@@ -187,9 +187,9 @@ def _download_archive():
             print(f'Caching the {i.upper()} Exoplanet Archive.')
             df = read_csv(download_link)
             df.to_csv(csv, index=False)
-        ten_days_ago = datetime.now() - timedelta(days=2)
+        two_days_ago = datetime.now() - timedelta(days=2)
         filetime = datetime.fromtimestamp(os.path.getctime(csv))
-        if filetime < ten_days_ago:
+        if filetime < two_days_ago:
             print(f'{i.upper()} Archive is 2 days old. Updating.')
             df = read_csv(download_link)
             df.to_csv(csv, index=False)
@@ -223,16 +223,23 @@ def estimate_t14(Rp, Rs, a, P):
     return (Rp * R_jup + Rs * R_sun)/(np.pi * a * AU) * P * 24 * 60
 
 
-def _IQR(df):
+def _IQR(df, sigma=1):
     # Only keep IQR of data
-    Q1 = df.quantile(0.25)
-    Q3 = df.quantile(0.75)
+    if sigma==1:    
+        Q1 = df.quantile(0.45)
+        Q3 = df.quantile(0.55)
+    if sigma==2:    
+        Q1 = df.quantile(0.35)
+        Q3 = df.quantile(0.65)
+    if sigma==3:    
+        Q1 = df.quantile(0.25)
+        Q3 = df.quantile(0.75)
     IQR = Q3 - Q1
     trueList = ~((df < (Q1 - 1.5 * IQR)) | (df > (Q3 + 1.5 * IQR)))
     return df[trueList]
   
     
-def priors(exoplanet, save=False, user=True):
+def priors(exoplanet, sigma=3, save=False, user=True):
     '''
     Generates priors from 4 exoplanet archives, nasa, eu, oec and exoplanets.org
 
@@ -271,7 +278,7 @@ def priors(exoplanet, save=False, user=True):
     # Fix t0 on most recent centred transit
     t0 = df['pl_tranmid'] .max()
     # Only keep IQR of data
-    df = _IQR(df)
+    df = _IQR(df, sigma=sigma)
     # Average the rest
     s = df.mean()
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
