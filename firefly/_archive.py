@@ -273,7 +273,7 @@ def priors(exoplanet, archive='eu', save=False, user=True):
         highest, ratios = _search_all(exoplanet)
         exoplanet = highest[0]
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    archive_list = [exo_nasa, exo_oec, exo_org, exo_eu]
+    archive_list = [exo_nasa, exo_org, exo_eu]
     exo_archive = concat(archive_list).set_index('pl_name')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Pick Out Chosen Exoplanet Priors
@@ -291,8 +291,8 @@ def priors(exoplanet, archive='eu', save=False, user=True):
         df = df.iloc[[-1]]
     elif archive=='nasa':
         df = df.iloc[[0]]
-    elif archive=='oec':
-        df = df.iloc[[1]]
+    # elif archive=='oec':
+    #     df = df.iloc[[1]]
     elif archive=='org':
         df = df.iloc[[2]]
     # Turn into a series
@@ -396,6 +396,8 @@ def priors(exoplanet, archive='eu', save=False, user=True):
     repack = DataFrame(cols, columns=['Parameter', 'Distribution',
                                       'Input A', 'Input B', 'Filter'])
     nan = repack.isnull().values.any()
+    if archive not in ['nasa', 'eu', 'org']:
+        archive = 'NASA'
     print(f'\nPriors generated from the {archive.upper()} Archive for'
               f' {exoplanet} ({tic}).\n')
     print(tabulate(repack, tablefmt='psql', showindex=False, headers='keys'))
