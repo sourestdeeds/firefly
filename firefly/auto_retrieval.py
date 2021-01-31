@@ -17,13 +17,9 @@ import os
 
 
 
-def _auto_input_check(targets, curve_sample, sigma):
+def _auto_input_check(targets, curve_sample):
     if not (0 < curve_sample <= 1):
         sys.exit('The curve sample must be in the range 0 < curve_sample <= 1.')
-    if not (1 <= sigma <= 3):
-        sys.exit('Please enter a value of sigma in the range of 1 to 3.')
-    if not isinstance(sigma, int):
-        sys.exit('Please enter a value of sigma as an integer in the range of 1 to 3.')
     _load_csv()
     targets = ''.join(targets)
     highest, ratios = _search(targets)
@@ -38,7 +34,7 @@ def _auto_input_check(targets, curve_sample, sigma):
 def firefly(
         # Firefly Interface
         targets,
-        sigma=3,
+        archive='eu',
         curve_sample=1, 
         email=False,
         to=['transitfit.server@gmail.com'], 
@@ -136,10 +132,9 @@ def firefly(
         
         will fit using only 1 lightcurve from each sector. 
         The default is 1 to fit all lightcurves across all sectors.
-    sigma : int, optional
-        Takes either 1, 2 or 3 as an int input. Defines how much of the central
-        data to keep. 3 sigma keeps the most, 1 discards major outliers.
-        The default is 3.
+    archive : str, {'eu', 'nasa', 'oec', 'org'}
+        The archive to generate priors from.
+        The default is 'eu'.
     email : bool, optional
         If True will send status emails. The default is False.
     to : str, optional
@@ -322,13 +317,13 @@ def firefly(
     >>> firefly/WASP-43 b timestamp.gz.tar
 
     '''
-    exoplanet = _auto_input_check(targets, curve_sample=curve_sample, sigma=sigma)
+    exoplanet = _auto_input_check(targets, curve_sample=curve_sample)
     try:
         archive_name, repack, results = \
         _retrieval(
             # Firefly Interface
             exoplanet, 
-            sigma=sigma,
+            archive=archive,
             curve_sample=curve_sample,
             clean=clean,
             cache=cache,
@@ -367,6 +362,7 @@ def firefly(
             results.to_html(float_format=lambda x: '%10.5f' % x) + '<br>'
             'Variables used:<br><br>'
             f'target={exoplanet}<br>'
+            f'archive={str(archive)}<br>'
             f'curve_sample={str(curve_sample)}<br>'
             f'clean={clean}<br>'
             f'cache={cache}<br>'
@@ -410,6 +406,7 @@ def firefly(
             print(
                 'Variables used:\n\n'
                 f'target={exoplanet}\n'
+                f'archive={str(archive)}\n'
                 f'curve_sample={str(curve_sample)}\n'
                 f'clean={clean}\n'
                 f'cache={cache}\n'
