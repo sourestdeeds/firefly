@@ -53,10 +53,10 @@ def _load_csv():
                      'eccentricity', 'inclination', 'tzero_tr', 'star_teff',
                      'star_teff_error_max', 'star_radius',
                      'star_radius_error_max', 'star_mass',
-                     'star_metallicity', 'star_metallicity_error_max']
+                     'star_metallicity', 'star_metallicity_error_max', 'omega']
     exo_eu = read_csv(eu_csv, usecols=col_subset_eu)
     exo_eu.columns = ['pl_name', 'pl_radj', 'pl_orbper', 'pl_orbsmax',
-                      'pl_orbeccen', 'pl_orbincl', 'pl_tranmid', 'st_met',
+                      'pl_orbeccen', 'pl_orbincl', 'pl_orblper', 'pl_tranmid', 'st_met',
                       'st_meterr1', 'st_mass','st_rad',
                       'st_raderr1', 'st_teff', 'st_tefferr1']
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -262,23 +262,28 @@ def priors(exoplanet, sigma=3, save=False, user=True):
         exoplanet = highest[0]
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Read in nasa.csv
-    archive_list = [exo_nasa, exo_eu, exo_oec, exo_org]
-    exo_archive = concat(archive_list).set_index('pl_name')
+        archive_list = [exo_nasa, exo_eu, exo_oec, exo_org]
+        exo_archive = concat(archive_list).set_index('pl_name')
+    else:
+        archive_list = [exo_eu]
+        exo_archive = concat(archive_list).set_index('pl_name')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Pick Out Chosen Exoplanet Priors
     try:
         df = DataFrame(exo_archive).loc[[exoplanet]]
     except KeyError:
         sys.exit('The chosen target is either spelt incorrectly, or does not '
-                 'exist in the NASA archive.')
+                 'exist in the EU archive.')
     try:
-        tic = df['tic_id'] .drop_duplicates() .dropna()[0]
+        df_nasa = exo_nasa.set_index('pl_name').loc[[exoplanet]]
+        tic = df_nasa['tic_id'] .drop_duplicates() .dropna()[0]
     except IndexError:
         tic = 'N/A'
     # Fix t0 on most recent centred transit
     t0 = df['pl_tranmid'] .max()
     # Only keep IQR of data
-    df = _IQR(df, sigma=sigma)
+    if user==True:
+        df = _IQR(df, sigma=sigma)
     # Average the rest
     s = df.mean()
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -294,11 +299,16 @@ def priors(exoplanet, sigma=3, save=False, user=True):
     z = s.loc['st_met']
     zerr =  s.loc['st_meterr1']
     ms = s.loc['st_mass']
-    logg = s.loc['st_logg']
-    loggerr = s.loc['st_loggerr1']
     T = s.loc['st_teff']
     Terr =  s.loc['st_tefferr1']
-    t14 = s.loc['pl_trandur'] * 60
+    # try:
+    #     t14 = s.loc['pl_trandur'] * 60
+    #     logg = s.loc['st_logg']
+    #     loggerr = s.loc['st_loggerr1']
+    # except Exception:
+    logg = float('nan')
+    loggerr = float('nan')
+    t14 = float('nan')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Assign Host data to Transitfit
     host_T = (T, Terr)
@@ -379,8 +389,12 @@ def priors(exoplanet, sigma=3, save=False, user=True):
     repack = DataFrame(cols, columns=['Parameter', 'Distribution',
                                       'Input A', 'Input B', 'Filter'])
     nan = repack.isnull().values.any()
-    print('\nPriors generated from the NASA, EU, OEC and ORG Archives for'
-          f' {exoplanet} ({tic}).\n')
+    if user==False:
+        print('\nPriors generated from the EU Archive for'
+              f' {exoplanet} ({tic}).\n')
+    else:
+        print('\nPriors generated from the NASA, EU, OEC and ORG Archives for'
+                  f' {exoplanet} ({tic}).\n')
     print(tabulate(repack, tablefmt='psql', showindex=False, headers='keys'))
     if user==False:
         return host_T, host_z, host_r, host_logg, t0, P, t14, nan, repack
