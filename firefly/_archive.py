@@ -268,7 +268,7 @@ def priors(exoplanet, sigma=3, save=False, user=True):
         archive_list = [exo_nasa, exo_eu, exo_oec, exo_org]
         exo_archive = concat(archive_list).set_index('pl_name')
     else:
-        archive_list = [exo_eu]
+        archive_list = [exo_nasa, exo_eu]
         exo_archive = concat(archive_list).set_index('pl_name')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Pick Out Chosen Exoplanet Priors
@@ -278,10 +278,11 @@ def priors(exoplanet, sigma=3, save=False, user=True):
         sys.exit('The chosen target is either spelt incorrectly, or does not '
                  'exist in the EU archive.')
     try:
-        df_nasa = exo_nasa.set_index('pl_name').loc[[exoplanet]]
-        tic = df_nasa['tic_id'] .drop_duplicates() .dropna()[0]
+        tic = df['tic_id'] .drop_duplicates() .dropna()[0]
     except IndexError:
         tic = 'N/A'
+    # Use EU Archive from here on.
+    df = df.iloc[[-1]]
     # Fix t0 on most recent centred transit
     t0 = df['pl_tranmid'] .max()
     # Only keep IQR of data
