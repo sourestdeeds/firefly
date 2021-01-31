@@ -177,9 +177,12 @@ def _download_archive():
         'oec_tables/master/comma_separated/open_exoplanet_catalogue.txt',
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # ORG
-        'http://exoplanets.org/csv-files/exoplanets.csv'
+        'http://exoplanets.org/csv-files/exoplanets.csv',
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        # TEP
+        'https://www.astro.keele.ac.uk/jkt/tepcat/allplanets-csv.csv'
     ]
-    archive = ['nasa', 'eu', 'oec', 'org']
+    archive = ['nasa', 'eu', 'oec', 'org', 'tep']
     for i, download_link in enumerate(download_links):
         i = archive[i]
         csv = f'firefly/data/{i}.csv.gz'
