@@ -237,13 +237,13 @@ def estimate_t14(Rp, Rs, a, P):
 
 def _IQR(df, sigma=1):
     # Only keep IQR of data
-    if sigma==1:    
+    if sigma==1:
         Q1 = df.quantile(0.45)
         Q3 = df.quantile(0.55)
-    if sigma==2:    
+    if sigma==2:
         Q1 = df.quantile(0.35)
         Q3 = df.quantile(0.65)
-    if sigma==3:    
+    if sigma==3:
         Q1 = df.quantile(0.25)
         Q3 = df.quantile(0.75)
     IQR = Q3 - Q1
@@ -273,7 +273,7 @@ def priors(exoplanet, archive='eu', save=False, user=True):
         highest, ratios = _search_all(exoplanet)
         exoplanet = highest[0]
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    archive_list = [exo_nasa, exo_org, exo_eu]
+    archive_list = [exo_nasa, exo_org, exo_oec, exo_eu]
     exo_archive = concat(archive_list).set_index('pl_name')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Pick Out Chosen Exoplanet Priors
@@ -297,10 +297,14 @@ def priors(exoplanet, archive='eu', save=False, user=True):
         df = df.iloc[[2]]
     # Turn into a series
     s = df.iloc[0]
+    t0 = s.loc['pl_tranmid']
+    if archive=='all':
+        df = _IQR(df, sigma=1)
+        t0 = df['pl_tranmid'].max()
+        s = df.mean()
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Values for calculation
     P = s.loc['pl_orbper']
-    t0 = s.loc['pl_tranmid']
     a = s.loc['pl_orbsmax']
     i = s.loc['pl_orbincl']
     w = s.loc['pl_orblper']
@@ -396,9 +400,13 @@ def priors(exoplanet, archive='eu', save=False, user=True):
     repack = DataFrame(cols, columns=['Parameter', 'Distribution',
                                       'Input A', 'Input B', 'Filter'])
     nan = repack.isnull().values.any()
-    if archive not in ['nasa', 'eu', 'org']:
+    if archive=='all':
+        print(f'\nPriors generated from the NASA, EU, OEC and ORG Archives for'
+              f' {exoplanet} ({tic}).\n')
+    elif archive not in ['nasa', 'eu', 'org']:
         archive = 'NASA'
-    print(f'\nPriors generated from the {archive.upper()} Archive for'
+    else:
+        print(f'\nPriors generated from the {archive.upper()} Archive for'
               f' {exoplanet} ({tic}).\n')
     print(tabulate(repack, tablefmt='psql', showindex=False, headers='keys'))
     if user==False:
