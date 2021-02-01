@@ -132,8 +132,9 @@ def firefly(
         
         will fit using only 1 lightcurve from each sector. 
         The default is 1 to fit all lightcurves across all sectors.
-    archive : str, {'eu', 'nasa', 'org'}
-        The archive to generate priors from.
+    archive : str, {'eu', 'nasa', 'org', 'all'}
+        The archive to generate priors from. All takes the IQR of all
+        archives (including OEC) and then the mean.
         The default is 'eu'.
     email : bool, optional
         If True will send status emails. The default is False.
