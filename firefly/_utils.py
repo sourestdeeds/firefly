@@ -294,10 +294,11 @@ def _retrieval(
         file=open(exo_folder+'/variables.txt', 'w')
     )
     now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
-    data = {'Exoplanet':exoplanet, 'Transits':int(len(df)), 'P':P, 'Perr':Perr, 't0':t0, 't0err':t0err,
+    data = {'Exoplanet':exoplanet, 'P':P, 'Perr':Perr, 't0':t0, 't0err':t0err,
             'a/AU':a, 'aerr':aerr, 'rp':rp, 'rperr':rperr, 'inc':inc,
-            'incerr':incerr, 'ecc':ecc,'eccerr':eccerr,
-            'w':w, 'werr':werr, 'Date':now}
+            'incerr':incerr, 'ecc':ecc, 'eccerr':eccerr,
+            'w':w, 'werr':werr, 'Transits':int(len(df)),
+            'Date':now, 'Archive':archive.upper()}
     df = DataFrame(data, index=[0])
     summary_master = 'firefly/data/summary_master.csv'
     if fit_ttv==False:
