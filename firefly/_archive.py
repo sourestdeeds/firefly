@@ -259,9 +259,9 @@ def priors(exoplanet, archive='eu', save=False, user=True):
     ----------
     exoplanet : str, 'wasp43b'
         The exoplanet to create a prior object for.
-    archive : str, {'eu', 'nasa', 'org', 'all'}
-        The archive to generate priors from. All takes the IQR of all
-        archives (including OEC) and then the mean.
+    archive : str, {'eu', 'nasa', 'org', 'all'}	
+        The archive to generate priors from. All takes the IQR of all	
+        archives (including OEC) and then the mean.	
         The default is 'eu'.
     save : bool, optional
         Internal use only. The default is False.
@@ -368,9 +368,9 @@ def priors(exoplanet, archive='eu', save=False, user=True):
             ['a', 'gaussian', a, a * 1e-2, ''],
             ['inc', 'gaussian', i, i * 1e-2, ''],
             ['w', ['fixed' if (w==90 or w==0) else 'gaussian'][0], w,
-             ['' if (w==90 or w==0) else np.abs(w * 1e-2)][0], ''],
+             ['' if (w==90 or w==0) else np.abs(w * 0.5)][0], ''],
             ['ecc', ['fixed' if ecc==0 else 'gaussian'][0], ecc,
-             ['' if ecc==0 else ecc * 1e-2][0], ''],
+             ['' if ecc==0 else ecc * 0.5][0], ''],
             ['rp', 'uniform',
              0.9 * radius_const * rp / rs,
              1.1 * radius_const * rp / rs, 0]]
@@ -391,9 +391,9 @@ def priors(exoplanet, archive='eu', save=False, user=True):
             ['a', 'gaussian', a, a * 1e-2, ''],
             ['inc', 'gaussian', i, i * 1e-2, ''],
             ['w', ['fixed' if (w==90 or w==0) else 'gaussian'][0], w,
-             ['' if (w==90 or w==0) else np.abs(w * 1e-2)][0], ''],
+             ['' if (w==90 or w==0) else np.abs(w * 0.5)][0], ''],
             ['ecc', ['fixed' if ecc==0 else 'gaussian'][0], ecc,
-             ['' if ecc==0 else ecc * 1e-2][0], ''],
+             ['' if ecc==0 else ecc * 0.5][0], ''],
             ['rp', 'uniform',
              0.9 * radius_const * rp / rs,
              1.1 * radius_const * rp / rs, 0],
