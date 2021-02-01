@@ -300,17 +300,18 @@ def _retrieval(
             'w':w, 'werr':werr, 'Date':now}
     df = DataFrame(data, index=[0])
     summary_master = 'firefly/data/summary_master.csv'
-    if not os.path.exists(summary_master):
-        df.to_csv(summary_master, index=False)
-    else:
-        add = read_csv(summary_master)
-        add = add.append(df)
-        add['Exoplanet'] = \
-            Categorical(add['Exoplanet'],
-            ordered=True,
-            categories=natsorted(add['Exoplanet'].unique()))
-        add = add.sort_values('Exoplanet')
-        add .to_csv(summary_master, index=False)
+    if fit_ttv==False:
+        if not os.path.exists(summary_master):
+            df.to_csv(summary_master, index=False)
+        else:
+            add = read_csv(summary_master)
+            add = add.append(df)
+            add['Exoplanet'] = \
+                Categorical(add['Exoplanet'],
+                ordered=True,
+                categories=natsorted(add['Exoplanet'].unique()))
+            add = add.sort_values('Exoplanet')
+            add .to_csv(summary_master, index=False)
     if clean==True:
         rmtree(f'{exo_folder}/output_parameters/quicksaves')
         rmtree(f'{exo_folder}/output_parameters/filter_0_parameters/quicksaves')
