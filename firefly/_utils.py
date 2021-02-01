@@ -262,10 +262,10 @@ def _retrieval(
         werr = float()
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Cleanup
-    if clean == True:
-        rmtree(f'{exo_folder}/mastDownload')
-        os.remove(data)
-        os.remove(priors)
+    # if clean == True:
+    #     rmtree(f'{exo_folder}/mastDownload')
+    #     os.remove(data)
+    #     os.remove(priors)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Archive and sort
     print(
