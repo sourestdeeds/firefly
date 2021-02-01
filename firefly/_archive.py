@@ -303,7 +303,7 @@ def priors(exoplanet, archive='eu', save=False, user=True):
     s = df.iloc[0]
     t0 = s.loc['pl_tranmid']
     if archive=='all':
-        df = _IQR(df, sigma=1)
+        df = _IQR(df, sigma=3)
         t0 = df['pl_tranmid'].max()
         s = df.mean()
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
