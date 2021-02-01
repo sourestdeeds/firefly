@@ -259,6 +259,10 @@ def priors(exoplanet, archive='eu', save=False, user=True):
     ----------
     exoplanet : str, 'wasp43b'
         The exoplanet to create a prior object for.
+    archive : str, {'eu', 'nasa', 'org', 'all'}
+        The archive to generate priors from. All takes the IQR of all
+        archives (including OEC) and then the mean.
+        The default is 'eu'.
     save : bool, optional
         Internal use only. The default is False.
     user : bool, optional
