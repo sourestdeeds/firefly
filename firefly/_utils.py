@@ -77,7 +77,7 @@ def _fits(exoplanet, exo_folder, cache):
     for j, fitsfile in enumerate(lc_links):
         with fits.open(fitsfile, cache=cache) as TESS_fits:
             time = TESS_fits[1].data['TIME'] + 2457000
-            time += TESS_fits[1].data['TIMECORR']
+            # time += TESS_fits[1].data['TIMECORR']
             flux = TESS_fits[1].data['PDCSAP_FLUX']
             flux_err = TESS_fits[1].data['PDCSAP_FLUX_ERR']
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
