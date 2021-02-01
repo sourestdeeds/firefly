@@ -34,7 +34,7 @@ def _email(subject, body, to):
     email['To'] = to
     email.set_content(body, subtype='html')
     #email.add_alternative(args, kw)
-    #email.add_attachment()  
+    #email.add_attachment()
     try:
         with SMTP_SSL('smtp.gmail.com', 465) as s:
             s.login(username, password)
@@ -99,7 +99,7 @@ def _fits(exoplanet, exo_folder, cache):
         fitsname.append(fitsfile[-55:])
         sector_list.append(int(fitsfile[-36:-32]))
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # Print search result 
+    # Print search result
     tess_sector = [f'TESS Sector {str(sector)}' for sector in sector_list]
     _ = {'Sector':tess_sector, 'Product':fitsname}
     df = DataFrame(_)
@@ -117,27 +117,27 @@ def _retrieval(
         # Firefly Interface
         exoplanet,
         archive='eu',
-        curve_sample=1, 
+        curve_sample=1,
         clean=False,
         cache=False,
         auto=True,
         # TransitFit Variables
-        cutoff=0.25, 
+        cutoff=0.25,
         window=2.5,
-        nlive=300, 
-        fit_ttv=False, 
+        nlive=300,
+        fit_ttv=False,
         detrending_list=[['nth order', 2]],
-        dynesty_sample='auto', 
+        dynesty_sample='auto',
         fitting_mode='auto',
-        limb_darkening_model='quadratic', 
+        limb_darkening_model='quadratic',
         ld_fit_method='independent',
-        max_batch_parameters=25, 
-        batch_overlap=2, 
-        dlogz=None, 
-        maxiter=None, 
-        maxcall=None, 
-        dynesty_bounding='multi', 
-        normalise=True, 
+        max_batch_parameters=25,
+        batch_overlap=2,
+        dlogz=None,
+        maxiter=None,
+        maxcall=None,
+        dynesty_bounding='multi',
+        normalise=True,
         detrend=True
 ):
     
@@ -166,7 +166,7 @@ def _retrieval(
     split_curve_in_dir = []
     csv_in_dir = _fits(exoplanet, exo_folder, cache)
     for i, csvfile in enumerate(csv_in_dir):
-        split_curves = split_lightcurve_file(csvfile, t0=t0, P=P, t14=t14, 
+        split_curves = split_lightcurve_file(csvfile, t0=t0, P=P, t14=t14,
                                              cutoff=cutoff, window=window)
         split_curves = [s + '.csv' for s in split_curves]
         split_curve_in_dir.append(split_curves)
@@ -181,7 +181,7 @@ def _retrieval(
     split_curve_in_dir = random.sample(split_curve_in_dir, k=int(curves))
     split_curve_in_dir = natsorted(split_curve_in_dir)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # Set the Data Paths     
+    # Set the Data Paths
     data_path = f'{exo_folder}/data_paths.csv'
     cols = ['Path', 'Telescope', 'Filter', 'Epochs', 'Detrending']
     df = DataFrame(columns=cols)
@@ -205,27 +205,27 @@ def _retrieval(
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Run the retrieval
     run_retrieval(
-            data, 
-            priors_csv, 
-            filters, 
-            host_T=host_T, 
-            host_logg=host_logg, 
-            host_z=host_z, 
+            data,
+            priors_csv,
+            filters,
+            host_T=host_T,
+            host_logg=host_logg,
+            host_z=host_z,
             host_r=host_r,
             nlive=nlive,
             fit_ttv=fit_ttv,
             detrending_list=detrending_list,
             dynesty_sample=dynesty_sample,
-            fitting_mode=fitting_mode, 
-            limb_darkening_model=limb_darkening_model, 
+            fitting_mode=fitting_mode,
+            limb_darkening_model=limb_darkening_model,
             ld_fit_method=ld_fit_method,
-            max_batch_parameters=max_batch_parameters, 
-            batch_overlap=batch_overlap, 
-            dlogz=dlogz, 
-            maxiter=maxiter, 
-            maxcall=maxcall, 
-            dynesty_bounding=dynesty_bounding, 
-            normalise=normalise, 
+            max_batch_parameters=max_batch_parameters,
+            batch_overlap=batch_overlap,
+            dlogz=dlogz,
+            maxiter=maxiter,
+            maxcall=maxcall,
+            dynesty_bounding=dynesty_bounding,
+            normalise=normalise,
             detrend=detrend,
             results_output_folder=results_output_folder,
             final_lightcurve_folder=fitted_lightcurve_folder,
@@ -244,20 +244,20 @@ def _retrieval(
         Perr = float()
     t0 = master['Best'].iloc[1]
     t0err = float(master['Error'].iloc[1])
-    a = master['Best'].iloc[2]
-    aerr = float(master['Error'].iloc[2])
-    rp = master['Best'].iloc[3]
-    rperr = float(master['Error'].iloc[3])
-    inc = master['Best'].iloc[4]
-    incerr = float(master['Error'].iloc[4])
-    ecc = master['Best'].iloc[5]
+    a = master['Best'].iloc[3]
+    aerr = float(master['Error'].iloc[3])
+    rp = master['Best'].iloc[4]
+    rperr = float(master['Error'].iloc[4])
+    inc = master['Best'].iloc[5]
+    incerr = float(master['Error'].iloc[5])
+    ecc = master['Best'].iloc[6]
     try:
-        eccerr = float(master['Error'].iloc[5])
+        eccerr = float(master['Error'].iloc[6])
     except ValueError:
         eccerr = float()
-    w = master['Best'].iloc[6]
+    w = master['Best'].iloc[7]
     try:
-        werr = float(master['Error'].iloc[6])
+        werr = float(master['Error'].iloc[7])
     except ValueError:
         werr = float()
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -295,8 +295,8 @@ def _retrieval(
     )
     now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
     data = {'Exoplanet':exoplanet, 'Transits':int(len(df)), 'P':P, 'Perr':Perr, 't0':t0, 't0err':t0err,
-            'a/r*':a, 'aerr':aerr, 'rp':rp, 'rperr':rperr, 'inc':inc,
-            'incerr':incerr, 'ecc':ecc,'eccerr':eccerr, 
+            'a/AU':a, 'aerr':aerr, 'rp':rp, 'rperr':rperr, 'inc':inc,
+            'incerr':incerr, 'ecc':ecc,'eccerr':eccerr,
             'w':w, 'werr':werr, 'Date':now}
     df = DataFrame(data, index=[0])
     summary_master = 'firefly/data/summary_master.csv'
@@ -306,12 +306,12 @@ def _retrieval(
         add = read_csv(summary_master)
         add = add.append(df)
         add['Exoplanet'] = \
-            Categorical(add['Exoplanet'], 
-            ordered=True, 
+            Categorical(add['Exoplanet'],
+            ordered=True,
             categories=natsorted(add['Exoplanet'].unique()))
         add = add.sort_values('Exoplanet')
         add .to_csv(summary_master, index=False)
-    if clean==True:   
+    if clean==True:
         rmtree(f'{exo_folder}/output_parameters/quicksaves')
         rmtree(f'{exo_folder}/output_parameters/filter_0_parameters/quicksaves')
     archive_name = f'{exoplanet} {now}'
