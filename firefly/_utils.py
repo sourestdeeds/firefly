@@ -116,7 +116,7 @@ def _fits(exoplanet, exo_folder, cache):
 def _retrieval(
         # Firefly Interface
         exoplanet,
-        sigma=3,
+        archive='eu',
         curve_sample=1, 
         clean=False,
         cache=False,
@@ -148,15 +148,8 @@ def _retrieval(
     _TESS_filter()
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Download Archive
-    try:
-        host_T, host_z, host_r, host_logg, t0, P, t14, nan, repack = \
-                            priors(exoplanet, sigma=sigma, save=True, user=False)
-    except Exception:
-        archive = ['nasa', 'eu', 'oec', 'org']
-        for i, file in enumerate(archive):
-            os.remove(f'firefly/data/{file}.csv.gz')
-        host_T, host_z, host_r, host_logg, t0, P, t14, nan, repack = \
-                            priors(exoplanet, sigma=sigma, save=True, user=False)
+    host_T, host_z, host_r, host_logg, t0, P, t14, nan, repack = \
+        priors(exoplanet, archive=archive, save=True, user=False)
     if auto==False:
         answer = ''
         while answer!='y':
