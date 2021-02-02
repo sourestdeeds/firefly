@@ -475,13 +475,13 @@ def gen_tess_viable(archive='eu'):
     epochs = []
     tic = []
     for i, exoplanet in enumerate(exo_list):
-        lc_links, tic_id = _lc(exoplanet)
-        is_nan = _check_nan(exoplanet, archive)
-        if (len(lc_links)==0 or is_nan):
-            pass
-        else:
-            print(f'{exoplanet} viable.')
-            try:
+        try:
+            lc_links, tic_id = _lc(exoplanet)
+            is_nan = _check_nan(exoplanet, archive)
+            if (len(lc_links)==0 or is_nan):
+                pass
+            else:
+                print(f'{exoplanet} viable.')
                 host_T, host_z, host_r, host_logg, t0, P, t14, nan, repack = \
                                         priors(exoplanet, archive, user=False)
                 epoch = ceil((0.8 * 27.4 / P) * len(lc_links))
@@ -490,8 +490,8 @@ def gen_tess_viable(archive='eu'):
                 products.append(len(lc_links))
                 period.append(P)
                 epochs.append(epoch)
-            except Exception:
-                pass
+        except Exception:
+            pass
     data = {'Exoplanet':viable, 'TIC ID':tic, 'Products':products, 'Period':period,
             'Epochs':epochs}
     df = DataFrame(data)
