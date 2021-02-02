@@ -294,13 +294,15 @@ def _retrieval(
         file=open(exo_folder+'/variables.txt', 'w')
     )
     now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
-    data = {'Exoplanet':exoplanet, 'P':P, 'Perr':Perr, 't0':t0, 't0err':t0err,
-            'a/AU':a, 'aerr':aerr, 'rp':rp, 'rperr':rperr, 'inc':inc,
-            'incerr':incerr, 'ecc':ecc, 'eccerr':eccerr,
-            'w':w, 'werr':werr, 'Transits':int(len(df)),
+    data = {'pl_name':exoplanet, 'pl_orbper':P, 'pl_orbpererr1':Perr,
+            'pl_trandur':t0, 'pl_trandurerr1':t0err,
+            'pl_orbsmax':a, 'pl_orbsmaxerr1':aerr, 'pl_radj':rp,
+            'pl_radjerr1':rperr, 'pl_orbincl':inc,
+            'pl_orbinclerr1':incerr, 'pl_orbeccen':ecc, 'pl_orbeccenerr1':eccerr,
+            'pl_orblper':w, 'pl_orblpererr1':werr, 'Transits':int(len(df)),
             'Date':now, 'Archive':archive.upper()}
     df = DataFrame(data, index=[0])
-    summary_master = 'firefly/data/summary_master.csv'
+    summary_master = 'firefly/data/spear.csv'
     if fit_ttv==False:
         if not os.path.exists(summary_master):
             df.to_csv(summary_master, index=False)
