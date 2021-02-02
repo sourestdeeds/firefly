@@ -259,9 +259,9 @@ def priors(exoplanet, archive='eu', save=False, user=True):
     ----------
     exoplanet : str, 'wasp43b'
         The exoplanet to create a prior object for.
-    archive : str, {'eu', 'nasa', 'org', 'all'}	
-        The archive to generate priors from. All takes the IQR of all	
-        archives (including OEC) and then the mean.	
+    archive : str, {'eu', 'nasa', 'org', 'all'}
+        The archive to generate priors from. All takes the IQR of all
+        archives (including OEC) and then the mean.
         The default is 'eu'.
     save : bool, optional
         Internal use only. The default is False.
@@ -277,7 +277,7 @@ def priors(exoplanet, archive='eu', save=False, user=True):
         highest, ratios = _search_all(exoplanet)
         exoplanet = highest[0]
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    archive_list = [exo_nasa, exo_org, exo_oec, exo_eu]
+    archive_list = [exo_nasa, exo_eu, exo_org, exo_oec]
     exo_archive = concat(archive_list)
     exo_archive = exo_archive[exo_archive['pl_name'].notna()]
     exo_archive['pl_name'] = \
@@ -300,10 +300,10 @@ def priors(exoplanet, archive='eu', save=False, user=True):
     except IndexError:
         tic = 'N/A'
     # Choose Archive
-    if archive=='eu':
-        df = df.iloc[[-1]]
-    elif archive=='nasa':
+    if archive=='nasa':
         df = df.iloc[[0]]
+    elif archive=='eu':
+        df = df.iloc[[1]]
     # elif archive=='oec':
     #     df = df.iloc[[1]]
     elif archive=='org':
@@ -426,7 +426,7 @@ def priors(exoplanet, archive='eu', save=False, user=True):
         return host_T, host_z, host_r, host_logg, t0, P, t14, nan, repack
 
 
-def tess_viable(k=10, survey=None):
+def tess_viable(k=10, archive='eu', survey=None):
     '''
     Currently there are 420 tess targets with full prior and lightcurve sets.
 
@@ -444,7 +444,7 @@ def tess_viable(k=10, survey=None):
 
     '''
     here = os.path.dirname(os.path.abspath(__file__))
-    tess = f'{here}/data/Filters/tess_viable.csv'
+    tess = f'{here}/data/Filters/{archive}_tess_viable.csv'
     tess_ttv = f'{here}/data/Filters/tess_ttv_viable.csv'
     targets = read_csv(tess)['Exoplanet']
     ttv_targets = read_csv(tess_ttv)['Exoplanet']
@@ -461,33 +461,38 @@ def tess_viable(k=10, survey=None):
     return targets, all_targets, ttv_targets
 
 
-def gen_tess_viable():
+def gen_tess_viable(archive='eu'):
     _download_archive()
     _load_csv()
     exo_list = exo_nasa[['pl_name', 'tic_id']] \
               .dropna() .drop_duplicates('pl_name') \
               .drop(['tic_id'], axis=1) .values .tolist()
     exo_list = [j for i in exo_list for j in i]
-    
+    exo_list = natsorted(exo_list)
     viable = []
     products = []
     period = []
     epochs = []
+    tic = []
     for i, exoplanet in enumerate(exo_list):
         lc_links, tic_id = _lc(exoplanet)
-        is_nan = _check_nan(exoplanet)
+        is_nan = _check_nan(exoplanet, archive)
         if (len(lc_links)==0 or is_nan):
             pass
         else:
             print(f'{exoplanet} viable.')
-            host_T, host_z, host_r, host_logg, t0, P, t14, nan, repack = \
-                                                priors(exoplanet, user=False)
-            epoch = ceil((0.8 * 27.4 / P) * len(lc_links))
-            viable.append(exoplanet)
-            products.append(len(lc_links))
-            period.append(P)
-            epochs.append(epoch)
-    data = {'Exoplanet':viable, 'Products':products, 'Period':period,
+            try:
+                host_T, host_z, host_r, host_logg, t0, P, t14, nan, repack = \
+                                        priors(exoplanet, archive, user=False)
+                epoch = ceil((0.8 * 27.4 / P) * len(lc_links))
+                viable.append(exoplanet)
+                tic.append(tic_id)
+                products.append(len(lc_links))
+                period.append(P)
+                epochs.append(epoch)
+            except Exception:
+                pass
+    data = {'Exoplanet':viable, 'TIC ID':tic, 'Products':products, 'Period':period,
             'Epochs':epochs}
     df = DataFrame(data)
     df['Exoplanet'] = \
@@ -496,7 +501,7 @@ def gen_tess_viable():
             categories=natsorted(df['Exoplanet'].unique()))
     df = df.sort_values('Exoplanet')
     here = os.path.dirname(os.path.abspath(__file__))
-    df.to_csv(f'{here}/data/Filters/tess_viable.csv', index=False)
+    df.to_csv(f'{here}/data/Filters/{archive}_tess_viable.csv', index=False)
 
 
 
@@ -539,12 +544,12 @@ def gen_tess_viable_ttv():
     df.to_csv(f'{here}/data/Filters/tess_ttv_viable.csv', index=False)
     
     
-def _check_nan(exoplanet, printing=False):
+def _check_nan(exoplanet, archive, printing=False):
     if printing == False:
         with suppress_print():
-            nan = priors(exoplanet, user=False)
+            nan = priors(exoplanet, archive, user=False)
             nan = nan[7]
     elif printing == True:
-        nan = priors(exoplanet, user=False)
+        nan = priors(exoplanet, archive, user=False)
         nan = nan[7]
     return nan
