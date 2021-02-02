@@ -17,7 +17,7 @@ import os
 
 
 
-def _auto_input_check(targets, curve_sample):
+def _auto_input_check(targets, archive, curve_sample):
     if not (0 < curve_sample <= 1):
         sys.exit('The curve sample must be in the range 0 < curve_sample <= 1.')
     _load_csv()
@@ -25,7 +25,7 @@ def _auto_input_check(targets, curve_sample):
     highest, ratios = _search(targets)
     exoplanet = highest[0]
     print(f'Target search chose {exoplanet}.')
-    nan = _check_nan(exoplanet)
+    nan = _check_nan(exoplanet, archive)
     if nan == True:
         sys.exit(f'Skipping {exoplanet} due to missing prior data.')
     return exoplanet
@@ -318,7 +318,7 @@ def firefly(
     >>> firefly/WASP-43 b timestamp.gz.tar
 
     '''
-    exoplanet = _auto_input_check(targets, curve_sample=curve_sample)
+    exoplanet = _auto_input_check(targets, archive, curve_sample=curve_sample)
     try:
         archive_name, repack, results = \
         _retrieval(
