@@ -370,6 +370,8 @@ def priors(exoplanet, archive='eu', save=False, user=True):
         logg, err_logg = calculate_logg((ms, ms * 1e-2), (rs, rs * 1e-2))
         host_logg = (logg, err_logg)
     # z
+    if (np.isnan(zerr) and z!=0):
+        host_z = (z, 0.1)
     if (np.isnan(z) or z==0):
         host_z = (0, 0.1)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
