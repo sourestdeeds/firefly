@@ -1,22 +1,37 @@
-from firefly import firefly
-from sys import argv
+from firefly import tess, firefly
+from subprocess import run
+from multiprocessing import Pool
+import sys
+import os
+
+
+class suppress_print():
+    def __enter__(self):
+        self.original_stdout = sys.stdout
+        sys.stdout = open(os.devnull, 'w')
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        sys.stdout.close()
+        sys.stdout = self.original_stdout
+        
 
 def main(exoplanet):
-    firefly(
+    with suppress_print():
+        firefly(
         # Firefly Interface
         exoplanet,
         archive='eu',
         curve_sample=1,
         email=False,
         to=['transitfit.server@gmail.com'],
-        clean=False,
+        clean=True,
         cache=False,
         auto=True,
         # TransitFit Variables
         cutoff=0.25,
-        window=2,
+        window=2.5,
         nlive=1000,
-        fit_ttv=True,
+        fit_ttv=False,
         detrending_list=[['nth order', 2]],
         dynesty_sample='rslice',
         fitting_mode='folded',
@@ -32,4 +47,10 @@ def main(exoplanet):
         detrend=True
     )
 
-main(argv[1:])
+targets, all_targets, ttv_targets = tess(archive='eu', survey='WASP')
+all_targets = ['wasp126b', 'lhs1815b', 'kepler42c', 'wasp119b', 'toi157b',
+               'wasp18b', 'hip65ab', 'l9859b', 'gj1252b', 'wasp62b']
+
+if __name__ == '__main__':
+    with Pool(processes=2) as pool:
+        pool.map(main, all_targets)
