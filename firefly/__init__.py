@@ -73,4 +73,4 @@ name = 'firefly'
 __version__ = '0.7.7'
 
 from .auto_retrieval import firefly
-from ._archive import priors, tess_viable, gen_tess_viable, gen_tess_viable_ttv
+from ._archive import priors, tess, gen_tess, gen_tess_viable_ttv
