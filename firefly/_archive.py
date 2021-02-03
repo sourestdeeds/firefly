@@ -281,16 +281,16 @@ def priors(exoplanet, archive='eu', save=False, user=True):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     archive_list = [exo_nasa, exo_eu, exo_org, exo_oec]
     exo_archive = concat(archive_list).set_index('pl_name')
-    if archive =='all':
-        exo_archive = concat(archive_list)
-        exo_archive = exo_archive[exo_archive['pl_name'].notna()]
-        exo_archive['pl_name'] = \
-            Categorical(exo_archive['pl_name'],
-            ordered=True,
-            categories=natsorted(exo_archive['pl_name'].unique()))
-        exo_archive = exo_archive.sort_values('pl_name').set_index('pl_name')
-        exo = exo_archive.mean(axis=0, level=0)
-        exo.to_csv('firefly/data/all.csv.gz')
+    # if archive =='all':
+    #     exo_archive = concat(archive_list)
+    #     exo_archive = exo_archive[exo_archive['pl_name'].notna()]
+    #     exo_archive['pl_name'] = \
+    #         Categorical(exo_archive['pl_name'],
+    #         ordered=True,
+    #         categories=natsorted(exo_archive['pl_name'].unique()))
+    #     exo_archive = exo_archive.sort_values('pl_name').set_index('pl_name')
+    #     exo = exo_archive.mean(axis=0, level=0)
+    #     exo.to_csv('firefly/data/all.csv.gz')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Pick Out Chosen Exoplanet Priors
     try:
