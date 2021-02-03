@@ -7,7 +7,7 @@ Automated version of retrieval.
 """
 
 from ._utils import _email, _retrieval
-from ._archive import _check_nan, _search, _load_csv
+from ._archive import _search, _load_csv
 
 from datetime import datetime
 from shutil import rmtree, make_archive
@@ -17,7 +17,7 @@ import os
 
 
 
-def _auto_input_check(targets, archive, curve_sample):
+def _auto_input_check(targets, curve_sample):
     if not (0 < curve_sample <= 1):
         sys.exit('The curve sample must be in the range 0 < curve_sample <= 1.')
     _load_csv()
@@ -25,9 +25,6 @@ def _auto_input_check(targets, archive, curve_sample):
     highest, ratios = _search(targets)
     exoplanet = highest[0]
     print(f'Target search chose {exoplanet}.')
-    nan = _check_nan(exoplanet, archive)
-    if nan == True:
-        sys.exit(f'Skipping {exoplanet} due to missing prior data.')
     return exoplanet
 
 
@@ -35,29 +32,29 @@ def firefly(
         # Firefly Interface
         targets,
         archive='eu',
-        curve_sample=1, 
+        curve_sample=1,
         email=False,
-        to=['transitfit.server@gmail.com'], 
+        to=['transitfit.server@gmail.com'],
         clean=False,
         cache=False,
         auto=True,
         # TransitFit Variables
         cutoff=0.25,
         window=2.5,
-        nlive=1000, 
+        nlive=1000,
         fit_ttv=False,
         detrending_list=[['nth order', 2]],
-        dynesty_sample='rslice', 
+        dynesty_sample='rslice',
         fitting_mode='folded',
-        limb_darkening_model='quadratic', 
+        limb_darkening_model='quadratic',
         ld_fit_method='coupled',
-        max_batch_parameters=25, 
-        batch_overlap=2, 
-        dlogz=None, 
-        maxiter=None, 
-        maxcall=None, 
-        dynesty_bounding='multi', 
-        normalise=True, 
+        max_batch_parameters=25,
+        batch_overlap=2,
+        dlogz=None,
+        maxiter=None,
+        maxcall=None,
+        dynesty_bounding='multi',
+        normalise=True,
         detrend=True
 ):
     '''
@@ -74,25 +71,25 @@ def firefly(
              firefly(targets)
      
     - Targets passed are corrected for basic user input; 'wasp43b' is
-      interpreted as 'WASP-43 b'. List must be of the form given in the 
+      interpreted as 'WASP-43 b'. List must be of the form given in the
       example below.
-    - Initial checks for targets from the exoplanet archive are then taken 
-      to ascertain 
-      whether the prior data extracted has entries in all columns. If there 
-      are missing entries for a given target in the list, the user will be 
+    - Initial checks for targets from the exoplanet archive are then taken
+      to ascertain
+      whether the prior data extracted has entries in all columns. If there
+      are missing entries for a given target in the list, the user will be
       asked whether to proceed.
-    - Iteratively takes the targets given and employs TransitFit across each 
+    - Iteratively takes the targets given and employs TransitFit across each
       TESS sector for every exoplanet in the list given.
     - All available split curves are fitted with TransitFit, then the results
-      are then zipped up and time stamped. Optionally sends an email upon an 
+      are then zipped up and time stamped. Optionally sends an email upon an
       error or full completion of a target.
-    - Email is also disabled by default. If enabled, status updates on 
-      completion and exceptions with the full traceback are sent. 
+    - Email is also disabled by default. If enabled, status updates on
+      completion and exceptions with the full traceback are sent.
       
     Background tasks for feeding data to TransitFit include:
     
     - Set the filter path to the TESS Filter.
-    - Download EU/NASA exoplanet archive data every 10 days 
+    - Download EU/NASA exoplanet archive data every 10 days
       (checks the file age).
     - Download MAST lightcurve data for target TESS Sectors.
     - Split the lightcurves into seperate transits or epochs.
@@ -105,7 +102,7 @@ def firefly(
     
         >>> ('wasp43b', 'WASp18b', 'wasP91--b') etc
         
-    Forces corrections based on classifier: 
+    Forces corrections based on classifier:
     
         >>> 'WASP', 'LTT', 'GJ' etc
     
@@ -123,14 +120,14 @@ def firefly(
         
         will fit half the curves extracted. The formula for this works as:
             
-        >>> total_curves = 
+        >>> total_curves =
             curves_extracted * curve_sample
         
         Always returns an int. For example:
             
         >>> curve_sample = 0.001
         
-        will fit using only 1 lightcurve from each sector. 
+        will fit using only 1 lightcurve from each sector.
         The default is 1 to fit all lightcurves across all sectors.
     archive : str, {'eu', 'nasa', 'org', 'all'}
         The archive to generate priors from. All takes the IQR of all
@@ -153,16 +150,16 @@ def firefly(
         before proceeding.
         The default is True.
     cutoff : float, optional
-        If there are no data within 
+        If there are no data within
         
-        >>> t14 * cutoff of t0, 
+        >>> t14 * cutoff of t0,
         
         a period will be
         discarded. Default is 0.25
     window : float, optional
-        Data outside of the range 
+        Data outside of the range
         
-        >>> [t0 ± (0.5 * t14) * window] 
+        >>> [t0 ± (0.5 * t14) * window]
         
         will be discarded.
     nlive : int, optional
@@ -193,27 +190,27 @@ def firefly(
                 # do something
            
         and a should be fitted globally, then the entry in the method_list
-        would be 
+        would be
         
         - ['custom', foo, [1], [], []].
     dynesty_sample : str, optional
         Method used to sample uniformly within the likelihood constraint,
         conditioned on the provided bounds. Unique methods available are:
             
-        - uniform sampling within the bounds('unif') 
-        - random walks with fixed proposals ('rwalk') 
-        - random walks with variable ("staggering") proposals ('rstagger') 
-        - multivariate slice sampling along preferred orientations ('slice') 
-        - "random" slice sampling along all orientations ('rslice') 
-        - "Hamiltonian" slices along random trajectories ('hslice') 
+        - uniform sampling within the bounds('unif')
+        - random walks with fixed proposals ('rwalk')
+        - random walks with variable ("staggering") proposals ('rstagger')
+        - multivariate slice sampling along preferred orientations ('slice')
+        - "random" slice sampling along all orientations ('rslice')
+        - "Hamiltonian" slices along random trajectories ('hslice')
         and any callable function which follows
         the pattern of the sample methods defined in dynesty.sampling.
         'auto' selects the sampling method based on the dimensionality of
-        the problem (from ndim). 
+        the problem (from ndim).
         - When ndim < 10, this defaults to 'unif'.
-        - When 10 <= ndim <= 20, this defaults to 'rwalk'. 
-        - When ndim > 20, this defaults to 'hslice' if a gradient is provided 
-          and 'slice' otherwise. 
+        - When 10 <= ndim <= 20, this defaults to 'rwalk'.
+        - When ndim > 20, this defaults to 'hslice' if a gradient is provided
+          and 'slice' otherwise.
         - 'rstagger' and 'rslice' are provided as alternatives for
           'rwalk' and 'slice', respectively. Default is 'auto'.
     fitting_mode : {`'auto'`, `'all'`, `'folded'`, `'batched'`}, optional
@@ -287,7 +284,7 @@ def firefly(
         
         where z is the current evidence
         from all saved samples and z_est is the estimated contribution from
-        the remaining volume. The default is 
+        the remaining volume. The default is
         
         >>> 1e-3 * (nlive - 1) + 0.01.
     maxiter : int or `None`, optional
@@ -318,12 +315,12 @@ def firefly(
     >>> firefly/WASP-43 b timestamp.gz.tar
 
     '''
-    exoplanet = _auto_input_check(targets, archive, curve_sample=curve_sample)
+    exoplanet = _auto_input_check(targets, curve_sample=curve_sample)
     try:
         archive_name, repack, results = \
         _retrieval(
             # Firefly Interface
-            exoplanet, 
+            exoplanet,
             archive=archive,
             curve_sample=curve_sample,
             clean=clean,
@@ -336,16 +333,16 @@ def firefly(
             fit_ttv=fit_ttv,
             detrending_list=detrending_list,
             dynesty_sample=dynesty_sample,
-            fitting_mode=fitting_mode, 
-            limb_darkening_model=limb_darkening_model, 
+            fitting_mode=fitting_mode,
+            limb_darkening_model=limb_darkening_model,
             ld_fit_method=ld_fit_method,
-            max_batch_parameters=max_batch_parameters, 
-            batch_overlap=batch_overlap, 
-            dlogz=dlogz, 
-            maxiter=maxiter, 
-            maxcall=maxcall, 
-            dynesty_bounding=dynesty_bounding, 
-            normalise=normalise, 
+            max_batch_parameters=max_batch_parameters,
+            batch_overlap=batch_overlap,
+            dlogz=dlogz,
+            maxiter=maxiter,
+            maxcall=maxcall,
+            dynesty_bounding=dynesty_bounding,
+            normalise=normalise,
             detrend=detrend
         )
         success = f'{os.getcwd()}/firefly/{archive_name}.gz.tar'
