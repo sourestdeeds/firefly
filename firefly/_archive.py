@@ -20,6 +20,8 @@ import sys
 import os
 
 
+class NaNError(Exception):
+    pass
 
 class suppress_print():
     def __enter__(self):
@@ -415,8 +417,7 @@ def priors(exoplanet, archive='eu', save=False, user=True):
                                       'Input A', 'Input B', 'Filter'])
     is_nan = repack.isnull().values.any()
     if is_nan:
-        print(f'Skipping {exoplanet} due to missing prior data.')
-        sys.exit()
+        raise NaNError(f'Skipping {exoplanet} due to missing prior data.')
     if archive=='all':
         print(f'\nPriors generated from the NASA, EU, OEC and ORG Archives for'
               f' {exoplanet} ({tic}).\n')
@@ -475,19 +476,18 @@ def gen_tess(archive='eu'):
     tic = []
     for i, exoplanet in enumerate(exo_list):
         try:
+            host_T, host_z, host_r, host_logg, t0, P, t14, repack = \
+                            priors(exoplanet, archive, user=False)
             lc_links, tic_id = _lc(exoplanet)
-            if len(lc_links)==0:
-                pass
-            else:
-                print(f'{exoplanet} viable.')
-                host_T, host_z, host_r, host_logg, t0, P, t14, repack = \
-                                        priors(exoplanet, archive, user=False)
+            if not len(lc_links)==0:
                 epoch = ceil((0.8 * 27.4 / P) * len(lc_links))
                 viable.append(exoplanet)
                 tic.append(tic_id)
                 products.append(len(lc_links))
                 period.append(P)
                 epochs.append(epoch)
+            else:
+                pass
         except Exception:
             pass
     data = {'Exoplanet':viable, 'TIC ID':tic, 'Products':products, 'Period':period,
@@ -503,7 +503,7 @@ def gen_tess(archive='eu'):
 
 
 
-def gen_tess_viable_ttv():
+def gen_tess_ttv():
     _download_archive()
     _load_csv()
     ttv_list = exo_nasa[['pl_name', 'tic_id', 'ttv_flag']]
@@ -516,20 +516,23 @@ def gen_tess_viable_ttv():
     products_ttv = []
     period_ttv = []
     epochs_ttv = []
+    tic = []
     for i, exoplanet in enumerate(ttv_list):
-        lc_links, tic_id = _lc(exoplanet)
-        is_nan = _check_nan(exoplanet)
-        if (len(lc_links)==0 or is_nan):
+        try:
+            host_T, host_z, host_r, host_logg, t0, P, t14, repack = \
+                            priors(exoplanet, archive, user=False)
+            lc_links, tic_id = _lc(exoplanet)
+            if not len(lc_links)==0:
+                epoch = ceil((0.8 * 27.4 / P) * len(lc_links))
+                viable_ttv.append(exoplanet)
+                tic.append(tic_id)
+                products_ttv.append(len(lc_links))
+                period_ttv.append(P)
+                epochs_ttv.append(epoch)
+            else:
+                pass
+        except Exception:
             pass
-        else:
-            print(f'{exoplanet} viable.')
-            host_T, host_z, host_r, host_logg, t0, P, t14, nan, repack = \
-                                            priors(exoplanet, user=False)
-            epoch_ttv = ceil((0.8 * 27.4 / P) * len(lc_links))
-            viable_ttv.append(exoplanet)
-            products_ttv.append(len(lc_links))
-            period_ttv.append(P)
-            epochs_ttv.append(epoch_ttv)
     data = {'Exoplanet':viable_ttv, 'Products':products_ttv,
             'Period':period_ttv, 'Epochs':epochs_ttv}
     df = DataFrame(data)
