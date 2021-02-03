@@ -1,5 +1,4 @@
 from firefly import tess, firefly
-from subprocess import run
 from multiprocessing import Pool
 import sys
 import os
