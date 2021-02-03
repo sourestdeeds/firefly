@@ -148,7 +148,7 @@ def _retrieval(
     _TESS_filter()
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Download Archive
-    host_T, host_z, host_r, host_logg, t0, P, t14, nan, repack = \
+    host_T, host_z, host_r, host_logg, t0, P, t14, repack = \
         priors(exoplanet, archive=archive, save=True, user=False)
     if auto==False:
         answer = ''
@@ -309,11 +309,11 @@ def _retrieval(
         else:
             add = read_csv(summary_master)
             add = add.append(df)
-            add['Exoplanet'] = \
-                Categorical(add['Exoplanet'],
+            add['pl_name'] = \
+                Categorical(add['pl_name'],
                 ordered=True,
-                categories=natsorted(add['Exoplanet'].unique()))
-            add = add.sort_values('Exoplanet')
+                categories=natsorted(add['pl_name'].unique()))
+            add = add.sort_values('pl_name')
             add .to_csv(summary_master, index=False)
     if clean==True:
         rmtree(f'{exo_folder}/output_parameters/quicksaves')
