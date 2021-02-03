@@ -426,7 +426,7 @@ def priors(exoplanet, archive='eu', save=False, user=True):
         return host_T, host_z, host_r, host_logg, t0, P, t14, nan, repack
 
 
-def tess_viable(k=10, archive='eu', survey=None):
+def tess(k=10, archive='eu', survey=None):
     '''
     Currently there are 420 tess targets with full prior and lightcurve sets.
 
@@ -461,7 +461,7 @@ def tess_viable(k=10, archive='eu', survey=None):
     return targets, all_targets, ttv_targets
 
 
-def gen_tess_viable(archive='eu'):
+def gen_tess(archive='eu'):
     _download_archive()
     _load_csv()
     exo_list = exo_nasa[['pl_name', 'tic_id']] \
