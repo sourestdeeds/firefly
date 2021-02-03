@@ -278,14 +278,15 @@ def priors(exoplanet, archive='eu', save=False, user=True):
         exoplanet = highest[0]
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     archive_list = [exo_nasa, exo_eu, exo_org, exo_oec]
-    exo_archive = concat(archive_list)
-    exo_archive = exo_archive[exo_archive['pl_name'].notna()]
-    exo_archive['pl_name'] = \
+    exo_archive = concat(archive_list).set_index('pl_name')
+    if archive =='all':
+        exo_archive = concat(archive_list)
+        exo_archive = exo_archive[exo_archive['pl_name'].notna()]
+        exo_archive['pl_name'] = \
             Categorical(exo_archive['pl_name'],
             ordered=True,
             categories=natsorted(exo_archive['pl_name'].unique()))
-    exo_archive = exo_archive.sort_values('pl_name').set_index('pl_name')
-    if archive =='all':
+        exo_archive = exo_archive.sort_values('pl_name').set_index('pl_name')
         exo = exo_archive.mean(axis=0, level=0)
         exo.to_csv('firefly/data/all.csv.gz')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -312,8 +313,8 @@ def priors(exoplanet, archive='eu', save=False, user=True):
     s = df.iloc[0]
     t0 = s.loc['pl_tranmid']
     if archive=='all':
-        df = _IQR(df, sigma=3)
         t0 = df['pl_tranmid'].max()
+        df = _IQR(df, sigma=3)
         s = df.mean()
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Values for calculation
@@ -412,7 +413,10 @@ def priors(exoplanet, archive='eu', save=False, user=True):
             ['host_logg', 'fixed', host_logg[0], host_logg[1], '']]
     repack = DataFrame(cols, columns=['Parameter', 'Distribution',
                                       'Input A', 'Input B', 'Filter'])
-    nan = repack.isnull().values.any()
+    #is_nan = repack.isnull().values.any()
+    #if is_nan:
+    #    print(f'Skipping {exoplanet} due to missing prior data.')
+    #    sys.exit(f'Skipping {exoplanet} due to missing prior data.')
     if archive=='all':
         print(f'\nPriors generated from the NASA, EU, OEC and ORG Archives for'
               f' {exoplanet} ({tic}).\n')
@@ -423,10 +427,10 @@ def priors(exoplanet, archive='eu', save=False, user=True):
               f' {exoplanet} ({tic}).\n')
     print(tabulate(repack, tablefmt='psql', showindex=False, headers='keys'))
     if user==False:
-        return host_T, host_z, host_r, host_logg, t0, P, t14, nan, repack
+        return host_T, host_z, host_r, host_logg, t0, P, t14, repack
 
 
-def tess(k=10, archive='eu', survey=None):
+def tess(archive='eu', survey=None):
     '''
     Currently there are 420 tess targets with full prior and lightcurve sets.
 
@@ -453,11 +457,6 @@ def tess(k=10, archive='eu', survey=None):
         ttv_targets = [s for s in ttv_targets if survey in s]
     all_targets = natsorted(targets)
     ttv_targets = natsorted(ttv_targets)
-    try:
-        targets = random.sample(targets, k=k)
-    except ValueError:
-        k = len(targets)
-        targets = random.sample(targets, k=k)
     return targets, all_targets, ttv_targets
 
 
@@ -477,12 +476,11 @@ def gen_tess(archive='eu'):
     for i, exoplanet in enumerate(exo_list):
         try:
             lc_links, tic_id = _lc(exoplanet)
-            is_nan = _check_nan(exoplanet, archive)
-            if (len(lc_links)==0 or is_nan):
+            if len(lc_links)==0:
                 pass
             else:
                 print(f'{exoplanet} viable.')
-                host_T, host_z, host_r, host_logg, t0, P, t14, nan, repack = \
+                host_T, host_z, host_r, host_logg, t0, P, t14, repack = \
                                         priors(exoplanet, archive, user=False)
                 epoch = ceil((0.8 * 27.4 / P) * len(lc_links))
                 viable.append(exoplanet)
@@ -543,13 +541,3 @@ def gen_tess_viable_ttv():
     here = os.path.dirname(os.path.abspath(__file__))
     df.to_csv(f'{here}/data/Filters/tess_ttv_viable.csv', index=False)
     
-    
-def _check_nan(exoplanet, archive, printing=False):
-    if printing == False:
-        with suppress_print():
-            nan = priors(exoplanet, archive, user=False)
-            nan = nan[7]
-    elif printing == True:
-        nan = priors(exoplanet, archive, user=False)
-        nan = nan[7]
-    return nan
