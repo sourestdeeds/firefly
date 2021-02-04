@@ -158,6 +158,18 @@ def _lc(exoplanet):
     return lc_links, tic_id
 
 
+def tess_candidate(count=18):
+    '''
+    Finds all candidate links with 18 sector observations.
+
+    '''
+    df = mast.sort_values('links').reset_index()
+    df = df.groupby(df.links.str[-30:-15].astype('int32')).size().reset_index(name='Products')
+    df = df.loc[df['Products']==count]
+    df = df.rename(columns={'links':'TIC ID'})
+    df.to_csv('firefly/data/{count}_sector_candidates.csv', index=False)
+    
+
 def _download_archive():
     os.makedirs('firefly/data', exist_ok=True)
     download_links = [ \
