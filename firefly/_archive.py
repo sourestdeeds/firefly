@@ -135,6 +135,29 @@ def _tic(exoplanet):
     tic_id = target['tic_id'] .values .tolist()[0]
     return tic_id
 
+def _pl(tic_id):
+    '''
+    Returns a dataframe of all planet names and tic ID's.
+
+    Returns
+    -------
+    Planet name corresponding to tic_id
+    '''
+    df = exo_nasa[['pl_name','tic_id']].dropna() \
+        .sort_values('pl_name')
+    df['tic_id'] = df['tic_id'].str[3:]
+    df['tic_id'] = df['tic_id'].astype(int)
+    df = df.set_index('tic_id')
+    try:
+        target = df.loc[[tic_id]]
+    except KeyError:
+        target = ''
+    try:
+        exoplanet = target['pl_name'] .values .tolist()[0]
+    except Exception:
+        exoplanet = ''
+    return exoplanet
+
 
 def _lc(exoplanet):
     '''
@@ -158,16 +181,20 @@ def _lc(exoplanet):
     return lc_links, tic_id
 
 
-def tess_candidate(count=18):
+def tess_candidate():
     '''
-    Finds all candidate links with 18 sector observations.
+    Finds all candidate tic_ids and groups by amount of sector observations.
 
     '''
-    df = mast.sort_values('links').reset_index()
-    df = df.groupby(df.links.str[-30:-15].astype('int32')).size().reset_index(name='Products')
-    df = df.loc[df['Products']==count]
-    df = df.rename(columns={'links':'TIC ID'})
-    df.to_csv('firefly/data/{count}_sector_candidates.csv', index=False)
+    for i in range(1,19):
+        count = i
+        df = mast.sort_values('links').reset_index()
+        df = df.groupby(df.links.str[-30:-15].astype(int)).size().reset_index(name='Products')
+        df = df.loc[df['Products']==count]
+        df = df.rename(columns={'links':'TIC ID'})
+        df['Exoplanet'] = df.apply(lambda row: _pl(row['TIC ID']), axis=1)
+        os.makedirs('firefly/data/candidates', exist_ok=True)
+        df.to_csv(f'firefly/data/candidates/{count}_sector_candidates.csv', index=False)
     
 
 def _download_archive():
