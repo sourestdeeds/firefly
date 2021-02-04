@@ -193,8 +193,9 @@ def tess_candidate():
         df = df.loc[df['Products']==count]
         df = df.rename(columns={'links':'TIC ID'})
         df['Exoplanet'] = df.apply(lambda row: _pl(row['TIC ID']), axis=1)
-        os.makedirs('firefly/data/candidates', exist_ok=True)
-        df.to_csv(f'firefly/data/candidates/{count}_sector_candidates.csv', index=False)
+        here = os.path.dirname(os.path.abspath(__file__))
+        os.makedirs(f'{here}/firefly/data/candidates', exist_ok=True)
+        df.to_csv(f'{here}/firefly/data/candidates/{count}_sector_candidates.csv', index=False)
     
 
 def _download_archive():
