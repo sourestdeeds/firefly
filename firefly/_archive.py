@@ -187,7 +187,7 @@ def tess_candidate():
 
     '''
     _load_csv()
-    for i in range(1,20):
+    for i in range(13,20):
         count = i
         df = mast.sort_values('links').reset_index()
         df = df.groupby(df.links.str[-30:-15].astype(int)).size().reset_index(name='Products')
@@ -195,8 +195,8 @@ def tess_candidate():
         df = df.rename(columns={'links':'TIC ID'})
         df['Exoplanet'] = df.apply(lambda row: _pl(row['TIC ID']), axis=1)
         here = os.path.dirname(os.path.abspath(__file__))
-        os.makedirs(f'{here}/firefly/data/Candidates', exist_ok=True)
-        df.to_csv(f'{here}/firefly/data/Candidates/{count}_sector_candidates.csv', index=False)
+        os.makedirs(f'{here}/data/Candidates', exist_ok=True)
+        df.to_csv(f'{here}/data/Candidates/{count}_sector_candidates.csv', index=False)
     
 
 def _download_archive():
