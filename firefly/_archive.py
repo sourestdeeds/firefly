@@ -44,7 +44,7 @@ def _load_csv():
     eu_csv = 'firefly/data/eu.csv.gz'
     oec_csv = 'firefly/data/oec.csv.gz'
     org_csv = 'firefly/data/org.csv.gz'
-    mast_csv = f'{here}/data/Filters/MAST_lc.csv.xz'
+    mast_csv = f'{here}/data/Filters/TESS_lc.csv.xz'
     global exo_nasa, exo_eu, exo_oec, exo_org, mast
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # NASA
