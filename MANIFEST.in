@@ -1,3 +1,6 @@
 include *.md
 include LICENCE.txt
+recursive-include firefly/data/Search *
+recursive-include firefly/data/Candidates *
+recursive-include firefly/data/Targets *
 recursive-include firefly/data/Filters *
