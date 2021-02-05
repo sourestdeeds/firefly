@@ -44,7 +44,7 @@ def _load_csv():
     eu_csv = 'firefly/data/eu.csv.gz'
     oec_csv = 'firefly/data/oec.csv.gz'
     org_csv = 'firefly/data/org.csv.gz'
-    mast_csv = f'{here}/data/Filters/TESS_lc.csv.xz'
+    mast_csv = f'{here}/data/Search/TESS_lc.csv.xz'
     global exo_nasa, exo_eu, exo_oec, exo_org, mast
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # NASA
@@ -186,7 +186,8 @@ def tess_candidate():
     Finds all candidate tic_ids and groups by amount of sector observations.
 
     '''
-    for i in range(1,19):
+    _load_csv()
+    for i in range(1,20):
         count = i
         df = mast.sort_values('links').reset_index()
         df = df.groupby(df.links.str[-30:-15].astype(int)).size().reset_index(name='Products')
@@ -194,8 +195,8 @@ def tess_candidate():
         df = df.rename(columns={'links':'TIC ID'})
         df['Exoplanet'] = df.apply(lambda row: _pl(row['TIC ID']), axis=1)
         here = os.path.dirname(os.path.abspath(__file__))
-        os.makedirs(f'{here}/firefly/data/candidates', exist_ok=True)
-        df.to_csv(f'{here}/firefly/data/candidates/{count}_sector_candidates.csv', index=False)
+        os.makedirs(f'{here}/firefly/data/Candidates', exist_ok=True)
+        df.to_csv(f'{here}/firefly/data/Candidates/{count}_sector_candidates.csv', index=False)
     
 
 def _download_archive():
@@ -491,8 +492,8 @@ def tess(archive='eu', survey=None):
 
     '''
     here = os.path.dirname(os.path.abspath(__file__))
-    tess = f'{here}/data/Filters/{archive}_tess_viable.csv'
-    tess_ttv = f'{here}/data/Filters/tess_ttv_viable.csv'
+    tess = f'{here}/data/Targets/{archive}_tess_viable.csv'
+    tess_ttv = f'{here}/data/Targets/tess_ttv_viable.csv'
     targets = read_csv(tess)['Exoplanet']
     ttv_targets = read_csv(tess_ttv)['Exoplanet']
     if survey != None:
@@ -541,7 +542,7 @@ def gen_tess(archive='eu'):
             categories=natsorted(df['Exoplanet'].unique()))
     df = df.sort_values('Exoplanet')
     here = os.path.dirname(os.path.abspath(__file__))
-    df.to_csv(f'{here}/data/Filters/{archive}_tess_viable.csv', index=False)
+    df.to_csv(f'{here}/data/Targets/{archive}_tess_viable.csv', index=False)
 
 
 
