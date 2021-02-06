@@ -61,6 +61,7 @@ def plot_epoch():
                     x=candidates, y = 'Epochs',
                     hue='Epochs', dodge=False)
         change_width(ax, 0.7)
-        plt.legend(title='Epochs',loc='center left', bbox_to_anchor=(1.0, 0.5))
+        ax.get_legend().remove()
+        #plt.legend(title='Epochs',loc='center left', bbox_to_anchor=(1.0, 0.5))
     plt.show()
     plt.savefig('epoch_rank.png', bbox_inches='tight')
