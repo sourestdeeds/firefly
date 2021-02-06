@@ -66,7 +66,7 @@ def plot_epoch():
         ax.text(1.05, 0.95, f'20% of \nAll Epochs \n{twenty_perc} Candidates', 
                 transform=ax.transAxes, fontsize=14,
                 verticalalignment='top', bbox=props, ha='center')
-        ax.text(1.01, 0.76, textstr, transform=ax.transAxes, fontsize=10,
+        ax.text(1.01, 0.76, textstr, transform=ax.transAxes, fontsize=12,
                 verticalalignment='top', bbox=props)
         # PLOT!
         sns.barplot(ax=ax, data=highlights, 
