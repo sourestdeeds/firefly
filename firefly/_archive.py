@@ -222,10 +222,14 @@ def _download_archive():
         '+from+pscomppars&format=csv',
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # NASA Kepler Names
-        'https://exoplanetarchive.ipac.caltech.edu/' +\
-        'TAP/sync?query=select+' +\
-        '*' +\
-        '+from+keplernames&format=csv',
+        'https://exoplanetarchive.ipac.caltech.edu/cgi-bin/' +\
+        'nstedAPI/nph-nstedAPI?' +\
+        'table=keplernames',
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        # NASA SuperWASP Names
+        #'https://exoplanetarchive.ipac.caltech.edu/cgi-bin/' +\
+        #'nstedAPI/nph-nstedAPI?' +\
+        #'table=superwasptimeseries',
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # EU
         'http://exoplanet.eu/catalog/csv',
@@ -374,21 +378,21 @@ def priors(exoplanet, archive='eu', save=False, user=True):
     ecc = s.loc['pl_orbeccen']
     rp = s.loc['pl_radj']
     rs = s.loc['st_rad']
-    rserr = s.loc['st_raderr1']
+    # rserr = s.loc['st_raderr1']
     z = s.loc['st_met']
     zerr =  s.loc['st_meterr1']
     ms = s.loc['st_mass']
     T = s.loc['st_teff']
-    Terr =  s.loc['st_tefferr1']
+    # Terr =  s.loc['st_tefferr1']
     t14 = s.loc['pl_trandur'] * 60
     logg = s.loc['st_logg']
-    loggerr = s.loc['st_loggerr1']
+    # loggerr = s.loc['st_loggerr1']
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Assign Host data to Transitfit
-    host_T = (T, Terr)
+    host_T = (T, T * 2e-2)
     host_z = (z, zerr)
-    host_r = (rs, rserr)
-    host_logg = (logg, loggerr)
+    host_r = (rs, rs * 5e-2)
+    host_logg = (logg, logg * 2e-2)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Nan checks
     # G = 6.67408e-11
@@ -418,9 +422,9 @@ def priors(exoplanet, archive='eu', save=False, user=True):
         host_logg = (logg, err_logg)
     # z
     if (np.isnan(zerr) and z!=0):
-        host_z = (z, 0.1)
+        host_z = (z, 0.05)
     if (np.isnan(z) or z==0):
-        host_z = (0, 0.1)
+        host_z = (0, 0.05)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Assign Exoplanet Priors to TransitFit
     radius_const = 0.1027626851
