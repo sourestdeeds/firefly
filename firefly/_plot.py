@@ -63,5 +63,4 @@ def plot_epoch():
         change_width(ax, 0.7)
         plt.legend(title='Epochs',loc='center left', bbox_to_anchor=(1.0, 0.5))
         plt.show()
-    
-plot_epoch()
+  
