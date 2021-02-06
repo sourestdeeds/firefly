@@ -221,6 +221,12 @@ def _download_archive():
         'pl_orbincl,pl_orblper' +\
         '+from+pscomppars&format=csv',
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        # NASA Kepler Names
+        'https://exoplanetarchive.ipac.caltech.edu/' +\
+        'TAP/sync?query=select+' +\
+        '*' +\
+        '+from+keplernames&format=csv',
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # EU
         'http://exoplanet.eu/catalog/csv',
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -234,7 +240,7 @@ def _download_archive():
         # TEP
         'https://www.astro.keele.ac.uk/jkt/tepcat/allplanets-csv.csv'
     ]
-    archive = ['nasa', 'eu', 'oec', 'org', 'tep']
+    archive = ['nasa', 'kepler', 'eu', 'oec', 'org', 'tep']
     for i, download_link in enumerate(download_links):
         i = archive[i]
         csv = f'firefly/data/{i}.csv.gz'
