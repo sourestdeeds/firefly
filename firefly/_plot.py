@@ -54,12 +54,21 @@ def plot_epoch():
                     alpha=0.5, ymin=0,ymax=0.25) for i in range(9)]
         [ax.axvline(x=i+0.45, color='k', marker=',', 
                     alpha=0.5, ymin=0.75,ymax=1) for i in range(9)]
-        [ax.text(i+0.4,total_epochs/30, 
+        [ax.text(i+0.4,total_epochs/28, 
                  f'{i+1}0% - {cumsum_cand[i]} Candidates',rotation=90) 
                  for i in range(10)]
         [ax.text(i-0.06, total_epochs/200, 
-                 str(highlights[candidates][i]),rotation=0) 
-                 for i in range(10)]
+                 str(highlights[candidates][i]),rotation=0) for i in range(10)]
+        # Top Planets
+        twenty_perc = cumsum_cand[0:2].sum()
+        textstr = '\n'.join(df['Exoplanet'][0:twenty_perc])
+        props = dict(boxstyle='round', facecolor='white', alpha=0.1)
+        ax.text(1.05, 0.95, f'20% of \nAll Epochs \n{twenty_perc} Candidates', 
+                transform=ax.transAxes, fontsize=14,
+                verticalalignment='top', bbox=props, ha='center')
+        ax.text(1.01, 0.76, textstr, transform=ax.transAxes, fontsize=10,
+                verticalalignment='top', bbox=props)
+        # PLOT!
         sns.barplot(ax=ax, data=highlights, 
                     x=candidates, y = 'Epochs', 
                     hue='Epochs', dodge=False)
