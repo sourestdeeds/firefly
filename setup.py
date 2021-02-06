@@ -39,6 +39,7 @@ setuptools.setup( name='firefly',
                                     'fuzzywuzzy',
                                     'python-Levenshtein',
                                     'natsort',
+                                    'seaborn',
                                     'transitfit'],
                   python_requires='>=3.6',
                   include_package_data=True )
