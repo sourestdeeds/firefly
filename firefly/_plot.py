@@ -22,8 +22,9 @@ def change_width(ax, new_value):
         patch.set_x(patch.get_x() + diff * .5)
 
 
-def plot_epoch():
-    fig, ax = plt.subplots(figsize=(20,25))
+def plot_epoch(sub=True):
+    if sub==True:
+        fig, ax = plt.subplots(figsize=(20,25))
     archive_list = ['eu', 'nasa', 'org', 'all']
     for i, archive in enumerate(archive_list):
         here = os.path.dirname(os.path.abspath(__file__))
@@ -51,6 +52,8 @@ def plot_epoch():
                                        np.arange(0, 1.0+0.1, 0.1))).sum()
         cumsum_cand = highlights[candidates].cumsum()
         cumsum_epochs = highlights['Epochs'].cumsum()
+        if sub==False:
+            fig, ax = plt.subplots(figsize=(20,25))
         temp = 411 + i
         ax=plt.subplot(temp)
         [ax.axvline(x=i+0.45, color='k', marker=',',
@@ -60,13 +63,13 @@ def plot_epoch():
         [ax.text(i+0.4,total_epochs/47,
                  f"{i+1}0% - {cumsum_cand[i]} Candidates - {cumsum_epochs[i]} Epochs",rotation=90)
                  for i in range(10)]
-        [ax.text(i-0.06, total_epochs/200,
+        [ax.text(i-0.06, highlights['Epochs'][i] + 5,
                  str(highlights[candidates][i]),rotation=0) for i in range(10)]
         # Top Planets
         twenty_perc = cumsum_cand[1]
         textstr = '\n'.join(df['Exoplanet'][0:twenty_perc])
         props = dict(boxstyle='round', facecolor='white', alpha=0.1)
-        ax.text(1.05, 0.95, f'20% of \nAll Epochs \n{twenty_perc} Candidates',
+        ax.text(1.06, 0.95, f'20% of \nAll Epochs \n{twenty_perc} Candidates',
                 transform=ax.transAxes, fontsize=14,
                 verticalalignment='top', bbox=props, ha='center')
         ax.text(1.01, 0.76, textstr, transform=ax.transAxes, fontsize=14,
@@ -74,13 +77,15 @@ def plot_epoch():
         # PLOT!
         sns.barplot(ax=ax, data=highlights,
                     x=candidates, y = 'Epochs',
-                    hue='Epochs', dodge=False)
+                    dodge=False, palette='rocket')
         change_width(ax, 0.7)
-        ax.get_legend().remove()
+        # ax.get_legend().remove()
         
         ax.xaxis.tick_bottom()
         column_labels = [f'{i}0 - {i+1}0%'.replace('00 - 10%', '0 - 10%') for i in range(10)]
         ax.set_xticklabels(column_labels, minor=False)
-        
-    plt.savefig('epoch_rank.jpg', bbox_inches='tight')
-    
+        if sub ==False:
+            plt.savefig(f'{archive}_epoch_rank.jpg', bbox_inches='tight')
+    if sub==True:
+        plt.savefig('epoch_rank.jpg', bbox_inches='tight')
+
