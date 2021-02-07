@@ -14,8 +14,8 @@ import matplotlib as mpl
 import seaborn as sns; sns.set_theme(style="whitegrid")
 
 
-def change_width(ax, new_value) :
-    for patch in ax.patches :
+def change_width(ax, new_value):
+    for patch in ax.patches:
         current_width = patch.get_width()
         diff = current_width - new_value
         patch.set_width(new_value)
@@ -31,9 +31,11 @@ def plot_epoch():
         .sort_values('Epochs', ascending=False).reset_index(drop=True)
         # df = pd.read_csv(f'{archive}_tess_viable.csv') \
         # .sort_values('Epochs', ascending=False).reset_index(drop=True)
+        # candidates = f'{len(df)} {archive.upper()} Archive ' +\
+        #             'Candidates Ranked by Epoch Count ' +\
+        #             f"({df['Epochs'].sum()} Total)"
         candidates = f'{len(df)} {archive.upper()} Archive ' +\
-                     'Candidates Ranked by Epoch Count ' +\
-                     f"({df['Epochs'].sum()} Total)"
+             'Candidates'
         df[candidates] = 1
         df['Candidate Cumsum'] = df[candidates].cumsum()
         total_candidates = df[candidates].sum()
@@ -45,32 +47,33 @@ def plot_epoch():
         # highlights = df.groupby('Frequency')['Exoplanet', 'Epochs']
         # .agg({'Exoplanet':'count','Epochs':'sum'})
 
-        highlights = df.groupby(pd.cut(df["Epoch Frequency"], 
+        highlights = df.groupby(pd.cut(df["Epoch Frequency"],
                                        np.arange(0, 1.0+0.1, 0.1))).sum()
         cumsum_cand = highlights[candidates].cumsum()
+        cumsum_epochs = highlights['Epochs'].cumsum()
         temp = 411 + i
         ax=plt.subplot(temp)
-        [ax.axvline(x=i+0.45, color='k', marker=',', 
-                    alpha=0.5, ymin=0,ymax=0.25) for i in range(9)]
-        [ax.axvline(x=i+0.45, color='k', marker=',', 
-                    alpha=0.5, ymin=0.75,ymax=1) for i in range(9)]
-        [ax.text(i+0.4,total_epochs/28, 
-                 f'{i+1}0% - {cumsum_cand[i]} Candidates',rotation=90) 
+        [ax.axvline(x=i+0.45, color='k', marker=',',
+                    alpha=0.5, ymin=0,ymax=0.15) for i in range(10)]
+        [ax.axvline(x=i+0.45, color='k', marker=',',
+                    alpha=0.5, ymin=0.90,ymax=1) for i in range(10)]
+        [ax.text(i+0.4,total_epochs/47,
+                 f"{i+1}0% - {cumsum_cand[i]} Candidates - {cumsum_epochs[i]} Epochs",rotation=90)
                  for i in range(10)]
-        [ax.text(i-0.06, total_epochs/200, 
+        [ax.text(i-0.06, total_epochs/200,
                  str(highlights[candidates][i]),rotation=0) for i in range(10)]
         # Top Planets
-        twenty_perc = cumsum_cand[0:2].sum()
+        twenty_perc = cumsum_cand[1]
         textstr = '\n'.join(df['Exoplanet'][0:twenty_perc])
         props = dict(boxstyle='round', facecolor='white', alpha=0.1)
-        ax.text(1.05, 0.95, f'20% of \nAll Epochs \n{twenty_perc} Candidates', 
+        ax.text(1.05, 0.95, f'20% of \nAll Epochs \n{twenty_perc} Candidates',
                 transform=ax.transAxes, fontsize=14,
                 verticalalignment='top', bbox=props, ha='center')
-        ax.text(1.01, 0.76, textstr, transform=ax.transAxes, fontsize=12,
+        ax.text(1.01, 0.76, textstr, transform=ax.transAxes, fontsize=14,
                 verticalalignment='top', bbox=props)
         # PLOT!
-        sns.barplot(ax=ax, data=highlights, 
-                    x=candidates, y = 'Epochs', 
+        sns.barplot(ax=ax, data=highlights,
+                    x=candidates, y = 'Epochs',
                     hue='Epochs', dodge=False)
         change_width(ax, 0.7)
         ax.get_legend().remove()
