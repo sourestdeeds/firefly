@@ -358,7 +358,7 @@ def firefly(
         now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
         keyboard = f'firefly/KeyboardInterrupt/{exoplanet} ' +\
                    f'{now} KeyboardInterrupt'
-        make_archive(keyboard, format='gztar',
+        make_archive(keyboard, format='zip',
                  root_dir=f'{os.getcwd()}/firefly/',
                  base_dir=f'{exoplanet}')
         rmtree(exo_folder)
@@ -377,10 +377,12 @@ def firefly(
                 'Variables used:\n\n'
                 f'target={exoplanet}\n'
                 f'archive={str(archive)}\n'
-                f'hlsp={hlsp}\n'
                 f'curve_sample={str(curve_sample)}\n'
                 f'clean={clean}\n'
                 f'cache={cache}\n'
+                f'auto={auto}\n'
+                f'hlsp={str(hlsp)}\n'
+                f'cadence={str(cadence)}\n'
                 f'cutoff={str(cutoff)}\n'
                 f'window={str(window)}\n'
                 f'nlive={str(nlive)}\n'
@@ -400,7 +402,7 @@ def firefly(
                 f'detrend={detrend}',
                 file=open(exo_folder+'/variables.txt', 'w')
             )
-            make_archive(exception, format='gztar',
+            make_archive(exception, format='zip',
                      root_dir=f'{os.getcwd()}/firefly/',
                      base_dir=f'{exoplanet}')
             rmtree(exo_folder)
