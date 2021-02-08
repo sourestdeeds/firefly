@@ -6,7 +6,7 @@ Automated version of retrieval.
 @author: Steven Charles-Mindoza
 """
 
-from ._utils import _email, _retrieval
+from ._utils import _retrieval
 from ._archive import _search, _load_csv
 
 from datetime import datetime
@@ -33,8 +33,6 @@ def firefly(
         targets,
         archive='eu',
         curve_sample=1,
-        email=False,
-        to=['transitfit.server@gmail.com'],
         clean=False,
         cache=False,
         auto=True,
@@ -136,12 +134,6 @@ def firefly(
         The archive to generate priors from. All takes the IQR of all
         archives (including OEC) and then the mean.
         The default is 'eu'.
-    email : bool, optional
-        If True will send status emails. The default is False.
-    to : str, optional
-        The email address to send status updates to.
-        
-        >>> to=['transitfit.server@gmail.com']
     clean : bool, optional
         If True will delete all downloaded files and zip outputs only.
         The default is False.
@@ -360,40 +352,6 @@ def firefly(
         print(f'\nData location: {success}\n'
                 'A new target has been fully retrieved across ' +
                 'all available TESS Sectors.')
-        if email == True:
-            exo_folder = f'firefly/{exoplanet}'
-            _email(
-            f'Success: {exoplanet}',
-            f'Data location: {success} <br><br>'
-            f'Priors from the Archive for {exoplanet}:<br>' +
-            repack.to_html(float_format=lambda x: '%10.5f' % x) + '<br>'
-            'TransitFit Complete Results:<br>' +
-            results.to_html(float_format=lambda x: '%10.5f' % x) + '<br>'
-            'Variables used:<br><br>'
-            f'target={exoplanet}<br>'
-            f'archive={str(archive)}<br>'
-            f'hlsp={hlsp}<br>'
-            f'curve_sample={str(curve_sample)}<br>'
-            f'clean={clean}<br>'
-            f'cache={cache}<br>'
-            f'cutoff={str(cutoff)}<br>'
-            f'window={str(window)}<br>'
-            f'nlive={str(nlive)}<br>'
-            f'fit_ttv={fit_ttv}<br>'
-            f'detrending_list={str(detrending_list)}<br>'
-            f'dynesty_sample={dynesty_sample}<br>'
-            f'fitting_mode={fitting_mode}<br>'
-            f'limb_darkening_model={limb_darkening_model}<br>'
-            f'ld_fit_method={ld_fit_method}<br>'
-            f'max_batch_parameters={str(max_batch_parameters)}<br>'
-            f'batch_overlap={str(batch_overlap)}<br>'
-            f'dlogz={str(dlogz)}<br>'
-            f'maxiter={str(maxiter)}<br>'
-            f'maxcall={str(maxcall)}<br>'
-            f'dynesty_bounding={dynesty_bounding}<br>'
-            f'normalise={normalise}<br>'
-            f'detrend={detrend}',
-            to=to)
     except KeyboardInterrupt:
         exo_folder = f'firefly/{exoplanet}'
         now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
@@ -405,7 +363,8 @@ def firefly(
         rmtree(exo_folder)
         raise
         sys.exit()
-    except BaseException:
+    except BaseException as e:
+        print(e)
         try:
             exo_folder = f'firefly/{exoplanet}'
             now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
@@ -444,7 +403,6 @@ def firefly(
                      root_dir=f'{os.getcwd()}/firefly/',
                      base_dir=f'{exoplanet}')
             rmtree(exo_folder)
-            if email == True:
-                _email(f'Exception: {exoplanet}', trace_back, to=to)
-        except:
+        except Exception as e:
+            print(e)
             pass
