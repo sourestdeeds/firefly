@@ -36,7 +36,7 @@ def firefly(
         curve_sample=1,
         email=False,
         to=['transitfit.server@gmail.com'],
-        clean=False,
+        clean=True,
         cache=False,
         auto=True,
         # TransitFit Variables
