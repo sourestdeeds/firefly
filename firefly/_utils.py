@@ -105,7 +105,7 @@ def _fits(exoplanet,
                          data['dataURL'][i] for i in range(len(search))]
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Dataframe Checks
-    data = data[data['t_exptime']==cadence]
+    data = data[data['t_exptime'].isin(cadence)]
     data = data[~data.dataURL.str.endswith('_dvt.fits')].reset_index(drop=True)
     provenance_name = data['provenance_name'].tolist()
     lc_links = data['dataURL'].tolist()
