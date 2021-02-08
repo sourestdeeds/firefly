@@ -6,7 +6,7 @@ The backend for auto_retrieval.
 @author: Steven Charles-Mindoza
 """
 
-from ._archive import priors, _tic
+from ._archive import priors, _tic, _load_csv, _search
 from transitfit import split_lightcurve_file, run_retrieval
 from astroquery.mast import Observations as obs
 from datetime import datetime
@@ -20,6 +20,8 @@ from math import ceil
 import sys
 import os
 import random
+
+
 
 def _TESS_filter():
     here = os.path.dirname(os.path.abspath(__file__))
@@ -37,20 +39,62 @@ def _TESS_filter():
     df.to_csv(tess_filter_path, index=False, header=True)
 
 
+def _alias(exoplanet):
+    alias = read_csv('https://exoplanetarchive.ipac.caltech.edu/cgi-bin/' +\
+        f'nstedAPI/nph-nstedAPI?table=aliastable&objname={exoplanet[:-2]}')
+    check_wasp = alias['aliasdis'][1]
+    if '1SWASP' in check_wasp:
+        return check_wasp
+    else:
+        return None
+
+def mast(exoplanet):
+    _load_csv()
+    highest, ratios = _search(exoplanet)
+    exoplanet = highest[0]
+    tic_id = _tic(exoplanet).replace('TIC ', '')
+    print(f'\nSearching MAST for {exoplanet} (TIC {tic_id}).')
+    search = obs.query_criteria(objectname=exoplanet,
+                                radius='.0002 deg',
+                                dataproduct_type=['timeseries'],
+                                project='TESS',
+                                target_name=tic_id
+                                ).to_pandas()
+    data = search[['obs_id', 'target_name', 't_exptime',
+               'provenance_name', 'project']]
+    data = data.rename(columns={"obs_id": "Product",
+                                "target_name": "TIC ID",
+                                "t_exptime": "Cadence",
+                                "provenance_name": "HLSP",
+                                "project": "Mission"})
+    data['Product'] = \
+                Categorical(data['Product'],
+                ordered=True,
+                categories=natsorted(data['Product'].unique()))
+    data = data.sort_values('Product')
+    print(f'\nQuery from MAST returned {len(search)} '
+          f'data products for {exoplanet} (TIC {tic_id}).\n')
+    return print(tabulate(data, tablefmt='psql', showindex=False, headers='keys'))
+
+
 def _fits(exoplanet,
           exo_folder,
           cache,
           hlsp=['SPOC', 'TESS-SPOC', 'TASOC'],
-          cadence=120,
+          cadence=[120],
 ):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # MAST Search
-    print(f'\nSearching MAST for {exoplanet}.')
-    search = obs.query_criteria(objectname=exoplanet, 
-                            radius='.00002 deg', 
-                            dataproduct_type=['timeseries'],
-                            project='TESS',
-                            provenance_name=hlsp).to_pandas()
+    tic_id = _tic(exoplanet).replace('TIC ', '')
+    print(f'\nSearching MAST for {exoplanet} (TIC {tic_id}).')
+    search = obs.query_criteria(objectname=exoplanet,
+                                radius='.0002 deg',
+                                dataproduct_type=['timeseries'],
+                                project='TESS',
+                                provenance_name=hlsp,
+                                t_exptime=cadence,
+                                target_name=tic_id
+                                ).to_pandas()
     if len(search)==0:
         rmtree(exo_folder)
         print(f'Search result contains no data products for {exoplanet}.')
@@ -61,17 +105,9 @@ def _fits(exoplanet,
                          data['dataURL'][i] for i in range(len(search))]
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Dataframe Checks
-    data = data[data['t_exptime']==cadence].reset_index(drop=True)
-    if len(data)==0:
-        rmtree(exo_folder)
-        print(f'Search result contains no data products for {exoplanet}.')
-        print('Cadence options are 20, 120, 600 or 1800.')
-        sys.exit(f'Search result contains no data products for {exoplanet}.')
     data = data[~data.dataURL.str.endswith('_dvt.fits')].reset_index(drop=True)
     provenance_name = data['provenance_name'].tolist()
     lc_links = data['dataURL'].tolist()
-    tic_id = _tic(exoplanet).replace('TIC ', '')
-    data = data[data['target_name'].astype(str)==tic_id].reset_index(drop=True)
     print(f'\nQuery from MAST returned {len(lc_links)} '
           f'data products for {exoplanet} (TIC {tic_id}).\n')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
