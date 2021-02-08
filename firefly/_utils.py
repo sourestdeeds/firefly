@@ -10,40 +10,16 @@ from ._archive import priors, _tic
 from transitfit import split_lightcurve_file, run_retrieval
 from astroquery.mast import Observations as obs
 from datetime import datetime
-from smtplib import SMTP_SSL
 from tabulate import tabulate
 from astropy.io import fits
 from csv import DictWriter
 from pandas import DataFrame, read_csv, Categorical
 from shutil import rmtree, make_archive
-from email.message import EmailMessage
 from natsort import natsorted
 from math import ceil
 import sys
 import os
 import random
-
-
-
-def _email(subject, body, to):
-    username = 'transitfit.server@gmail.com'
-    password = 'spearnet1!'
-    
-    email = EmailMessage()
-    email['Subject'] = subject
-    email['From'] = 'transitfit.server@gmail.com'
-    email['To'] = to
-    email.set_content(body, subtype='html')
-    #email.add_alternative(args, kw)
-    #email.add_attachment()
-    try:
-        with SMTP_SSL('smtp.gmail.com', 465) as s:
-            s.login(username, password)
-            s.send_message(email)
-    except BaseException:
-        # Continue on conn failure
-        pass
-
 
 def _TESS_filter():
     here = os.path.dirname(os.path.abspath(__file__))
