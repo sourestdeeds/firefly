@@ -353,7 +353,7 @@ def _retrieval(
         rmtree(f'{exo_folder}/output_parameters/quicksaves')
         rmtree(f'{exo_folder}/output_parameters/filter_0_parameters/quicksaves')
     sci_prod = ' '.join(hlsp)
-    archive_name = f"{exoplanet}_{archive.upper()}_{sci_prod}_{now}"
+    archive_name = f"{exoplanet} {archive.upper()} {sci_prod} {now}"
     if fit_ttv==True:
         os.makedirs('firefly/ttv', exist_ok=True)
         os.makedirs(f'firefly/ttv/{fitting_mode}', exist_ok=True)
