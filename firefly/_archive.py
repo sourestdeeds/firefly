@@ -39,12 +39,10 @@ def _load_csv():
 
     '''
     _download_archive()
-    # here = os.path.dirname(os.path.abspath(__file__))
     nasa_csv = 'firefly/data/nasa.csv.gz'
     eu_csv = 'firefly/data/eu.csv.gz'
     oec_csv = 'firefly/data/oec.csv.gz'
     org_csv = 'firefly/data/org.csv.gz'
-    # mast_csv = f'{here}/data/Search/TESS_lc.csv.xz'
     global exo_nasa, exo_eu, exo_oec, exo_org
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # NASA
@@ -83,9 +81,6 @@ def _load_csv():
                       'st_logg', 'st_loggerr1','st_mass', 'pl_name',
                       'pl_orbper', 'pl_radj', 'st_rad', 'st_raderr1', 'pl_orbsmax',
                       'st_teff', 'st_tefferr1', 'pl_tranmid']
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # MAST
-    # mast = read_csv(mast_csv)
     
 
 def _search(exoplanet):
@@ -102,7 +97,7 @@ def _search(exoplanet):
 
 def _search_all(exoplanet):
     archive_list = [exo_nasa, exo_eu, exo_oec, exo_org]
-    exo_archive = concat(archive_list)# .set_index('pl_name')
+    exo_archive = concat(archive_list)
     exo_list = exo_archive[['pl_name']] \
               .dropna() .drop_duplicates('pl_name') \
               .values .tolist()
@@ -222,14 +217,9 @@ def _download_archive():
         '+from+pscomppars&format=csv',
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # NASA Kepler Names
-        'https://exoplanetarchive.ipac.caltech.edu/cgi-bin/' +\
-        'nstedAPI/nph-nstedAPI?' +\
-        'table=keplernames',
-        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-        # NASA SuperWASP Names
-        #'https://exoplanetarchive.ipac.caltech.edu/cgi-bin/' +\
-        #'nstedAPI/nph-nstedAPI?' +\
-        #'table=superwasptimeseries',
+        # 'https://exoplanetarchive.ipac.caltech.edu/cgi-bin/' +\
+        # 'nstedAPI/nph-nstedAPI?' +\
+        # 'table=keplernames',
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # EU
         'http://exoplanet.eu/catalog/csv',
@@ -244,7 +234,7 @@ def _download_archive():
         # TEP
         'https://www.astro.keele.ac.uk/jkt/tepcat/allplanets-csv.csv'
     ]
-    archive = ['nasa', 'kepler', 'eu', 'oec', 'org', 'tep']
+    archive = ['nasa', 'eu', 'oec', 'org', 'tep']
     for i, download_link in enumerate(download_links):
         i = archive[i]
         csv = f'firefly/data/{i}.csv.gz'
