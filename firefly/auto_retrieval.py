@@ -323,12 +323,13 @@ def firefly(
             # Firefly Interface
             exoplanet,
             archive=archive,
-            hlsp=hlsp,
-            cadence=cadence,
             curve_sample=curve_sample,
             clean=clean,
             cache=cache,
             auto=auto,
+            # MAST Search
+            hlsp=hlsp,
+            cadence=cadence,
             # TransitFit Variables
             cutoff=cutoff,
             window=window,
