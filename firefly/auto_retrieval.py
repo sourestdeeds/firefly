@@ -32,6 +32,7 @@ def firefly(
         # Firefly Interface
         targets,
         archive='eu',
+        hlsp=['SPOC'],
         curve_sample=1,
         email=False,
         to=['transitfit.server@gmail.com'],
@@ -133,6 +134,9 @@ def firefly(
         The archive to generate priors from. All takes the IQR of all
         archives (including OEC) and then the mean.
         The default is 'eu'.
+    hlsp : str list, ['SPOC', 'TESS-SPOC', 'TASOC']
+        SPOC is the primary TESS mission, and the rest are HLSP.
+        The default is ['SPOC'].
     email : bool, optional
         If True will send status emails. The default is False.
     to : str, optional
@@ -322,6 +326,7 @@ def firefly(
             # Firefly Interface
             exoplanet,
             archive=archive,
+            hlsp=hlsp,
             curve_sample=curve_sample,
             clean=clean,
             cache=cache,
@@ -361,6 +366,7 @@ def firefly(
             'Variables used:<br><br>'
             f'target={exoplanet}<br>'
             f'archive={str(archive)}<br>'
+            f'hlsp={hlsp}<br>'
             f'curve_sample={str(curve_sample)}<br>'
             f'clean={clean}<br>'
             f'cache={cache}<br>'
@@ -405,6 +411,7 @@ def firefly(
                 'Variables used:\n\n'
                 f'target={exoplanet}\n'
                 f'archive={str(archive)}\n'
+                f'hlsp={hlsp}\n'
                 f'curve_sample={str(curve_sample)}\n'
                 f'clean={clean}\n'
                 f'cache={cache}\n'
