@@ -70,6 +70,10 @@ def _fits(exoplanet, exo_folder, cache, hlsp=['SPOC', 'TESS-SPOC', 'TASOC']):
                             dataproduct_type=['timeseries'],
                             project='TESS',
                             provenance_name=hlsp).to_pandas()
+    if len(search) == 0:
+        rmtree(exo_folder)
+        print(f'Search result contains no data products for {exoplanet}.')
+        sys.exit(f'Search result contains no data products for {exoplanet}.')
     data = search[['obs_id', 'target_name', 'dataURL', 't_exptime',
                    'provenance_name']]
     data['dataURL'] = ['https://mast.stsci.edu/api/v0.1/Download/file/?uri=' +\
@@ -82,10 +86,6 @@ def _fits(exoplanet, exo_folder, cache, hlsp=['SPOC', 'TESS-SPOC', 'TASOC']):
     lc_links = data['dataURL'].tolist()
     tic_id = _tic(exoplanet).replace('TIC ', '')
     data = data[data['target_name'].astype(str)==tic_id].reset_index(drop=True)
-    if len(lc_links) == 0:
-        rmtree(exo_folder)
-        print(f'Search result contains no data products for {exoplanet}.')
-        sys.exit(f'Search result contains no data products for {exoplanet}.')
     print(f'\nQuery from MAST returned {len(lc_links)} '
           f'data products for {exoplanet} (TIC {tic_id}).\n')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -350,8 +350,11 @@ def _retrieval(
             add = add.sort_values('pl_name')
             add .to_csv(summary_master, index=False)
     if clean==True:
-        rmtree(f'{exo_folder}/output_parameters/quicksaves')
-        rmtree(f'{exo_folder}/output_parameters/filter_0_parameters/quicksaves')
+        try:
+            rmtree(f'{exo_folder}/output_parameters/quicksaves')
+            rmtree(f'{exo_folder}/output_parameters/filter_0_parameters/quicksaves')
+        except Exception:
+            pass
     sci_prod = ' '.join(hlsp)
     archive_name = f"{exoplanet} {archive.upper()} {sci_prod} {now}"
     if fit_ttv==True:
