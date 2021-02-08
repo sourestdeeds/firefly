@@ -61,7 +61,12 @@ def _TESS_filter():
     df.to_csv(tess_filter_path, index=False, header=True)
 
 
-def _fits(exoplanet, exo_folder, cache, hlsp=['SPOC', 'TESS-SPOC', 'TASOC']):
+def _fits(exoplanet,
+          exo_folder,
+          cache,
+          hlsp=['SPOC', 'TESS-SPOC', 'TASOC'],
+          cadence=120,
+):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # MAST Search
     print(f'\nSearching MAST for {exoplanet}.')
@@ -70,7 +75,7 @@ def _fits(exoplanet, exo_folder, cache, hlsp=['SPOC', 'TESS-SPOC', 'TASOC']):
                             dataproduct_type=['timeseries'],
                             project='TESS',
                             provenance_name=hlsp).to_pandas()
-    if len(search) == 0:
+    if len(search)==0:
         rmtree(exo_folder)
         print(f'Search result contains no data products for {exoplanet}.')
         sys.exit(f'Search result contains no data products for {exoplanet}.')
@@ -80,7 +85,12 @@ def _fits(exoplanet, exo_folder, cache, hlsp=['SPOC', 'TESS-SPOC', 'TASOC']):
                          data['dataURL'][i] for i in range(len(search))]
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Dataframe Checks
-    data = data[data['t_exptime']!=20].reset_index(drop=True)
+    data = data[data['t_exptime']==cadence].reset_index(drop=True)
+    if len(data)==0:
+        rmtree(exo_folder)
+        print(f'Search result contains no data products for {exoplanet}.')
+        print('Cadence options are 20, 120, 600 or 1800.')
+        sys.exit(f'Search result contains no data products for {exoplanet}.')
     data = data[~data.dataURL.str.endswith('_dvt.fits')].reset_index(drop=True)
     provenance_name = data['provenance_name'].tolist()
     lc_links = data['dataURL'].tolist()
@@ -148,11 +158,13 @@ def _retrieval(
         # Firefly Interface
         exoplanet,
         archive='eu',
-        hlsp=['SPOC'],
         curve_sample=1,
         clean=False,
         cache=False,
         auto=True,
+        # MAST Search
+        hlsp=['SPOC'],
+        cadence=120,
         # TransitFit Variables
         cutoff=0.25,
         window=2.5,
@@ -196,7 +208,7 @@ def _retrieval(
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Split the Light curves
     split_curve_in_dir = []
-    csv_in_dir = _fits(exoplanet, exo_folder, cache, hlsp=hlsp)
+    csv_in_dir = _fits(exoplanet, exo_folder, cache, hlsp, cadence)
     for i, csvfile in enumerate(csv_in_dir):
         split_curves = split_lightcurve_file(csvfile, t0=t0, P=P, t14=t14,
                                              cutoff=cutoff, window=window)
