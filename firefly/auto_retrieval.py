@@ -32,13 +32,15 @@ def firefly(
         # Firefly Interface
         targets,
         archive='eu',
-        hlsp=['SPOC'],
         curve_sample=1,
         email=False,
         to=['transitfit.server@gmail.com'],
-        clean=True,
+        clean=False,
         cache=False,
         auto=True,
+        # MAST Search
+        hlsp=['SPOC'],
+        cadence=120,
         # TransitFit Variables
         cutoff=0.25,
         window=2.5,
@@ -134,9 +136,6 @@ def firefly(
         The archive to generate priors from. All takes the IQR of all
         archives (including OEC) and then the mean.
         The default is 'eu'.
-    hlsp : str list, ['SPOC', 'TESS-SPOC', 'TASOC']
-        SPOC is the primary TESS mission, and the rest are HLSP.
-        The default is ['SPOC'].
     email : bool, optional
         If True will send status emails. The default is False.
     to : str, optional
@@ -153,6 +152,12 @@ def firefly(
         If False will allow the user to modify the generated priors file
         before proceeding.
         The default is True.
+    hlsp : str list, ['SPOC', 'TESS-SPOC', 'TASOC']
+        SPOC is the primary TESS mission, and the rest are HLSP.
+        The default is ['SPOC'].
+    cadence : int
+        The exposure time. Options are 20, 120, 600 or 1800.
+        The default is 120.
     cutoff : float, optional
         If there are no data within
         
@@ -327,6 +332,7 @@ def firefly(
             exoplanet,
             archive=archive,
             hlsp=hlsp,
+            cadence=cadence,
             curve_sample=curve_sample,
             clean=clean,
             cache=cache,
