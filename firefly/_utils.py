@@ -111,6 +111,22 @@ def _fits(exoplanet,
     print(f'\nQuery from MAST returned {len(lc_links)} '
           f'data products for {exoplanet} (TIC {tic_id}).\n')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Print search result
+    show = search[['obs_id', 'target_name', 't_exptime',
+                   'provenance_name', 'project']]
+    show = show.rename(columns={"obs_id": "Product",
+                                "target_name": "TIC ID",
+                                "t_exptime": "Cadence",
+                                "provenance_name": "HLSP",
+                                "project": "Mission"})
+    show['Product'] = \
+            Categorical(show['Product'],
+            ordered=True,
+            categories=natsorted(show['Product'].unique()))
+    show = show.sort_values('Product')
+    print(tabulate(show, tablefmt='psql', showindex=False, headers='keys'))
+    print()
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Extract Time series
     csv_in_dir = []
     for j, fitsfile in enumerate(lc_links):
@@ -142,7 +158,7 @@ def _fits(exoplanet,
             write_dict.append({'Time': time[i], 'Flux': flux[i],
                                'Flux err': flux_err[i]})
         source = f'{exo_folder}/mastDownload'
-        mast_name = data['obs_id'][j] 
+        mast_name = data['obs_id'][j]
         os.makedirs(f'{source}/{mast_name}', exist_ok=True)
         csv_name = f'{source}/{mast_name}/{mast_name}.csv'
         with open(csv_name, 'w') as f:
@@ -151,12 +167,7 @@ def _fits(exoplanet,
             writer.writeheader()
             writer.writerows(write_dict)
         csv_in_dir.append(f'{os.getcwd()}/{csv_name}')
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # Print search result
-    fitsname = natsorted((data['obs_id'] + '.fits') .tolist())
-    _ = {'Product':fitsname}
-    df = DataFrame(_)
-    print(tabulate(df, tablefmt='psql', showindex=False, headers='keys'))
+        
     print('\nSplitting up the lightcurves into seperate epochs:\n')
     # csv_in_dir = []
     # for r, d, f in os.walk(source):
