@@ -43,8 +43,6 @@ from firefly import firefly
 
 firefly('wasp43b')
 ```
-
-#### Console Output
 ```
 Target search chose WASP-43 b.
 
