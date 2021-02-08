@@ -196,7 +196,7 @@ def _retrieval(
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Split the Light curves
     split_curve_in_dir = []
-    csv_in_dir = _fits(exoplanet, exo_folder, cache)
+    csv_in_dir = _fits(exoplanet, exo_folder, cache, hlsp=hlsp)
     for i, csvfile in enumerate(csv_in_dir):
         split_curves = split_lightcurve_file(csvfile, t0=t0, P=P, t14=t14,
                                              cutoff=cutoff, window=window)
