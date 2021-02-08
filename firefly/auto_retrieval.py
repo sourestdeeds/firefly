@@ -365,47 +365,43 @@ def firefly(
         raise
         sys.exit()
     except BaseException as e:
-        print(e)
-        try:
-            exo_folder = f'firefly/{exoplanet}'
-            now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
-            exception = f'firefly/Exception/{exoplanet} ' +\
-                        f'{now} Exception'
-            trace_back = format_exc()
-            print(trace_back, file=open(exo_folder+'/traceback.txt', 'w'))
-            print(
-                'Variables used:\n\n'
-                f'target={exoplanet}\n'
-                f'archive={str(archive)}\n'
-                f'curve_sample={str(curve_sample)}\n'
-                f'clean={clean}\n'
-                f'cache={cache}\n'
-                f'auto={auto}\n'
-                f'hlsp={str(hlsp)}\n'
-                f'cadence={str(cadence)}\n'
-                f'cutoff={str(cutoff)}\n'
-                f'window={str(window)}\n'
-                f'nlive={str(nlive)}\n'
-                f'fit_ttv={fit_ttv}\n'
-                f'detrending_list={str(detrending_list)}\n'
-                f'dynesty_sample={dynesty_sample}\n'
-                f'fitting_mode={fitting_mode}\n'
-                f'limb_darkening_model={limb_darkening_model}\n'
-                f'ld_fit_method={ld_fit_method}\n'
-                f'max_batch_parameters={str(max_batch_parameters)}\n'
-                f'batch_overlap={str(batch_overlap)}\n'
-                f'dlogz={str(dlogz)}\n'
-                f'maxiter={str(maxiter)}\n'
-                f'maxcall={str(maxcall)}\n'
-                f'dynesty_bounding={dynesty_bounding}\n'
-                f'normalise={normalise}\n'
-                f'detrend={detrend}',
-                file=open(exo_folder+'/variables.txt', 'w')
-            )
-            make_archive(exception, format='zip',
-                     root_dir=f'{os.getcwd()}/firefly/',
-                     base_dir=f'{exoplanet}')
-            rmtree(exo_folder)
-        except Exception as e:
-            print(e)
-            pass
+        exo_folder = f'firefly/{exoplanet}'
+        now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
+        exception = f'firefly/Exception/{exoplanet} ' +\
+                    f'{now} Exception'
+        trace_back = format_exc()
+        print(trace_back, file=open(exo_folder+'/traceback.txt', 'w'))
+        print(
+            'Variables used:\n\n'
+            f'target={exoplanet}\n'
+            f'archive={str(archive)}\n'
+            f'curve_sample={str(curve_sample)}\n'
+            f'clean={clean}\n'
+            f'cache={cache}\n'
+            f'auto={auto}\n'
+            f'hlsp={str(hlsp)}\n'
+            f'cadence={str(cadence)}\n'
+            f'cutoff={str(cutoff)}\n'
+            f'window={str(window)}\n'
+            f'nlive={str(nlive)}\n'
+            f'fit_ttv={fit_ttv}\n'
+            f'detrending_list={str(detrending_list)}\n'
+            f'dynesty_sample={dynesty_sample}\n'
+            f'fitting_mode={fitting_mode}\n'
+            f'limb_darkening_model={limb_darkening_model}\n'
+            f'ld_fit_method={ld_fit_method}\n'
+            f'max_batch_parameters={str(max_batch_parameters)}\n'
+            f'batch_overlap={str(batch_overlap)}\n'
+            f'dlogz={str(dlogz)}\n'
+            f'maxiter={str(maxiter)}\n'
+            f'maxcall={str(maxcall)}\n'
+            f'dynesty_bounding={dynesty_bounding}\n'
+            f'normalise={normalise}\n'
+            f'detrend={detrend}',
+            file=open(exo_folder+'/variables.txt', 'w')
+        )
+        make_archive(exception, format='zip',
+                 root_dir=f'{os.getcwd()}/firefly/',
+                 base_dir=f'{exoplanet}')
+        rmtree(exo_folder)
+        print(traceback)
