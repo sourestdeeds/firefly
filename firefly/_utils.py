@@ -303,6 +303,8 @@ def _retrieval(
     print(
         'Variables used:\n\n'
         f'target={exoplanet}\n'
+        f'archive={archive}\n'
+        f'hlsp={hlsp}\n'
         f'curve_sample={str(curve_sample)}\n'
         f'clean={clean}\n'
         f'cache={cache}\n'
@@ -350,7 +352,8 @@ def _retrieval(
     if clean==True:
         rmtree(f'{exo_folder}/output_parameters/quicksaves')
         rmtree(f'{exo_folder}/output_parameters/filter_0_parameters/quicksaves')
-    archive_name = f'{exoplanet} {now}'
+    sci_prod = ' '.join(hlsp)
+    archive_name = f"{exoplanet}_{archive.upper()}_{sci_prod}_{now}"
     if fit_ttv==True:
         os.makedirs('firefly/ttv', exist_ok=True)
         os.makedirs(f'firefly/ttv/{fitting_mode}', exist_ok=True)
