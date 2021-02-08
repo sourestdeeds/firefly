@@ -350,7 +350,7 @@ def firefly(
             normalise=normalise,
             detrend=detrend
         )
-        success = f'{os.getcwd()}/firefly/{archive_name}.gz.tar'
+        success = f'{os.getcwd()}/firefly/{archive_name}.zip'
         print(f'\nData location: {success}\n'
                 'A new target has been fully retrieved across ' +
                 'all available TESS Sectors.')
