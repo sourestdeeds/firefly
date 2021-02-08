@@ -40,6 +40,7 @@ setuptools.setup( name='firefly',
                                     'python-Levenshtein',
                                     'natsort',
                                     'seaborn',
+                                    'astroquery',
                                     'transitfit'],
                   python_requires='>=3.6',
                   include_package_data=True )

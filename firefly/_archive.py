@@ -39,13 +39,11 @@ def _load_csv():
 
     '''
     _download_archive()
-    here = os.path.dirname(os.path.abspath(__file__))
     nasa_csv = 'firefly/data/nasa.csv.gz'
     eu_csv = 'firefly/data/eu.csv.gz'
     oec_csv = 'firefly/data/oec.csv.gz'
     org_csv = 'firefly/data/org.csv.gz'
-    mast_csv = f'{here}/data/Search/TESS_lc.csv.xz'
-    global exo_nasa, exo_eu, exo_oec, exo_org, mast
+    global exo_nasa, exo_eu, exo_oec, exo_org
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # NASA
     exo_nasa = read_csv(nasa_csv)
@@ -83,9 +81,6 @@ def _load_csv():
                       'st_logg', 'st_loggerr1','st_mass', 'pl_name',
                       'pl_orbper', 'pl_radj', 'st_rad', 'st_raderr1', 'pl_orbsmax',
                       'st_teff', 'st_tefferr1', 'pl_tranmid']
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # MAST
-    mast = read_csv(mast_csv)
     
 
 def _search(exoplanet):
@@ -102,7 +97,7 @@ def _search(exoplanet):
 
 def _search_all(exoplanet):
     archive_list = [exo_nasa, exo_eu, exo_oec, exo_org]
-    exo_archive = concat(archive_list)# .set_index('pl_name')
+    exo_archive = concat(archive_list)
     exo_list = exo_archive[['pl_name']] \
               .dropna() .drop_duplicates('pl_name') \
               .values .tolist()
@@ -159,7 +154,7 @@ def _pl(tic_id):
     return exoplanet
 
 
-def _lc(exoplanet):
+def _lc(exoplanet, mast):
     '''
     # https://archive.stsci.edu/tess/bulk_downloads/bulk_downloads_ffi-tp-lc-dv.html
     out = DataFrame()
@@ -222,14 +217,9 @@ def _download_archive():
         '+from+pscomppars&format=csv',
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # NASA Kepler Names
-        'https://exoplanetarchive.ipac.caltech.edu/cgi-bin/' +\
-        'nstedAPI/nph-nstedAPI?' +\
-        'table=keplernames',
-        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-        # NASA SuperWASP Names
-        #'https://exoplanetarchive.ipac.caltech.edu/cgi-bin/' +\
-        #'nstedAPI/nph-nstedAPI?' +\
-        #'table=superwasptimeseries',
+        # 'https://exoplanetarchive.ipac.caltech.edu/cgi-bin/' +\
+        # 'nstedAPI/nph-nstedAPI?' +\
+        # 'table=keplernames',
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # EU
         'http://exoplanet.eu/catalog/csv',
@@ -244,7 +234,7 @@ def _download_archive():
         # TEP
         'https://www.astro.keele.ac.uk/jkt/tepcat/allplanets-csv.csv'
     ]
-    archive = ['nasa', 'kepler', 'eu', 'oec', 'org', 'tep']
+    archive = ['nasa', 'eu', 'oec', 'org', 'tep']
     for i, download_link in enumerate(download_links):
         i = archive[i]
         csv = f'firefly/data/{i}.csv.gz'
@@ -517,6 +507,9 @@ def tess(archive='eu', survey=None):
 def gen_tess(archive='eu'):
     _download_archive()
     _load_csv()
+    here = os.path.dirname(os.path.abspath(__file__))
+    mast_csv = f'{here}/data/Search/TESS_lc.csv.xz'
+    mast = read_csv(mast_csv)
     exo_list = exo_nasa[['pl_name', 'tic_id']] \
               .dropna() .drop_duplicates('pl_name') \
               .drop(['tic_id'], axis=1) .values .tolist()
@@ -531,7 +524,7 @@ def gen_tess(archive='eu'):
         try:
             host_T, host_z, host_r, host_logg, t0, P, t14, repack = \
                             priors(exoplanet, archive, user=False)
-            lc_links, tic_id = _lc(exoplanet)
+            lc_links, tic_id = _lc(exoplanet, mast)
             if not len(lc_links)==0:
                 epoch = ceil((0.8 * 27.4 / P) * len(lc_links))
                 viable.append(exoplanet)
@@ -559,6 +552,9 @@ def gen_tess(archive='eu'):
 def gen_tess_ttv():
     _download_archive()
     _load_csv()
+    here = os.path.dirname(os.path.abspath(__file__))
+    mast_csv = f'{here}/data/Search/TESS_lc.csv.xz'
+    mast = read_csv(mast_csv)
     ttv_list = exo_nasa[['pl_name', 'tic_id', 'ttv_flag']]
     ttv_list = ttv_list[ttv_list!=0] . dropna() \
               .drop_duplicates('pl_name') \
@@ -574,7 +570,7 @@ def gen_tess_ttv():
         try:
             host_T, host_z, host_r, host_logg, t0, P, t14, repack = \
                             priors(exoplanet, archive, user=False)
-            lc_links, tic_id = _lc(exoplanet)
+            lc_links, tic_id = _lc(exoplanet, mast)
             if not len(lc_links)==0:
                 epoch = ceil((0.8 * 27.4 / P) * len(lc_links))
                 viable_ttv.append(exoplanet)
