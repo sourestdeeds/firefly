@@ -37,47 +37,13 @@ Background tasks for feeding data to TransitFit include:
 - Delete all downloaded data and inputs.
 - Zip up and timestamp the output.
 
-An example use with TransitFit is the following:
+# firefly
 ```python
 from firefly import firefly
 
 firefly('wasp43b')
 ```
-Below shows a working example with all variables.
-```python
-from firefly import firefly, tess_viable
 
-    firefly(
-            # Firefly Interface
-            exoplanet,
-            archive='eu',
-            curve_sample=1,
-            clean=False,
-            cache=False,
-            auto=True,
-            # MAST Search
-            hlsp=['SPOC'],
-            cadence=[120],
-            # TransitFit Variables
-            cutoff=0.25,
-            window=2.5,
-            nlive=1000,
-            fit_ttv=False,
-            detrending_list=[['nth order', 2]],
-            dynesty_sample='rslice',
-            fitting_mode='folded',
-            limb_darkening_model='quadratic',
-            ld_fit_method='coupled',
-            max_batch_parameters=25,
-            batch_overlap=2,
-            dlogz=None,
-            maxiter=None,
-            maxcall=None,
-            dynesty_bounding='multi',
-            normalise=True,
-            detrend=True,
-       )
-```
 #### Console Output
 ```
 Target search chose WASP-43 b.
@@ -121,50 +87,47 @@ Query from MAST returned 1 data products for WASP-43 b (TIC 36734222).
 +-------------------------------------------------+----------+-----------+--------+-----------+
 
 ```
-
-Parameters
-----------
-    
-#### targets : str, list
-A list of exoplanet targets.
-Input is a single string:
+# mast
 ```python
-'WASP-43 b'
-```    
+from firefly import mast
 
-#### archive : {`'eu'`, `'nasa'`}, optional
-The exoplanet archive to use for priors. Supports:
+mast('wasp43b')
+```
+```
+Searching MAST for WASP-43 b (TIC 36734222).
 
-- 'eu'
-- 'nasa'
-- 'org'
-- 'all'
-The default is `'eu'`.
+Query from MAST returned 3 data products for WASP-43 b (TIC 36734222).
 
-#### curve_sample : int {0 < curve_sample <= 1}, optional
-The fraction of curves generated to fit against. For example, setting
++----------------------------------------------------------------+----------+-----------+----------+-----------+
+| Product                                                        |   TIC ID |   Cadence | HLSP     | Mission   |
+|----------------------------------------------------------------+----------+-----------+----------+-----------|
+| hlsp_diamante_tess_lightcurve_tic-0000000036734222_tess_v1_llc | 36734222 |      1800 | DIAMANTE | TESS      |
+| hlsp_qlp_tess_ffi_s0009-0000000036734222_tess_v01_llc          | 36734222 |      1800 | QLP      | TESS      |
+| tess2019058134432-s0009-0000000036734222-0139-s                | 36734222 |       120 | SPOC     | TESS      |
++----------------------------------------------------------------+----------+-----------+----------+-----------+
+```
+# priors
 ```python
-curve_sample = 0.5
-```
-will fit half the curves extracted. The formula for this works as:
-```python
-total_curves = curves_extracted * curve_sample
-```
-Always returns an int. For example:
-```python
-curve_sample = 0.001
-```
-will fit using only 1 lightcurve from each sector. 
-The default is `1` to fit all lightcurves across all sectors.
+from firefly import priors
 
-#### clean : bool, optional
-If True will delete all downloaded files and zip outputs only.
-The default is `False`.
-
-Returns
--------
-A whole lot of data to science!
-Zipped files are found in:
+priors('wasp43b')
 ```
-firefly/WASP-43 b timestamp.gz.tar
+```
+Priors generated from the EU Archive for WASP-43 b (TIC 36734222).
+
++-------------+----------------+----------------+---------------+----------+
+| Parameter   | Distribution   |        Input A |       Input B | Filter   |
+|-------------+----------------+----------------+---------------+----------|
+| P           | gaussian       |    0.813478    |   8.13478e-05 |          |
+| t0          | gaussian       |    2.45573e+06 |   0.007       |          |
+| a           | gaussian       |    0.01526     |   0.0001526   |          |
+| inc         | gaussian       |   82.33        |   0.8233      |          |
+| w           | gaussian       |  328           | 164           |          |
+| ecc         | gaussian       |    0.0035      |   0.00175     |          |
+| rp          | uniform        |    0.143652    |   0.175575    | 0        |
+| host_T      | fixed          | 4520           |  90.4         |          |
+| host_z      | fixed          |   -0.01        |   0.012       |          |
+| host_r      | fixed          |    0.667       |   0.03335     |          |
+| host_logg   | fixed          |    4.64544     |   0.00971112  |          |
++-------------+----------------+----------------+---------------+----------+
 ```
