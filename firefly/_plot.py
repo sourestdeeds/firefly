@@ -69,13 +69,13 @@ def plot_epoch(sub=True):
         twenty_perc = cumsum_cand[1]
         textstr = '\n'.join(df['Exoplanet'][0:twenty_perc])
         props = dict(boxstyle='round', facecolor='white', alpha=0.1)
-        ax.text(1.06, 0.95, f'20% of \nAll Epochs \n{twenty_perc} Candidates',
-                transform=ax.transAxes, fontsize=14,
+        ax.text(1.045, 0.93, f'20% of \nAll Epochs \n{twenty_perc} Candidates',
+                transform=ax.transAxes, fontsize=14, weight='bold',
                 verticalalignment='top', bbox=props, ha='center')
         ax.text(1.01, 0.76, textstr, transform=ax.transAxes, fontsize=14,
                 verticalalignment='top', bbox=props)
         # PLOT!
-        sns.barplot(ax=ax, data=highlights,
+        sns.barplot(ax=ax, data=highlights, 
                     x=candidates, y = 'Epochs',
                     dodge=False, palette='rocket')
         change_width(ax, 0.7)
