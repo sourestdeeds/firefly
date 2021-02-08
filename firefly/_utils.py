@@ -100,11 +100,12 @@ def _fits(exoplanet,
         print(f'Search result contains no data products for {exoplanet}.')
         sys.exit(f'Search result contains no data products for {exoplanet}.')
     data = search[['obs_id', 'target_name', 'dataURL', 't_exptime',
-                   'provenance_name']]
+                   'provenance_name', 'project']]
     data['dataURL'] = ['https://mast.stsci.edu/api/v0.1/Download/file/?uri=' +\
                          data['dataURL'][i] for i in range(len(search))]
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Dataframe Checks
+    data = data[data['t_exptime']==cadence]
     data = data[~data.dataURL.str.endswith('_dvt.fits')].reset_index(drop=True)
     provenance_name = data['provenance_name'].tolist()
     lc_links = data['dataURL'].tolist()
@@ -112,7 +113,7 @@ def _fits(exoplanet,
           f'data products for {exoplanet} (TIC {tic_id}).\n')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Print search result
-    show = search[['obs_id', 'target_name', 't_exptime',
+    show = data[['obs_id', 'target_name', 't_exptime',
                    'provenance_name', 'project']]
     show = show.rename(columns={"obs_id": "Product",
                                 "target_name": "TIC ID",
