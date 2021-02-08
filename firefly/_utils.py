@@ -6,8 +6,9 @@ The backend for auto_retrieval.
 @author: Steven Charles-Mindoza
 """
 
-from ._archive import priors, _lc
+from ._archive import priors, _tic
 from transitfit import split_lightcurve_file, run_retrieval
+from astroquery.mast import Observations as obs
 from datetime import datetime
 from smtplib import SMTP_SSL
 from tabulate import tabulate
@@ -60,9 +61,27 @@ def _TESS_filter():
     df.to_csv(tess_filter_path, index=False, header=True)
 
 
-def _fits(exoplanet, exo_folder, cache):
+def _fits(exoplanet, exo_folder, cache, hlsp=['SPOC', 'TESS-SPOC', 'TASOC']):
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # MAST Search
     print(f'\nSearching MAST for {exoplanet}.')
-    lc_links, tic_id = _lc(exoplanet)
+    search = obs.query_criteria(objectname=exoplanet, 
+                            radius='.00002 deg', 
+                            dataproduct_type=['timeseries'],
+                            project='TESS',
+                            provenance_name=hlsp).to_pandas()
+    data = search[['obs_id', 'target_name', 'dataURL', 't_exptime',
+                   'provenance_name']]
+    data['dataURL'] = ['https://mast.stsci.edu/api/v0.1/Download/file/?uri=' +\
+                         data['dataURL'][i] for i in range(len(search))]
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Dataframe Checks
+    data = data[data['t_exptime']!=20].reset_index(drop=True)
+    data = data[~data.dataURL.str.endswith('_dvt.fits')].reset_index(drop=True)
+    provenance_name = data['provenance_name'].tolist()
+    lc_links = data['dataURL'].tolist()
+    tic_id = _tic(exoplanet).replace('TIC ', '')
+    data = data[data['target_name'].astype(str)==tic_id].reset_index(drop=True)
     if len(lc_links) == 0:
         rmtree(exo_folder)
         print(f'Search result contains no data products for {exoplanet}.')
@@ -72,13 +91,28 @@ def _fits(exoplanet, exo_folder, cache):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Extract Time series
     csv_in_dir = []
-    fitsname = []
-    sector_list = []
     for j, fitsfile in enumerate(lc_links):
         with fits.open(fitsfile, cache=cache) as TESS_fits:
-            time = TESS_fits[1].data['TIME'] + 2457000
-            flux = TESS_fits[1].data['PDCSAP_FLUX']
-            flux_err = TESS_fits[1].data['PDCSAP_FLUX_ERR']
+            if provenance_name[j]=='SPOC':
+                time = TESS_fits[1].data['TIME'] + 2457000
+                flux = TESS_fits[1].data['PDCSAP_FLUX']
+                flux_err = TESS_fits[1].data['PDCSAP_FLUX_ERR']
+            # elif provenance_name[j]=='QLP':
+            #     time = TESS_fits[1].data['TIME'] + 2457000
+            #     flux = TESS_fits[1].data['KSPSAP_FLUX']
+            #     flux_err = TESS_fits[1].data['KSPSAP_FLUX_ERR']
+            # elif provenance_name[j]=='DIAMANTE':
+            #     time = TESS_fits[1].data['BTJD'] + 2457000
+            #     flux = TESS_fits[1].data['LC0_AP1']
+            #     flux_err = TESS_fits[1].data['ELC0_AP1']
+            elif provenance_name[j]=='TASOC':
+                time = TESS_fits[1].data['TIME'] + 2457000
+                flux = TESS_fits[1].data['FLUX_RAW']
+                flux_err = TESS_fits[1].data['FLUX_RAW_ERR']
+            elif provenance_name[j]=='TESS-SPOC':
+                time = TESS_fits[1].data['TIME'] + 2457000
+                flux = TESS_fits[1].data['PDCSAP_FLUX']
+                flux_err = TESS_fits[1].data['PDCSAP_FLUX_ERR']
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Extract all light curves to a single csv file
         write_dict = []
@@ -86,7 +120,7 @@ def _fits(exoplanet, exo_folder, cache):
             write_dict.append({'Time': time[i], 'Flux': flux[i],
                                'Flux err': flux_err[i]})
         source = f'{exo_folder}/mastDownload'
-        mast_name = fitsfile[-55:].replace('.fits', '')
+        mast_name = data['obs_id'][j] 
         os.makedirs(f'{source}/{mast_name}', exist_ok=True)
         csv_name = f'{source}/{mast_name}/{mast_name}.csv'
         with open(csv_name, 'w') as f:
@@ -95,12 +129,10 @@ def _fits(exoplanet, exo_folder, cache):
             writer.writeheader()
             writer.writerows(write_dict)
         csv_in_dir.append(f'{os.getcwd()}/{csv_name}')
-        fitsname.append(fitsfile[-55:])
-        sector_list.append(int(fitsfile[-36:-32]))
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Print search result
-    tess_sector = [f'TESS Sector {str(sector)}' for sector in sector_list]
-    _ = {'Sector':tess_sector, 'Product':fitsname}
+    fitsname = natsorted((data['obs_id'] + '.fits') .tolist())
+    _ = {'Product':fitsname}
     df = DataFrame(_)
     print(tabulate(df, tablefmt='psql', showindex=False, headers='keys'))
     print('\nSplitting up the lightcurves into seperate epochs:\n')
@@ -116,6 +148,7 @@ def _retrieval(
         # Firefly Interface
         exoplanet,
         archive='eu',
+        hlsp=['SPOC'],
         curve_sample=1,
         clean=False,
         cache=False,
