@@ -147,7 +147,7 @@ def firefly(
     hlsp : str list, ['SPOC', 'TESS-SPOC', 'TASOC']
         SPOC is the primary TESS mission, and the rest are HLSP.
         The default is ['SPOC'].
-    cadence : int
+    cadence : int list, [20, 120, 600, 1800]
         The exposure time. Options are 20, 120, 600 or 1800.
         The default is 120.
     cutoff : float, optional
