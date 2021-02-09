@@ -182,6 +182,9 @@ def tess_candidate():
 
     '''
     _load_csv()
+    here = os.path.dirname(os.path.abspath(__file__))
+    mast_csv = f'{here}/data/Search/TESS_lc.csv.xz'
+    mast = read_csv(mast_csv)
     for i in range(13,20):
         count = i
         df = mast.sort_values('links').reset_index()
