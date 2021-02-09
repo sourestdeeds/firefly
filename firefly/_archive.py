@@ -398,7 +398,7 @@ def priors(exoplanet, archive='eu', save=False, user=True):
     #     a = (((P * 24 * 60 * 60)**2 * G * ms * sol /
     #           (4 * np.pi**2))**(1 / 3)) / AU
     # w
-    if np.isnan(w):
+    if (np.isnan(w) or w==0):
         w = 90
     # ecc
     if np.isnan(ecc):
@@ -422,9 +422,10 @@ def priors(exoplanet, archive='eu', save=False, user=True):
             ['t0', 'gaussian', t0, 7e-3, ''],
             ['a', 'gaussian', a, a * 1e-2, ''],
             ['inc', 'gaussian', i, i * 1e-2, ''],
-            ['w', ['fixed' if (w==90 or w==0) else 'gaussian'][0], w,
-             ['' if (w==90 or w==0)
-              else (360-np.abs(w))if w > 180
+            ['w', ['fixed' if w==90 else 'gaussian'][0], w,
+             ['' if w==90
+              else (360-np.abs(w))/2 if 180 < w < 360
+              else (360-np.abs(w)) if 270 <= w < 360
               else w * 0.5][0], ''],
             ['ecc', ['fixed' if ecc==0 else 'gaussian'][0], ecc,
              ['' if ecc==0 else ecc * 0.5][0], ''],
@@ -447,9 +448,10 @@ def priors(exoplanet, archive='eu', save=False, user=True):
             ['t0', 'gaussian', t0, 7e-3, ''],
             ['a', 'gaussian', a, a * 1e-2, ''],
             ['inc', 'gaussian', i, i * 1e-2, ''],
-            ['w', ['fixed' if (w==90 or w==0) else 'gaussian'][0], w,
-             ['' if (w==90 or w==0)
-              else (360-np.abs(w)) if w > 180
+            ['w', ['fixed' if w==90 else 'gaussian'][0], w,
+             ['' if w==90
+              else (360-np.abs(w))/2 if 180 < w < 270
+              else (360-np.abs(w)) if 270 <= w < 360
               else w * 0.5][0], ''],
             ['ecc', ['fixed' if ecc==0 else 'gaussian'][0], ecc,
              ['' if ecc==0 else ecc * 0.5][0], ''],
