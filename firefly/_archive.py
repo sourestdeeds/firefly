@@ -459,7 +459,7 @@ def priors(exoplanet, archive='eu', save=False, user=True):
     repack = DataFrame(cols, columns=['Parameter', 'Distribution',
                                       'Input A', 'Input B', 'Filter'])
     is_nan = repack.isnull().values.any()
-    if is_nan:
+    if is_nan and user==False:
         raise NaNError(f'Skipping {exoplanet} due to missing prior data.')
     if archive=='all':
         print(f'\nPriors generated from the NASA, EU, OEC and ORG Archives for'
