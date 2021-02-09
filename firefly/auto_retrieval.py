@@ -316,7 +316,7 @@ def firefly(
     >>> firefly/WASP-43 b timestamp.gz.tar
 
     '''
-    exoplanet = _auto_input_check(targets, curve_sample=curve_sample)
+    exoplanet = _auto_input_check(targets, curve_sample)
     try:
         archive_name, repack, results = \
         _retrieval(
@@ -404,4 +404,4 @@ def firefly(
                  root_dir=f'{os.getcwd()}/firefly/',
                  base_dir=f'{exoplanet}')
         rmtree(exo_folder)
-        print(traceback)
+        print(trace_back)
