@@ -26,7 +26,7 @@ base_context = {
                 "grid.linewidth": 1,
                 "lines.linewidth": 1.5,
                 "lines.markersize": 6,
-                "patch.linewidth": 1,a
+                "patch.linewidth": 1,
 
                 "xtick.major.width": 0,
                 "ytick.major.width": 0,
