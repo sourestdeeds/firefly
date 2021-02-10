@@ -11,8 +11,36 @@ import os
 from matplotlib import pyplot as plt
 import numpy as np
 import matplotlib as mpl
-import seaborn as sns; sns.set_theme(style="whitegrid")
+import seaborn as sns
 
+base_context = {
+
+                "font.size": 12,
+                "axes.labelsize": 12,
+                "axes.titlesize": 12,
+                "xtick.labelsize": 11,
+                "ytick.labelsize": 11,
+                "legend.fontsize": 11,
+
+                "axes.linewidth": 1.25
+                "grid.linewidth": 1,
+                "lines.linewidth": 1.5,
+                "lines.markersize": 6,
+                "patch.linewidth": 1,a
+
+                "xtick.major.width": 0,
+                "ytick.major.width": 0,
+                "xtick.minor.width": 0,
+                "ytick.minor.width": 0,
+
+                "xtick.major.size": 0,
+                "ytick.major.size": 0,
+                "xtick.minor.size": 0,
+                "ytick.minor.size": 0,
+
+                }
+
+sns.set_theme(style="whitegrid", rc = base_context)
 
 def change_width(ax, new_value):
     for patch in ax.patches:
