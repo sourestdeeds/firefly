@@ -22,7 +22,7 @@ base_context = {
                 "ytick.labelsize": 11,
                 "legend.fontsize": 11,
 
-                "axes.linewidth": 1.25
+                "axes.linewidth": 1.25,
                 "grid.linewidth": 1,
                 "lines.linewidth": 1.5,
                 "lines.markersize": 6,
