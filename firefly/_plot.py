@@ -58,13 +58,13 @@ def plot_epoch(sub=True):
         here = os.path.dirname(os.path.abspath(__file__))
         df = pd.read_csv(f'{here}/data/Targets/{archive}_tess_viable.csv') \
         .sort_values('Epochs', ascending=False).reset_index(drop=True)
-        # df = pd.read_csv(f'{archive}_tess_viable.csv') \
+        # df = pd.read_csv(f'Targets/{archive}_tess_viable.csv') \
         # .sort_values('Epochs', ascending=False).reset_index(drop=True)
         # candidates = f'{len(df)} {archive.upper()} Archive ' +\
         #             'Candidates Ranked by Epoch Count ' +\
         #             f"({df['Epochs'].sum()} Total)"
         candidates = f'{len(df)} {archive.upper()} Archive ' +\
-             'Candidates'
+             'Candidates Ranked by Descending Observed Transits'
         df[candidates] = 1
         df['Candidate Cumsum'] = df[candidates].cumsum()
         total_candidates = df[candidates].sum()
@@ -81,32 +81,37 @@ def plot_epoch(sub=True):
         cumsum_cand = highlights[candidates].cumsum()
         cumsum_epochs = highlights['Epochs'].cumsum()
         if sub==False:
-            fig, ax = plt.subplots(figsize=(20,25))
+            fig, ax = plt.subplots(figsize=(15,45))
+            sns.despine(fig=fig, ax=ax)
         temp = 411 + i
         ax=plt.subplot(temp)
-        [ax.axvline(x=i+0.45, color='k', marker=',',
+        [ax.axvline(x=i+0.4, color='k', marker=',',
                     alpha=0.5, ymin=0,ymax=0.15) for i in range(10)]
         [ax.axvline(x=i+0.45, color='k', marker=',',
-                    alpha=0.5, ymin=0.90,ymax=1) for i in range(10)]
-        [ax.text(i+0.4,total_epochs/47,
-                 f"{i+1}0% - {cumsum_cand[i]} Candidates - {cumsum_epochs[i]} Epochs",rotation=90)
+                    alpha=0.5, ymin=0.8,ymax=1) for i in range(10)]
+        # [ax.text(i+0.34,total_epochs/47,
+        #          f"{i+1}0% - {cumsum_cand[i]} Candidates - {cumsum_epochs[i]} Transits",rotation=90)
+        #          for i in range(10)]
+        [ax.text(i+0.34,total_epochs/47,
+                 f"{i+1}0% of All Transits - {round(cumsum_cand[i]*100/total_candidates)}% Candidates",rotation=90)
                  for i in range(10)]
-        [ax.text(i-0.06, highlights['Epochs'][i] + 5,
+        [ax.text(i-0.1, highlights['Epochs'][i] + 5,
                  str(highlights[candidates][i]),rotation=0) for i in range(10)]
         # Top Planets
-        twenty_perc = cumsum_cand[1]
+        twenty_perc = cumsum_cand[2]
         textstr = '\n'.join(df['Exoplanet'][0:twenty_perc])
         props = dict(boxstyle='round', facecolor='white', alpha=0.1)
-        ax.text(1.045, 0.93, f'20% of \nAll Epochs \n{twenty_perc} Candidates',
-                transform=ax.transAxes, fontsize=14, weight='bold',
+        ax.text(1.075, 0.96, f'30% of \nAll Transits \n{twenty_perc} Candidates',
+                transform=ax.transAxes, fontsize=16, weight='bold',
                 verticalalignment='top', bbox=props, ha='center')
-        ax.text(1.01, 0.76, textstr, transform=ax.transAxes, fontsize=14,
+        ax.text(1.02, 0.85, textstr, transform=ax.transAxes, fontsize=16,
                 verticalalignment='top', bbox=props)
         # PLOT!
+        highlights['Observed Transits'] = highlights['Epochs']
         sns.barplot(ax=ax, data=highlights, 
-                    x=candidates, y = 'Epochs',
+                    x=candidates, y = 'Observed Transits',
                     dodge=False, palette='rocket')
-        change_width(ax, 0.7)
+        change_width(ax, 0.6)
         # ax.get_legend().remove()
         
         ax.xaxis.tick_bottom()
@@ -116,4 +121,3 @@ def plot_epoch(sub=True):
             plt.savefig(f'{archive}_epoch_rank.jpg', bbox_inches='tight')
     if sub==True:
         plt.savefig('epoch_rank.jpg', bbox_inches='tight')
-
