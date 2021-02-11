@@ -9,18 +9,20 @@ Created on Sat Feb  6 13:14:20 2021
 import pandas as pd
 import os
 from matplotlib import pyplot as plt
+from PyAstronomy.pyTiming import pyPeriod
 import numpy as np
 import matplotlib as mpl
 import seaborn as sns
+mpl.rcParams['figure.dpi'] = 300
 
 base_context = {
 
-                "font.size": 12,
-                "axes.labelsize": 12,
-                "axes.titlesize": 12,
-                "xtick.labelsize": 11,
-                "ytick.labelsize": 11,
-                "legend.fontsize": 11,
+                "font.size": 18,
+                "axes.labelsize": 18,
+                "axes.titlesize": 14,
+                "xtick.labelsize": 16,
+                "ytick.labelsize": 16,
+                "legend.fontsize": 16,
 
                 "axes.linewidth": 1.25,
                 "grid.linewidth": 1,
@@ -50,7 +52,7 @@ def change_width(ax, new_value):
         patch.set_x(patch.get_x() + diff * .5)
 
 
-def plot_epoch(sub=True):
+def plot_epoch(sub=False):
     if sub==True:
         fig, ax = plt.subplots(figsize=(20,25))
     archive_list = ['eu', 'nasa', 'org', 'all']
@@ -61,7 +63,7 @@ def plot_epoch(sub=True):
         # df = pd.read_csv(f'Targets/{archive}_tess_viable.csv') \
         # .sort_values('Epochs', ascending=False).reset_index(drop=True)
         # candidates = f'{len(df)} {archive.upper()} Archive ' +\
-        #             'Candidates Ranked by Epoch Count ' +\
+        #            'Candidates Ranked by Epoch Count ' +\
         #             f"({df['Epochs'].sum()} Total)"
         candidates = f'{len(df)} {archive.upper()} Archive ' +\
              'Candidates Ranked by Descending Observed Transits'
@@ -121,3 +123,27 @@ def plot_epoch(sub=True):
             plt.savefig(f'{archive}_epoch_rank.jpg', bbox_inches='tight')
     if sub==True:
         plt.savefig('epoch_rank.jpg', bbox_inches='tight')
+        
+
+def lomb(file, dpi=300):
+    mpl.rcParams['figure.dpi'] = dpi
+    df = pd.read_csv(file).dropna()
+    time = df['Time'].values
+    flux = df['Flux'].values
+    err = df['Flux err'].values
+    
+    clp = pyPeriod.Gls((time, flux, err), norm="ZK")
+    fapLevels = np.array([0.1, 0.01, 0.001])
+    # Power Thresholds
+    plevels = clp.powerLevel(fapLevels)
+    # PLOT
+    fig, ax = plt.subplots(figsize=(15,10))
+    plt.xlabel("Frequency")
+    plt.ylabel("Power")
+    plt.plot(clp.freq, clp.power, 'b.-', alpha=0.6)
+    # Add the FAP levels to the plot
+    for i in range(len(fapLevels)):
+        plt.plot([min(clp.freq), max(clp.freq)], [plevels[i]]*2, '--',
+                 label="FAP = %4.1f%%" % (fapLevels[i]*100))
+    plt.legend()
+    plt.savefig(f'{file}.jpg', bbox_inches='tight')
