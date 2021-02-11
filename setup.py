@@ -41,6 +41,8 @@ setuptools.setup( name='firefly',
                                     'natsort',
                                     'seaborn',
                                     'astroquery',
+                                    'pyastronomy',
+                                    'astropy',
                                     'transitfit'],
                   python_requires='>=3.6',
                   include_package_data=True )
