@@ -109,7 +109,7 @@ def plot_epoch(sub=False):
                 verticalalignment='top', bbox=props)
         # PLOT!
         highlights['Observed Transits'] = highlights['Epochs']
-        sns.barplot(ax=ax, data=highlights, 
+        sns.barplot(ax=ax, data=highlights,
                     x=candidates, y = 'Observed Transits',
                     dodge=False, palette='rocket')
         change_width(ax, 0.6)
@@ -124,7 +124,7 @@ def plot_epoch(sub=False):
         plt.savefig('epoch_rank.jpg', bbox_inches='tight')
         
 
-def lc_plot(file):
+def lc_plot(file, max_p = 1.5):
     from lightkurve import LightCurve
     df = pd.read_csv(file).dropna()
     time = df['Time'].values - 2457000
@@ -134,18 +134,11 @@ def lc_plot(file):
     lc = LightCurve(time, flux, flux_err, time_format='btjd')
     lc.remove_outliers()
     
-    # pg = lc.normalize(unit='ppm') \
-    #       .to_periodogram(oversample_factor=1)
-    pg = lc.to_periodogram(oversample_factor=1)
-    condition = (pg.power==np.max(pg.power))
-    #max_p = np.where(condition)[0]
-    # pg = lc.normalize(unit='ppm') \
-    #      .to_periodogram(oversample_factor=25, maximum_period=np.abs(max_p/60))
-    pg = lc.to_periodogram(oversample_factor=25, maximum_period=np.abs(1.5))
+    pg = lc.to_periodogram(oversample_factor=25, maximum_period=max_p)
     # PLOT!
     fig, ax = plt.subplots(figsize=(15,15))
     ax=plt.subplot(311)
-    plt.errorbar(lc.time, lc.flux, 
+    plt.errorbar(lc.time, lc.flux,
                  lc.flux_err, color='b',
                  alpha=0.2, zorder=1, capsize=2, ls='none')
     plt.scatter(lc.time, lc.flux, color='k', s=0.5, alpha=0.6, zorder=2)
@@ -163,15 +156,15 @@ def lc_plot(file):
     condition = (lc.flux==np.min(lc.flux))
     t0 = np.where(condition)[0][0]
     t0 = lc.time[t0]
-    folded_lc = lc.fold(period=period, t0=t0) 
+    folded_lc = lc.fold(period=period, t0=t0)
     
     ax=plt.subplot(313)
-    plt.errorbar(folded_lc.time, folded_lc.flux, 
+    plt.errorbar(folded_lc.time, folded_lc.flux,
                  folded_lc.flux_err, color='b',
                  alpha=0.2, zorder=1, capsize=2, ls='none')
-    plt.scatter(folded_lc.time, folded_lc.flux, 
+    plt.scatter(folded_lc.time, folded_lc.flux,
                 alpha=0.4, color='k', zorder=2, s=2)
     plt.xlabel('Phase')
     plt.ylabel('Flux')
     filename = f'{file}'.replace('.csv', '')
-    plt.savefig(f'{filename}.jpg')
+    plt.savefig(f'{filename}.jpg', bbox_inches='tight')
