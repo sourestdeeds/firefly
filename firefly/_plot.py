@@ -9,7 +9,7 @@ Created on Sat Feb  6 13:14:20 2021
 import pandas as pd
 import os
 from matplotlib import pyplot as plt
-from PyAstronomy.pyTiming import pyPeriod
+from lightkurve import LightCurve
 import numpy as np
 import matplotlib as mpl
 import seaborn as sns
@@ -125,25 +125,23 @@ def plot_epoch(sub=False):
         plt.savefig('epoch_rank.jpg', bbox_inches='tight')
         
 
-def lomb(file, dpi=300):
-    mpl.rcParams['figure.dpi'] = dpi
+def lc_plot(file):
     df = pd.read_csv(file).dropna()
-    time = df['Time'].values
+    time = df['Time'].values - 2457000
     flux = df['Flux'].values
-    err = df['Flux err'].values
+    flux_err = df['Flux err'].values
     
-    clp = pyPeriod.Gls((time, flux, err), norm="ZK")
-    fapLevels = np.array([0.1, 0.01, 0.001])
-    # Power Thresholds
-    plevels = clp.powerLevel(fapLevels)
-    # PLOT
-    fig, ax = plt.subplots(figsize=(15,10))
-    plt.xlabel("Frequency")
-    plt.ylabel("Power")
-    plt.plot(clp.freq, clp.power, 'b.-', alpha=0.6)
-    # Add the FAP levels to the plot
-    for i in range(len(fapLevels)):
-        plt.plot([min(clp.freq), max(clp.freq)], [plevels[i]]*2, '--',
-                 label="FAP = %4.1f%%" % (fapLevels[i]*100))
-    plt.legend()
-    plt.savefig(f'{file}.jpg', bbox_inches='tight')
+    lc = LightCurve(time, flux, flux_err, time_format='btjd')
+    lc.remove_outliers()
+    
+
+    pg = lc.normalize(unit='ppm').to_periodogram(oversample_factor=25)
+    #pg.plot()
+    #pg.plot(scale='log')
+    pg.show_properties()
+    
+    period = pg.period_at_max_power
+    #b_t0 = bls.transit_time_at_max_power
+    #b_dur = bls.duration_at_max_power
+    
+    ax = lc.fold(period).scatter(label=f'Period = {period.value:.3f} days')
