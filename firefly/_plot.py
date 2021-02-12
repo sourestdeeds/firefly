@@ -9,7 +9,6 @@ Created on Sat Feb  6 13:14:20 2021
 import pandas as pd
 import os
 from matplotlib import pyplot as plt
-from lightkurve import LightCurve
 import numpy as np
 import matplotlib as mpl
 import seaborn as sns
@@ -126,6 +125,7 @@ def plot_epoch(sub=False):
         
 
 def lc_plot(file):
+    from lightkurve import LightCurve
     df = pd.read_csv(file).dropna()
     time = df['Time'].values - 2457000
     flux = df['Flux'].values
