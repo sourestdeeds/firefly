@@ -9,6 +9,7 @@ Created on Sat Feb  6 13:14:20 2021
 import pandas as pd
 import os
 from matplotlib import pyplot as plt
+from astropy import units as u
 import numpy as np
 import matplotlib as mpl
 import seaborn as sns
@@ -124,7 +125,7 @@ def plot_epoch(sub=False):
         plt.savefig('epoch_rank.jpg', bbox_inches='tight')
         
 
-def lc_plot(file, max_p = 1.5):
+def lc_plot(file, flatten=False):
     from lightkurve import LightCurve
     df = pd.read_csv(file).dropna()
     time = df['Time'].values - 2457000
@@ -132,9 +133,14 @@ def lc_plot(file, max_p = 1.5):
     flux_err = df['Flux err'].values
     
     lc = LightCurve(time, flux, flux_err, time_format='btjd')
-    lc.remove_outliers()
+    lc = lc.remove_outliers().normalize()
+    if flatten==True:
+        lc = lc.remove_outliers().flatten()
     
-    pg = lc.to_periodogram(oversample_factor=25, maximum_period=max_p)
+    pg = lc.to_periodogram(oversample_factor=25)
+    period = float(pg.period_at_max_power/u.d)
+    pg = lc.to_periodogram(oversample_factor=25, maximum_period=period*1.25,
+                           minimum_period=period*0.75)
     # PLOT!
     fig, ax = plt.subplots(figsize=(15,15))
     ax=plt.subplot(311)
