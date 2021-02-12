@@ -7,7 +7,6 @@ The backend for auto_retrieval.
 """
 
 from ._archive import priors, _tic, _load_csv, _search
-from._plot import lc_plot
 from transitfit import split_lightcurve_file, run_retrieval
 from astroquery.mast import Observations as obs
 from datetime import datetime
@@ -132,6 +131,7 @@ def _discover_search(tic_id):
         csv_in_dir.append(f'{os.getcwd()}/{csv_name}')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Plot the final output
+    from._plot import lc_plot
     for k, csv in enumerate(csv_in_dir):
         lc_plot(csv)
         
