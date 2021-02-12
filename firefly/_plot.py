@@ -133,15 +133,22 @@ def lc_plot(file):
     
     lc = LightCurve(time, flux, flux_err, time_format='btjd')
     lc.remove_outliers()
-    condition = (lc.flux==np.min(lc.flux))
-    t0 = np.where(condition)[0][0]
-    t0 = lc.time[t0]
+    
     pg = lc.normalize(unit='ppm') \
-         .to_periodogram(oversample_factor=25, maximum_period=1.5)
+         .to_periodogram(oversample_factor=1)
+    condition = (pg.power==np.max(pg.power))
+    max_p = np.where(condition)[0][0]
+    pg = lc.normalize(unit='ppm') \
+         .to_periodogram(oversample_factor=25, maximum_period=np.abs(max_p/60))
     
     # PLOT!
-    fig, ax = plt.subplots(figsize=(15,10))
-    ax=plt.subplot(211)
+    fig, ax = plt.subplots(figsize=(15,15))
+    ax=plt.subplot(311)
+    plt.scatter(lc.time, lc.flux, color='k', s=0.5, alpha=0.6)
+    plt.xlabel('Time (BTJD)')
+    plt.ylabel('Flux')
+    
+    ax=plt.subplot(312)
     plt.plot(pg.period, pg.power, color='k')
     plt.xlabel('Period')
     plt.ylabel('Power')
@@ -149,10 +156,13 @@ def lc_plot(file):
 
     # Folded
     period = pg.period_at_max_power
+    condition = (lc.flux==np.min(lc.flux))
+    t0 = np.where(condition)[0][0]
+    t0 = lc.time[t0]
     folded_lc = lc.fold(period=period, t0=t0) 
     
-    ax=plt.subplot(212)
-    plt.scatter(folded_lc.time, folded_lc.flux, alpha=0.8, color='k')
+    ax=plt.subplot(313)
+    plt.scatter(folded_lc.time, folded_lc.flux, alpha=0.6, color='k')
     plt.errorbar(folded_lc.time, folded_lc.flux, 
                  folded_lc.flux_err, color='k',
                  alpha=0.3)
