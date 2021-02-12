@@ -144,12 +144,15 @@ def lc_plot(file):
     # PLOT!
     fig, ax = plt.subplots(figsize=(15,15))
     ax=plt.subplot(311)
-    plt.scatter(lc.time, lc.flux, color='k', s=0.5, alpha=0.6)
+    plt.errorbar(lc.time, lc.flux, 
+                 lc.flux_err, color='b',
+                 alpha=0.2, zorder=1, capsize=2, ls='none')
+    plt.scatter(lc.time, lc.flux, color='k', s=0.5, alpha=0.6, zorder=2)
     plt.xlabel('Time (BTJD)')
     plt.ylabel('Flux')
     
     ax=plt.subplot(312)
-    plt.plot(pg.period, pg.power, color='k')
+    plt.plot(pg.period, pg.power, color='k', alpha=0.8)
     plt.xlabel('Period')
     plt.ylabel('Power')
     #pg.show_properties()
@@ -162,10 +165,12 @@ def lc_plot(file):
     folded_lc = lc.fold(period=period, t0=t0) 
     
     ax=plt.subplot(313)
-    plt.scatter(folded_lc.time, folded_lc.flux, alpha=0.6, color='k')
     plt.errorbar(folded_lc.time, folded_lc.flux, 
-                 folded_lc.flux_err, color='k',
-                 alpha=0.3)
+                 folded_lc.flux_err, color='b',
+                 alpha=0.2, zorder=1, capsize=2, ls='none')
+    plt.scatter(folded_lc.time, folded_lc.flux, 
+                alpha=0.4, color='k', zorder=2, s=2)
     plt.xlabel('Phase')
     plt.ylabel('Flux')
-    plt.savefig(f'{file}.jpg')
+    filename = f'{file}'.replace('.csv', '')
+    plt.savefig(f'{filename}.jpg')
