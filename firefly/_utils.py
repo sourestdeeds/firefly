@@ -87,9 +87,7 @@ def _fits(exoplanet,
     # MAST Search
     tic_id = _tic(exoplanet).replace('TIC ', '')
     print(f'\nSearching MAST for {exoplanet} (TIC {tic_id}).')
-    search = obs.query_criteria(objectname=exoplanet,
-                                radius='.0002 deg',
-                                dataproduct_type=['timeseries'],
+    search = obs.query_criteria(dataproduct_type=['timeseries'],
                                 project='TESS',
                                 provenance_name=hlsp,
                                 t_exptime=cadence,
