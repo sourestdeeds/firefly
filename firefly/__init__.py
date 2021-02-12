@@ -74,5 +74,5 @@ __version__ = '0.7.8'
 
 from .auto_retrieval import firefly
 from ._archive import priors, tess, tess_candidate, gen_tess, gen_tess_ttv
-from ._plot import plot_epoch, lc_plot
+from ._plot import plot_epoch
 from ._utils import mast, discover
