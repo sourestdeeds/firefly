@@ -135,13 +135,13 @@ def lc_plot(file):
     lc.remove_outliers()
     
     # pg = lc.normalize(unit='ppm') \
-    #      .to_periodogram(oversample_factor=1)
+    #       .to_periodogram(oversample_factor=1)
     pg = lc.to_periodogram(oversample_factor=1)
     condition = (pg.power==np.max(pg.power))
-    max_p = np.where(condition)[0][0]
+    #max_p = np.where(condition)[0]
     # pg = lc.normalize(unit='ppm') \
     #      .to_periodogram(oversample_factor=25, maximum_period=np.abs(max_p/60))
-    pg = lc.to_periodogram(oversample_factor=25, maximum_period=np.abs(max_p/60))
+    pg = lc.to_periodogram(oversample_factor=25, maximum_period=np.abs(1.5))
     # PLOT!
     fig, ax = plt.subplots(figsize=(15,15))
     ax=plt.subplot(311)
