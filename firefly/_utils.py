@@ -54,9 +54,7 @@ def mast(exoplanet):
     exoplanet = highest[0]
     tic_id = _tic(exoplanet).replace('TIC ', '')
     print(f'\nSearching MAST for {exoplanet} (TIC {tic_id}).')
-    search = obs.query_criteria(objectname=exoplanet,
-                                radius='.0002 deg',
-                                dataproduct_type=['timeseries'],
+    search = obs.query_criteria(dataproduct_type=['timeseries'],
                                 project='TESS',
                                 target_name=tic_id
                                 ).to_pandas()
