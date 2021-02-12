@@ -80,7 +80,7 @@ def mast(exoplanet):
 def discover():
     here = os.path.dirname(os.path.abspath(__file__))
     os.makedirs('firefly/discover', exist_ok=True)
-    upper_ecliptic = f'{here}/firefly/data/Candidates/19_sector_candidates.csv'
+    upper_ecliptic = f'{here}/data/Candidates/19_sector_candidates.csv'
     #upper_ecliptic = '19_sector_candidates.csv'
     tic_ids = read_csv(upper_ecliptic)['TIC ID'].tolist()
     for i, tic_id in enumerate(tic_ids):
@@ -297,7 +297,8 @@ def _retrieval(
         split_curves = [s + '.csv' for s in split_curves]
         split_curve_in_dir.append(split_curves)
         if clean == True:
-            os.remove(csvfile)
+            pass
+            # os.remove(csvfile)
     split_curve_in_dir = [i for sub in split_curve_in_dir for i in sub]
     print(f'\nA total of {len(split_curve_in_dir)} lightcurves '
           'were generated.')
@@ -445,7 +446,7 @@ def _retrieval(
             add .to_csv(summary_master, index=False)
     if clean==True:
         try:
-            rmtree(f'{exo_folder}/output_parameters/quicksaves')
+            # rmtree(f'{exo_folder}/output_parameters/quicksaves')
             rmtree(f'{exo_folder}/output_parameters/filter_0_parameters/quicksaves')
         except Exception:
             pass
