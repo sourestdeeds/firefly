@@ -133,15 +133,29 @@ def lc_plot(file):
     
     lc = LightCurve(time, flux, flux_err, time_format='btjd')
     lc.remove_outliers()
+    condition = (lc.flux==np.min(lc.flux))
+    t0 = np.where(condition)[0][0]
+    t0 = lc.time[t0]
+    pg = lc.normalize(unit='ppm') \
+         .to_periodogram(oversample_factor=25, maximum_period=1.5)
     
+    # PLOT!
+    fig, ax = plt.subplots(figsize=(15,10))
+    ax=plt.subplot(211)
+    plt.plot(pg.period, pg.power, color='k')
+    plt.xlabel('Period')
+    plt.ylabel('Power')
+    #pg.show_properties()
 
-    pg = lc.normalize(unit='ppm').to_periodogram(oversample_factor=25)
-    #pg.plot()
-    #pg.plot(scale='log')
-    pg.show_properties()
-    
+    # Folded
     period = pg.period_at_max_power
-    #b_t0 = bls.transit_time_at_max_power
-    #b_dur = bls.duration_at_max_power
+    folded_lc = lc.fold(period=period, t0=t0) 
     
-    ax = lc.fold(period).scatter(label=f'Period = {period.value:.3f} days')
+    ax=plt.subplot(212)
+    plt.scatter(folded_lc.time, folded_lc.flux, alpha=0.8, color='k')
+    plt.errorbar(folded_lc.time, folded_lc.flux, 
+                 folded_lc.flux_err, color='k',
+                 alpha=0.3)
+    plt.xlabel('Phase')
+    plt.ylabel('Flux')
+    plt.savefig(f'{file}.jpg')
