@@ -7,6 +7,7 @@ The backend for auto_retrieval.
 """
 
 from ._archive import priors, _tic, _load_csv, _search
+from._plot import lc_plot
 from transitfit import split_lightcurve_file, run_retrieval
 from astroquery.mast import Observations as obs
 from datetime import datetime
@@ -76,6 +77,65 @@ def mast(exoplanet):
           f'data products for {exoplanet} (TIC {tic_id}).\n')
     return print(tabulate(data, tablefmt='psql', showindex=False, headers='keys'))
 
+
+def discover():
+    here = os.path.dirname(os.path.abspath(__file__))
+    os.makedirs('firefly/discover', exist_ok=True)
+    upper_ecliptic = f'{here}/firefly/data/Candidates/19_sector_candidates.csv'
+    #upper_ecliptic = '19_sector_candidates.csv'
+    tic_ids = read_csv(upper_ecliptic)['TIC ID'].tolist()
+    for i, tic_id in enumerate(tic_ids):
+        _discover_search(tic_id)
+        
+        
+def _discover_search(tic_id):
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # MAST Search
+    search = obs.query_criteria(dataproduct_type=['timeseries'],
+                                project='TESS',
+                                provenance_name='SPOC',
+                                t_exptime=120,
+                                target_name=tic_id
+                                ).to_pandas()
+    data = search[['obs_id', 'target_name', 'dataURL', 't_exptime',
+                   'provenance_name', 'project']]
+    data['dataURL'] = ['https://mast.stsci.edu/api/v0.1/Download/file/?uri=' +\
+                         data['dataURL'][i] for i in range(len(search))]
+    # data = data[data['t_exptime'].isin(cadence)]
+    data = data[~data.dataURL.str.endswith('_dvt.fits')].reset_index(drop=True)
+    provenance_name = data['provenance_name'].tolist()
+    lc_links = data['dataURL'].tolist()
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Extract Time series
+    os.makedirs('firefly/discover', exist_ok=True)
+    csv_in_dir = []
+    print(f'Fitting TIC {tic_id}')
+    for j, fitsfile in enumerate(lc_links):
+        with fits.open(fitsfile, cache=False) as TESS_fits:
+            time = TESS_fits[1].data['TIME'] + 2457000
+            flux = TESS_fits[1].data['PDCSAP_FLUX']
+            flux_err = TESS_fits[1].data['PDCSAP_FLUX_ERR']
+            
+        write_dict = []
+        for i in range(len(time)):
+            write_dict.append({'Time': time[i], 'Flux': flux[i],
+                               'Flux err': flux_err[i]})
+        source = f'firefly/discover/{tic_id}'
+        mast_name = data['obs_id'][j]
+        os.makedirs(f'{source}', exist_ok=True)
+        csv_name = f'{source}/{mast_name}.csv'
+        with open(csv_name, 'w') as f:
+            columns = ['Time', 'Flux', 'Flux err']
+            writer = DictWriter(f, columns)
+            writer.writeheader()
+            writer.writerows(write_dict)
+        csv_in_dir.append(f'{os.getcwd()}/{csv_name}')
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Plot the final output
+    for k, csv in enumerate(csv_in_dir):
+        lc_plot(csv)
+        
+        
 
 def _fits(exoplanet,
           exo_folder,
