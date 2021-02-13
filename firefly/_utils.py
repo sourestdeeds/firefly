@@ -188,6 +188,10 @@ def _fits(exoplanet,
     csv_in_dir = []
     for j, fitsfile in enumerate(lc_links):
         with fits.open(fitsfile, cache=cache) as TESS_fits:
+            source = f'{exo_folder}/mastDownload'
+            mast_name = data['obs_id'][j]
+            os.makedirs(f'{source}/{mast_name}', exist_ok=True)
+            TESS_fits.writeto(f'{source}/{mast_name}/{mast_name}.fits')
             if provenance_name[j]=='SPOC':
                 time = TESS_fits[1].data['TIME'] + 2457000
                 flux = TESS_fits[1].data['PDCSAP_FLUX']
@@ -214,9 +218,6 @@ def _fits(exoplanet,
         for i in range(len(time)):
             write_dict.append({'Time': time[i], 'Flux': flux[i],
                                'Flux err': flux_err[i]})
-        source = f'{exo_folder}/mastDownload'
-        mast_name = data['obs_id'][j]
-        os.makedirs(f'{source}/{mast_name}', exist_ok=True)
         csv_name = f'{source}/{mast_name}/{mast_name}.csv'
         with open(csv_name, 'w') as f:
             columns = ['Time', 'Flux', 'Flux err']
