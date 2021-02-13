@@ -7,12 +7,13 @@ The backend for auto_retrieval.
 """
 
 from ._archive import priors, _tic, _load_csv, _search
+from ._plot import lc_plot
+
 from transitfit import split_lightcurve_file, run_retrieval
 from astroquery.mast import Observations as obs
 from datetime import datetime
 from tabulate import tabulate
 from astropy.io import fits
-from csv import DictWriter
 from pandas import DataFrame, read_csv, Categorical
 from shutil import rmtree, make_archive
 from natsort import natsorted
@@ -120,16 +121,15 @@ def _discover_search(tic_id):
         source = f'firefly/discover/{tic_id}'
         mast_name = data['obs_id'][j]
         os.makedirs(f'{source}', exist_ok=True)
-        csv_name = f'{source}/{mast_name}.csv'
-        with open(csv_name, 'w') as f:
-            columns = ['Time', 'Flux', 'Flux err']
-            writer = DictWriter(f, columns)
-            writer.writeheader()
-            writer.writerows(write_dict)
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Extract all light curves to a single csv file
+        csv_name = f'{source}/{mast_name}/{mast_name}.csv'
+        write_dict = {'Time': time, 'Flux': flux, 'Flux err': flux_err}
+        df = DataFrame(write_dict)
+        df.to_csv(csv_name, index=False, na_rep='nan')
         csv_in_dir.append(f'{os.getcwd()}/{csv_name}')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Plot the final output
-    from._plot import lc_plot
     for k, csv in enumerate(csv_in_dir):
         lc_plot(csv)
         
@@ -191,19 +191,12 @@ def _fits(exoplanet,
             source = f'{exo_folder}/mastDownload'
             mast_name = data['obs_id'][j]
             os.makedirs(f'{source}/{mast_name}', exist_ok=True)
-            TESS_fits.writeto(f'{source}/{mast_name}/{mast_name}.fits')
+            TESS_fits.writeto(f'{source}/{mast_name}/{mast_name}.fits',
+                              overwrite=True)
             if provenance_name[j]=='SPOC':
                 time = TESS_fits[1].data['TIME'] + 2457000
                 flux = TESS_fits[1].data['PDCSAP_FLUX']
                 flux_err = TESS_fits[1].data['PDCSAP_FLUX_ERR']
-            # elif provenance_name[j]=='QLP':
-            #     time = TESS_fits[1].data['TIME'] + 2457000
-            #     flux = TESS_fits[1].data['KSPSAP_FLUX']
-            #     flux_err = TESS_fits[1].data['KSPSAP_FLUX_ERR']
-            # elif provenance_name[j]=='DIAMANTE':
-            #     time = TESS_fits[1].data['BTJD'] + 2457000
-            #     flux = TESS_fits[1].data['LC0_AP1']
-            #     flux_err = TESS_fits[1].data['ELC0_AP1']
             elif provenance_name[j]=='TASOC':
                 time = TESS_fits[1].data['TIME'] + 2457000
                 flux = TESS_fits[1].data['FLUX_RAW']
@@ -214,16 +207,10 @@ def _fits(exoplanet,
                 flux_err = TESS_fits[1].data['PDCSAP_FLUX_ERR']
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Extract all light curves to a single csv file
-        write_dict = []
-        for i in range(len(time)):
-            write_dict.append({'Time': time[i], 'Flux': flux[i],
-                               'Flux err': flux_err[i]})
         csv_name = f'{source}/{mast_name}/{mast_name}.csv'
-        with open(csv_name, 'w') as f:
-            columns = ['Time', 'Flux', 'Flux err']
-            writer = DictWriter(f, columns)
-            writer.writeheader()
-            writer.writerows(write_dict)
+        write_dict = {'Time': time, 'Flux': flux, 'Flux err': flux_err}
+        df = DataFrame(write_dict)
+        df.to_csv(csv_name, index=False, na_rep='nan')
         csv_in_dir.append(f'{os.getcwd()}/{csv_name}')
         
     print('\nSplitting up the lightcurves into seperate epochs:\n')
@@ -295,6 +282,10 @@ def _retrieval(
                                              cutoff=cutoff, window=window)
         split_curves = [s + '.csv' for s in split_curves]
         split_curve_in_dir.append(split_curves)
+        # lc_plot(csvfile)
+        if clean == True:
+            ...
+            # os.remove(csvfile)
     split_curve_in_dir = [i for sub in split_curve_in_dir for i in sub]
     print(f'\nA total of {len(split_curve_in_dir)} lightcurves '
           'were generated.')
@@ -384,6 +375,12 @@ def _retrieval(
     except ValueError:
         werr = float()
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Cleanup
+    # if clean == True:
+    #     rmtree(f'{exo_folder}/mastDownload')
+    #     os.remove(data)
+    #     os.remove(priors)
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Archive and sort
     print(
         'Variables used:\n\n'
@@ -436,7 +433,7 @@ def _retrieval(
             add .to_csv(summary_master, index=False)
     if clean==True:
         try:
-            rmtree(f'{exo_folder}/output_parameters/quicksaves')
+            # rmtree(f'{exo_folder}/output_parameters/quicksaves')
             rmtree(f'{exo_folder}/output_parameters/filter_0_parameters/quicksaves')
         except Exception:
             pass
