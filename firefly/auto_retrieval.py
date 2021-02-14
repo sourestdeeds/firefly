@@ -318,7 +318,7 @@ def firefly(
     '''
     exoplanet = _auto_input_check(targets, curve_sample)
     try:
-        archive_name, repack, results = \
+        archive_name = \
         _retrieval(
             # Firefly Interface
             exoplanet,
