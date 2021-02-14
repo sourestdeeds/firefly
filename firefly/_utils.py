@@ -282,10 +282,6 @@ def _retrieval(
                                              cutoff=cutoff, window=window)
         split_curves = [s + '.csv' for s in split_curves]
         split_curve_in_dir.append(split_curves)
-        # lc_plot(csvfile)
-        if clean == True:
-            ...
-            # os.remove(csvfile)
     split_curve_in_dir = [i for sub in split_curve_in_dir for i in sub]
     print(f'\nA total of {len(split_curve_in_dir)} lightcurves '
           'were generated.')
@@ -345,7 +341,6 @@ def _retrieval(
             final_lightcurve_folder=fitted_lightcurve_folder,
             plot_folder=plot_folder
         )
-    results = read_csv(f'{exo_folder}/output_parameters/Complete_results.csv')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Save Best Values
     master = read_csv(f'{exo_folder}/output_parameters/Complete_results.csv',
@@ -374,12 +369,6 @@ def _retrieval(
         werr = float(master['Error'].iloc[7])
     except ValueError:
         werr = float()
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # Cleanup
-    # if clean == True:
-    #     rmtree(f'{exo_folder}/mastDownload')
-    #     os.remove(data)
-    #     os.remove(priors)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Archive and sort
     print(
@@ -433,7 +422,7 @@ def _retrieval(
             add .to_csv(summary_master, index=False)
     if clean==True:
         try:
-            # rmtree(f'{exo_folder}/output_parameters/quicksaves')
+            rmtree(f'{exo_folder}/output_parameters/quicksaves')
             rmtree(f'{exo_folder}/output_parameters/filter_0_parameters/quicksaves')
         except Exception:
             pass
@@ -453,6 +442,6 @@ def _retrieval(
                      root_dir=f'{os.getcwd()}/firefly/',
                      base_dir=f'{exoplanet}')
     rmtree(f'{exo_folder}')
-    return archive_name, repack, results
+    return archive_name
 
 
