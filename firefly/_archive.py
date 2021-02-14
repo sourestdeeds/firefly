@@ -185,7 +185,7 @@ def tess_candidate():
     here = os.path.dirname(os.path.abspath(__file__))
     mast_csv = f'{here}/data/Search/TESS_lc.csv.xz'
     mast = read_csv(mast_csv)
-    for i in range(13,20):
+    for i in range(13,21):
         count = i
         df = mast.sort_values('links').reset_index()
         df = df.groupby(df.links.str[-30:-15].astype(int)).size().reset_index(name='Products')
@@ -216,7 +216,7 @@ def _download_archive():
         'pl_name,tic_id,pl_orbper,pl_orbsmax,pl_radj,pl_orbeccen,ttv_flag,' +\
         'st_teff,st_rad,st_mass,st_met,st_logg,pl_tranmid,pl_trandur,' +\
         'st_tefferr1,st_raderr1,st_meterr1,st_loggerr1,' +\
-        'pl_orbincl,pl_orblper' +\
+        'pl_orbincl,pl_orblper,ra,dec,glat,glon,sy_dist,sy_plx' +\
         '+from+pscomppars&format=csv',
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # NASA Kepler Names
@@ -380,6 +380,10 @@ def priors(exoplanet, archive='eu', save=False, user=True):
     t14 = s.loc['pl_trandur'] * 60
     logg = s.loc['st_logg']
     # loggerr = s.loc['st_loggerr1']
+    if archive=='nasa':
+        ra = s.loc['ra']
+        dec = s.loc['dec']
+        dist = s.loc['sy_dist']
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Assign Host data to Transitfit
     host_T = (T, T * 2e-2)
@@ -479,6 +483,8 @@ def priors(exoplanet, archive='eu', save=False, user=True):
         print(f'\nPriors generated from the {archive.upper()} Archive for'
               f' {exoplanet} ({tic}).\n')
     print(tabulate(repack, tablefmt='psql', showindex=False, headers='keys'))
+    if archive=='nasa':
+        return host_T, host_z, host_r, host_logg, t0, P, t14, repack, ra, dec, dist
     if user==False:
         return host_T, host_z, host_r, host_logg, t0, P, t14, repack
 
@@ -529,9 +535,14 @@ def gen_tess(archive='eu'):
     period = []
     epochs = []
     tic = []
+    ra_list, dec_list, dist_list = [], [], []
     for i, exoplanet in enumerate(exo_list):
         try:
-            host_T, host_z, host_r, host_logg, t0, P, t14, repack = \
+            if archive=='nasa':
+                host_T, host_z, host_r, host_logg, t0, P, t14, repack, ra, dec, dist = \
+                            priors(exoplanet, archive, user=False)
+            else:
+                host_T, host_z, host_r, host_logg, t0, P, t14, repack = \
                             priors(exoplanet, archive, user=False)
             lc_links, tic_id = _lc(exoplanet, mast)
             if not len(lc_links)==0:
@@ -541,12 +552,20 @@ def gen_tess(archive='eu'):
                 products.append(len(lc_links))
                 period.append(P)
                 epochs.append(epoch)
+                if archive=='nasa':
+                    ra_list.append(ra)
+                    dec_list.append(dec)
+                    dist_list.append(dist)
             else:
                 pass
         except Exception:
             pass
-    data = {'Exoplanet':viable, 'TIC ID':tic, 'Products':products, 'Period':period,
-            'Epochs':epochs}
+    if archive=='nasa':
+        data = {'Exoplanet':viable, 'TIC ID':tic, 'Products':products, 'Period':period,
+                'Epochs':epochs, 'RA':ra_list, 'DEC':dec_list, 'Distance':dist_list}
+    else:
+        data = {'Exoplanet':viable, 'TIC ID':tic, 'Products':products, 'Period':period,
+                'Epochs':epochs}
     df = DataFrame(data)
     df['Exoplanet'] = \
             Categorical(df['Exoplanet'],
