@@ -400,7 +400,7 @@ def _retrieval(
     )
     now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
     data = {'pl_name':exoplanet, 'pl_orbper':P, 'pl_orbpererr1':Perr,
-            'pl_trandur':t0, 'pl_trandurerr1':t0err,
+            'pl_tranmid':t0, 'pl_tranmiderr1':t0err,
             'pl_orbsmax':a, 'pl_orbsmaxerr1':aerr, 'pl_radj':rp,
             'pl_radjerr1':rperr, 'pl_orbincl':inc,
             'pl_orbinclerr1':incerr, 'pl_orbeccen':ecc, 'pl_orbeccenerr1':eccerr,
