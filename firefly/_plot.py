@@ -174,3 +174,63 @@ def lc_plot(file, flatten=False):
     plt.ylabel('Flux')
     filename = f'{file}'.replace('.csv', '')
     plt.savefig(f'{filename}.jpg', bbox_inches='tight')
+   
+  
+def mw():
+    from astropy import units as u
+    import astropy.coordinates as apycoords
+    from mw_plot import MWSkyMap, MWPlot
+    here = os.path.dirname(os.path.abspath(__file__))
+    df = pd.read_csv(f'{here}/data/Targets/nasa_tess_viable.csv')
+    ra = df['RA'].values * u.deg
+    dec = df['DEC'].values * u.deg
+    z = df['Epochs'].values
+    distance = df['Distance'] .values * u.pc
+    c = apycoords.SkyCoord(ra=ra, dec=dec, distance=distance, frame='icrs')
+    
+    plot_instance = MWPlot(mode='face-on', center=(0, 0)*u.kpc, radius= 12*u.kpc,
+                       unit=u.kpc, coord='galactic', annotation=True,  grayscale=False)
+    plot_instance.fontsize = 35  # fontsize for matplotlib plotting
+    plot_instance.figsize = (20, 20)  # figsize for matplotlib plotting
+    plot_instance.dpi = 200  # dpi for matplotlib plotting
+    plot_instance.cmap = 'hot'  # matplotlib cmap: https://matplotlib.org/examples/color/colormaps_reference.html
+    #plot_instance.clim = (vmin, vmax) # colorbar range
+    plot_instance.imalpha = 0.85  # alpha value for the milkyway image
+    plot_instance.s = 100.0  # make the scatter points bigger
+    plot_instance.tight_layout = True # whether plt.tight_layout() will be run
+    
+    plot_instance.mw_scatter(-c.galactic.cartesian.x, 
+                             c.galactic.cartesian.y, [z, 'Transits Observed'])
+    plot_instance.savefig('mw_zoom_out.png')
+    
+    
+    plot_instance = MWPlot(mode='face-on', center=(0, 0)*u.kpc, radius= 2*u.kpc,
+                       unit=u.kpc, coord='galactic', annotation=True,  grayscale=False)
+    plot_instance.fontsize = 35  # fontsize for matplotlib plotting
+    plot_instance.figsize = (20, 20)  # figsize for matplotlib plotting
+    plot_instance.dpi = 200  # dpi for matplotlib plotting
+    plot_instance.cmap = 'hot'  # matplotlib cmap: https://matplotlib.org/examples/color/colormaps_reference.html
+    #plot_instance.clim = (vmin, vmax) # colorbar range
+    plot_instance.imalpha = 1  # alpha value for the milkyway image
+    plot_instance.s = 100.0  # make the scatter points bigger
+    plot_instance.tight_layout = True # whether plt.tight_layout() will be run
+    
+    plot_instance.mw_scatter(-c.galactic.cartesian.x, 
+                             c.galactic.cartesian.y, [z, 'Transits Observed'])
+    plot_instance.savefig('mw.png')
+    
+    
+    plot_instance = MWPlot(mode='face-on', center=(0, 0)*u.kpc, radius= 1*u.kpc,
+                       unit=u.kpc, coord='galactic', annotation=True,  grayscale=False)
+    plot_instance.fontsize = 35  # fontsize for matplotlib plotting
+    plot_instance.figsize = (20, 20)  # figsize for matplotlib plotting
+    plot_instance.dpi = 200  # dpi for matplotlib plotting
+    plot_instance.cmap = 'hot'  # matplotlib cmap: https://matplotlib.org/examples/color/colormaps_reference.html
+    #plot_instance.clim = (vmin, vmax) # colorbar range
+    plot_instance.imalpha = 1  # alpha value for the milkyway image
+    plot_instance.s = 100.0  # make the scatter points bigger
+    plot_instance.tight_layout = True # whether plt.tight_layout() will be run
+    
+    plot_instance.mw_scatter(-c.galactic.cartesian.x, 
+                             c.galactic.cartesian.y, [z, 'Transits Observed'])
+    plot_instance.savefig('mw_zoom_in.png')
