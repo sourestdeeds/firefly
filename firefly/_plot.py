@@ -17,12 +17,12 @@ mpl.rcParams['figure.dpi'] = 300
 
 base_context = {
 
-                "font.size": 18,
-                "axes.labelsize": 18,
+                "font.size": 14,
+                "axes.labelsize": 14,
                 "axes.titlesize": 14,
-                "xtick.labelsize": 16,
-                "ytick.labelsize": 16,
-                "legend.fontsize": 16,
+                "xtick.labelsize": 14,
+                "ytick.labelsize": 14,
+                "legend.fontsize": 14,
 
                 "axes.linewidth": 1.25,
                 "grid.linewidth": 1,
