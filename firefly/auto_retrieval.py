@@ -41,8 +41,8 @@ def firefly(
         cadence=[120],
         # TransitFit Variables
         cutoff=0.25,
-        window=2.5,
-        nlive=1000,
+        window=5,
+        nlive=625,
         fit_ttv=False,
         detrending_list=[['nth order', 2]],
         dynesty_sample='rslice',
