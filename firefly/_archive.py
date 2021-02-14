@@ -43,10 +43,17 @@ def _load_csv():
     eu_csv = 'firefly/data/eu.csv.gz'
     oec_csv = 'firefly/data/oec.csv.gz'
     org_csv = 'firefly/data/org.csv.gz'
-    global exo_nasa, exo_eu, exo_oec, exo_org
+    spearnet_csv = 'firefly/data/spear.csv'
+    global exo_nasa, exo_eu, exo_oec, exo_org, exo_spearnet
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # NASA
     exo_nasa = read_csv(nasa_csv)
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # SPEARNET
+    try:
+        exo_spearnet = read_csv(spearnet_csv)
+    except:
+        pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # EU
     col_subset_eu = ['# name', 'orbital_period', 'semi_major_axis', 'radius',
@@ -323,7 +330,7 @@ def priors(exoplanet, archive='eu', save=False, user=True):
         highest, ratios = _search_all(exoplanet)
         exoplanet = highest[0]
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    archive_list = [exo_nasa, exo_eu, exo_org, exo_oec]
+    archive_list = [exo_nasa, exo_eu, exo_org, exo_oec, exo_spearnet]
     exo_archive = concat(archive_list).set_index('pl_name')
     # if archive =='all':
     #     exo_archive = concat(archive_list)
@@ -338,29 +345,33 @@ def priors(exoplanet, archive='eu', save=False, user=True):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Pick Out Chosen Exoplanet Priors
     try:
-        df = DataFrame(exo_archive).loc[[exoplanet]]
+        choice = DataFrame(exo_archive).loc[[exoplanet]]
     except KeyError:
         sys.exit('The chosen target is either spelt incorrectly, or does not '
                  'exist in the EU archive.')
     try:
-        tic = df['tic_id'] .drop_duplicates() .dropna()[0]
+        # tic = df['tic_id'] .drop_duplicates() .dropna()[0]
+        tic = _tic(exoplanet)
     except IndexError:
         tic = 'N/A'
     # Choose Archive
     if archive=='nasa':
-        df = df.iloc[[0]]
+        df = choice.iloc[[0]]
     elif archive=='eu':
-        df = df.iloc[[1]]
+        df = choice.iloc[[1]]
     # elif archive=='oec':
     #     df = df.iloc[[1]]
     elif archive=='org':
-        df = df.iloc[[2]]
+        df = choice.iloc[[2]]
+    elif archive=='spearnet':
+        df = choice.iloc[[4]]
+        s_limb = choice.mean()
     # Turn into a series
     s = df.iloc[0]
     t0 = s.loc['pl_tranmid']
     if archive=='all':
-        t0 = df['pl_tranmid'].max()
-        df = _IQR(df, sigma=3)
+        t0 = choice['pl_tranmid'].max()
+        df = _IQR(choice, sigma=3)
         s = df.mean()
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Values for calculation
@@ -422,6 +433,17 @@ def priors(exoplanet, archive='eu', save=False, user=True):
         host_z = (z, 0.05)
     if (np.isnan(z) or z==0):
         host_z = (0, 0.05)
+    if archive=='spearnet':
+        rs = s_limb.loc['st_rad']
+        z = s_limb.loc['st_met']
+        zerr =  s_limb.loc['st_meterr1']
+        ms = s_limb.loc['st_mass']
+        T = s_limb.loc['st_teff']
+        logg = s_limb.loc['st_logg']
+        host_T = (T, T * 2e-2)
+        host_z = (z, zerr)
+        host_r = (rs, rs * 5e-2)
+        host_logg = (logg, logg * 2e-2)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Assign Exoplanet Priors to TransitFit
     radius_const = 0.1027626851
@@ -477,13 +499,13 @@ def priors(exoplanet, archive='eu', save=False, user=True):
     if archive=='all':
         print(f'\nPriors generated from the NASA, EU, OEC and ORG Archives for'
               f' {exoplanet} ({tic}).\n')
-    elif archive not in ['nasa', 'eu', 'org']:
+    elif archive not in ['nasa', 'eu', 'org', 'spearnet']:
         archive = 'NASA'
     else:
         print(f'\nPriors generated from the {archive.upper()} Archive for'
               f' {exoplanet} ({tic}).\n')
     print(tabulate(repack, tablefmt='psql', showindex=False, headers='keys'))
-    if archive=='nasa':
+    if (archive=='nasa' and user==False):
         return host_T, host_z, host_r, host_logg, t0, P, t14, repack, ra, dec, dist
     if user==False:
         return host_T, host_z, host_r, host_logg, t0, P, t14, repack
