@@ -451,6 +451,7 @@ def priors(exoplanet, archive='eu', save=False, user=True):
         host_z = (z, zerr)
         host_r = (rs, rs * 5e-2)
         host_logg = (logg, logg * 2e-2)
+        t14 = estimate_t14(rp, rs, a, P)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Assign Exoplanet Priors to TransitFit
     radius_const = 0.1027626851
@@ -502,10 +503,11 @@ def priors(exoplanet, archive='eu', save=False, user=True):
             ['rp', ['gaussian' if archive=='spearnet' else 'uniform'][0],
              [rp if archive=='spearnet' else (0.9 * radius_const * rp / rs)][0],
              [rperr if archive=='spearnet' else (1.1 * radius_const * rp / rs)][0], 0],
-            ['host_T', 'fixed', host_T[0], host_T[1], ''],
-            ['host_z', 'fixed', host_z[0], host_z[1], ''],
-            ['host_r', 'fixed', host_r[0], host_r[1], ''],
-            ['host_logg', 'fixed', host_logg[0], host_logg[1], '']]
+            ['t14', '', t14, '', ''],
+            ['host_T', '', host_T[0], host_T[1], ''],
+            ['host_z', '', host_z[0], host_z[1], ''],
+            ['host_r', '', host_r[0], host_r[1], ''],
+            ['host_logg', '', host_logg[0], host_logg[1], '']]
     repack = DataFrame(cols, columns=['Parameter', 'Distribution',
                                       'Input A', 'Input B', 'Filter'])
     is_nan = repack.isnull().values.any()
