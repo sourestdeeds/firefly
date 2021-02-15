@@ -260,19 +260,18 @@ def _retrieval(
     _TESS_filter()
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Download Archive
-    host_T, host_z, host_r, host_logg, t0, P, t14, repack = \
-        priors(exoplanet, archive=archive, save=True, user=False)
+    if archive=='nasa':
+        host_T, host_z, host_r, host_logg, t0, P, t14, repack, ra, dec, dist = \
+            priors(exoplanet, archive=archive, save=True, user=False)
+    else:
+        host_T, host_z, host_r, host_logg, t0, P, t14, repack = \
+            priors(exoplanet, archive=archive, save=True, user=False)
     if auto==False:
         answer = ''
         while answer!='y':
             answer = input('Modify your priors file, type y to proceed. ')
             if answer=='q':
                 sys.exit('Exiting..')
-    # cols = [['t0', t0], ['P', P], ['t14', t14]]
-    # df = DataFrame(cols, columns=['Parameter', 'Value'])
-    # print('\nSplitting the lightcurve into seperate epochs'
-    #       ' using the following parameters.\n')
-    # print(tabulate(df, tablefmt='psql', showindex=False, headers='keys'))
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Split the Light curves
     split_curve_in_dir = []
