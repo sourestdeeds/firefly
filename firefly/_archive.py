@@ -434,6 +434,13 @@ def priors(exoplanet, archive='eu', save=False, user=True):
     if (np.isnan(z) or z==0):
         host_z = (0, 0.05)
     if archive=='spearnet':
+        Perr = s.loc['pl_orbpererr1']
+        aerr = s.loc['pl_orbsmaxerr1']
+        ierr = s.loc['pl_orbinclerr1']
+        werr = s.loc['pl_orblpererr1']
+        eccerr = s.loc['pl_orbeccenerr1']
+        t0err = s.loc['pl_tranmiderr1']
+        rperr = s.loc['pl_radjerr1']
         rs = s_limb.loc['st_rad']
         z = s_limb.loc['st_met']
         zerr =  s_limb.loc['st_meterr1']
@@ -447,20 +454,24 @@ def priors(exoplanet, archive='eu', save=False, user=True):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Assign Exoplanet Priors to TransitFit
     radius_const = 0.1027626851
-    cols = [['P', 'gaussian', P, P * 1e-4, ''],
-            ['t0', 'gaussian', t0, 7e-3, ''],
-            ['a', 'gaussian', a, a * 1e-2, ''],
-            ['inc', 'gaussian', i, i * 1e-2, ''],
+    cols = [['P', 'gaussian', P, [Perr if archive=='spearnet' else P * 1e-4][0], ''],
+            ['t0', 'gaussian', t0, [t0err if archive=='spearnet' else 7e-3][0], ''],
+            ['a', 'gaussian', a, [aerr if archive=='spearnet' else a * 1e-2][0], ''],
+            ['inc', 'gaussian', i, [ierr if archive=='spearnet' else i * 1e-2][0], ''],
             ['w', ['fixed' if w==90 else 'gaussian'][0], w,
              ['' if w==90
-              else (360-np.abs(w))/2 if 180 < w < 360
+              else (360-np.abs(w))/2 if 180 < w < 270
               else (360-np.abs(w)) if 270 <= w < 360
+              else werr if archive=='spearnet'
               else w * 0.5][0], ''],
-            ['ecc', ['fixed' if ecc==0 else 'gaussian'][0], ecc,
-             ['' if ecc==0 else ecc * 0.5][0], ''],
-            ['rp', 'uniform',
-             0.9 * radius_const * rp / rs,
-             1.1 * radius_const * rp / rs, 0]]
+            ['ecc', ['fixed' if ecc==0
+                     else 'gaussian'][0], ecc,
+             ['' if ecc==0
+              else eccerr if archive=='spearnet'
+              else ecc * 0.5][0], ''],
+            ['rp', ['gaussian' if archive=='spearnet' else 'uniform'][0],
+             [rp if archive=='spearnet' else (0.9 * radius_const * rp / rs)][0],
+             [rperr if archive=='spearnet' else (1.1 * radius_const * rp / rs)][0], 0]]
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Save the priors
     priors_csv = DataFrame(cols, columns=['Parameter', 'Distribution',
@@ -473,20 +484,24 @@ def priors(exoplanet, archive='eu', save=False, user=True):
             pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # For printing variables only
-    cols = [['P', 'gaussian', P, P * 1e-4, ''],
-            ['t0', 'gaussian', t0, 7e-3, ''],
-            ['a', 'gaussian', a, a * 1e-2, ''],
-            ['inc', 'gaussian', i, i * 1e-2, ''],
+    cols = [['P', 'gaussian', P, [Perr if archive=='spearnet' else P * 1e-4][0], ''],
+            ['t0', 'gaussian', t0, [t0err if archive=='spearnet' else 7e-3][0], ''],
+            ['a', 'gaussian', a, [aerr if archive=='spearnet' else a * 1e-2][0], ''],
+            ['inc', 'gaussian', i, [ierr if archive=='spearnet' else i * 1e-2][0], ''],
             ['w', ['fixed' if w==90 else 'gaussian'][0], w,
              ['' if w==90
               else (360-np.abs(w))/2 if 180 < w < 270
               else (360-np.abs(w)) if 270 <= w < 360
+              else werr if archive=='spearnet'
               else w * 0.5][0], ''],
-            ['ecc', ['fixed' if ecc==0 else 'gaussian'][0], ecc,
-             ['' if ecc==0 else ecc * 0.5][0], ''],
-            ['rp', 'uniform',
-             0.9 * radius_const * rp / rs,
-             1.1 * radius_const * rp / rs, 0],
+            ['ecc', ['fixed' if ecc==0
+                     else 'gaussian'][0], ecc,
+             ['' if ecc==0
+              else eccerr if archive=='spearnet'
+              else ecc * 0.5][0], ''],
+            ['rp', ['gaussian' if archive=='spearnet' else 'uniform'][0],
+             [rp if archive=='spearnet' else (0.9 * radius_const * rp / rs)][0],
+             [rperr if archive=='spearnet' else (1.1 * radius_const * rp / rs)][0], 0],
             ['host_T', 'fixed', host_T[0], host_T[1], ''],
             ['host_z', 'fixed', host_z[0], host_z[1], ''],
             ['host_r', 'fixed', host_r[0], host_r[1], ''],
