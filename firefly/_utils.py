@@ -268,11 +268,11 @@ def _retrieval(
             answer = input('Modify your priors file, type y to proceed. ')
             if answer=='q':
                 sys.exit('Exiting..')
-    cols = [['t0', t0], ['P', P], ['t14', t14]]
-    df = DataFrame(cols, columns=['Parameter', 'Value'])
-    print('\nSplitting the lightcurve into seperate epochs'
-          ' using the following parameters.\n')
-    print(tabulate(df, tablefmt='psql', showindex=False, headers='keys'))
+    # cols = [['t0', t0], ['P', P], ['t14', t14]]
+    # df = DataFrame(cols, columns=['Parameter', 'Value'])
+    # print('\nSplitting the lightcurve into seperate epochs'
+    #       ' using the following parameters.\n')
+    # print(tabulate(df, tablefmt='psql', showindex=False, headers='keys'))
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Split the Light curves
     split_curve_in_dir = []
