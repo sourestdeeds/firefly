@@ -330,7 +330,10 @@ def priors(exoplanet, archive='eu', save=False, user=True):
         highest, ratios = _search_all(exoplanet)
         exoplanet = highest[0]
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    archive_list = [exo_nasa, exo_eu, exo_org, exo_oec, exo_spearnet]
+    try:
+        archive_list = [exo_nasa, exo_eu, exo_org, exo_oec, exo_spearnet]
+    except:
+        archive_list = [exo_nasa, exo_eu, exo_org, exo_oec]
     exo_archive = concat(archive_list).set_index('pl_name')
     # if archive =='all':
     #     exo_archive = concat(archive_list)
