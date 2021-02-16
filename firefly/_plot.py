@@ -17,12 +17,12 @@ mpl.rcParams['figure.dpi'] = 300
 
 base_context = {
 
-                "font.size": 14,
-                "axes.labelsize": 14,
+                "font.size": 18,
+                "axes.labelsize": 18,
                 "axes.titlesize": 14,
-                "xtick.labelsize": 14,
-                "ytick.labelsize": 14,
-                "legend.fontsize": 14,
+                "xtick.labelsize": 16,
+                "ytick.labelsize": 16,
+                "legend.fontsize": 16,
 
                 "axes.linewidth": 1.25,
                 "grid.linewidth": 1,
@@ -42,7 +42,9 @@ base_context = {
 
                 }
 
-sns.set_theme(style="whitegrid", rc = base_context)
+sns.set_theme(style="whitegrid")
+sns.set_context('paper')
+sns.set_palette('deep')
 
 def change_width(ax, new_value):
     for patch in ax.patches:
@@ -53,6 +55,7 @@ def change_width(ax, new_value):
 
 
 def plot_epoch(sub=False):
+    sns.set_theme(style="whitegrid", rc = base_context)
     if sub==True:
         fig, ax = plt.subplots(figsize=(20,25))
     archive_list = ['eu', 'nasa', 'org', 'all']
@@ -126,6 +129,7 @@ def plot_epoch(sub=False):
         
 
 def lc_plot(file, flatten=False):
+    sns.set_theme(style="whitegrid", rc = base_context)
     from lightkurve import LightCurve
     df = pd.read_csv(file).dropna()
     time = df['Time'].values - 2457000
@@ -174,8 +178,8 @@ def lc_plot(file, flatten=False):
     plt.ylabel('Flux')
     filename = f'{file}'.replace('.csv', '')
     plt.savefig(f'{filename}.jpg', bbox_inches='tight')
-   
-  
+
+
 def mw():
     from astropy import units as u
     import astropy.coordinates as apycoords
@@ -199,7 +203,7 @@ def mw():
     plot_instance.s = 100.0  # make the scatter points bigger
     plot_instance.tight_layout = True # whether plt.tight_layout() will be run
     
-    plot_instance.mw_scatter(-c.galactic.cartesian.x, 
+    plot_instance.mw_scatter(-c.galactic.cartesian.x,
                              c.galactic.cartesian.y, [z, 'Transits Observed'])
     plot_instance.savefig('mw_zoom_out.png')
     
@@ -215,7 +219,7 @@ def mw():
     plot_instance.s = 100.0  # make the scatter points bigger
     plot_instance.tight_layout = True # whether plt.tight_layout() will be run
     
-    plot_instance.mw_scatter(-c.galactic.cartesian.x, 
+    plot_instance.mw_scatter(-c.galactic.cartesian.x,
                              c.galactic.cartesian.y, [z, 'Transits Observed'])
     plot_instance.savefig('mw.png')
     
@@ -231,6 +235,6 @@ def mw():
     plot_instance.s = 100.0  # make the scatter points bigger
     plot_instance.tight_layout = True # whether plt.tight_layout() will be run
     
-    plot_instance.mw_scatter(-c.galactic.cartesian.x, 
+    plot_instance.mw_scatter(-c.galactic.cartesian.x,
                              c.galactic.cartesian.y, [z, 'Transits Observed'])
     plot_instance.savefig('mw_zoom_in.png')
