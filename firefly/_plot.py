@@ -9,6 +9,10 @@ Created on Sat Feb  6 13:14:20 2021
 import pandas as pd
 import os
 from matplotlib import pyplot as plt
+import matplotlib.gridspec as gridspec
+from matplotlib.colors import to_rgb
+from matplotlib import colors
+from astropy.timeseries import LombScargle
 from astropy import units as u
 import numpy as np
 import matplotlib as mpl
@@ -238,3 +242,77 @@ def mw():
     plot_instance.mw_scatter(-c.galactic.cartesian.x,
                              c.galactic.cartesian.y, [z, 'Transits Observed'])
     plot_instance.savefig('mw_zoom_in.png')
+    
+
+def oc():
+    '''
+    Loads in the t0 and errors
+    '''
+
+    #path = '../outputs/full_analysis_results/independent_LDC_results.csv'
+    path_ttv = 'ttv_results.csv'
+    path = 'Complete_results.csv'
+    data_ttv = pd.read_csv(path_ttv).set_index('Parameter') \
+                .filter(like = 't0', axis=0).drop(['Telescope', 'Filter'], axis=1)
+    data = pd.read_csv(path).set_index('Parameter') \
+                .filter(like = 't0', axis=0).drop(['Telescope', 'Filter'], axis=1)
+    
+    t0_o = data['Best'] .values
+    t0_oerr = data['Error'].astype(float) .values
+    t0_c = data_ttv['Best'] .values
+    t0_cerr = data_ttv['Error'].astype(float) .values
+    epoch_no = (data_ttv['Epoch'].astype(int) + 1) . values
+    
+    ominusc = t0_c  - t0_o
+    ominuscerr = t0_cerr - t0_oerr
+    ominusc *= 24 * 60
+    ominuscerr *= 24 * 60
+
+    # Do the Lomb-Scargel stuff.
+    ls = LombScargle(epoch_no, ominusc, ominuscerr)
+
+    #frequency, power = ls.autopower(minimum_frequency=1/200, maximum_frequency=1/100)
+    frequency, power = ls.autopower(nyquist_factor=1, samples_per_peak=100)#minimum_frequency=1/150, maximum_frequency=1/0.5)
+
+    fap = ls.false_alarm_probability(power.max())
+    
+    false_alarm_levels = ls.false_alarm_level([0.1, 0.05, 0.01])
+    #print(frequency, power)
+
+    # Get the best frequency for plotting??
+    fit_x = np.linspace(epoch_no.min(), epoch_no.max(), 1000)
+    fit_y = ls.model(fit_x, frequency[np.argmax(power)])
+    
+     # Make figure and axes
+    fig = plt.figure(figsize=(15,10))
+    gs = gridspec.GridSpec(2, 1)
+
+    oc_ax = fig.add_subplot(gs[0])
+    ls_ax = fig.add_subplot(gs[1])
+
+    #Plot data
+    oc_ax.errorbar(epoch_no, ominusc, ominuscerr, marker='.', 
+                   elinewidth=0.8, color='b', linestyle='', 
+                   capsize=2, alpha=0.8, zorder=1)
+    oc_ax.scatter(epoch_no, ominusc, marker='.', color='black', zorder=2)
+    oc_ax.axhline(0, color='black', linestyle='--', linewidth=1)
+    oc_ax.plot(fit_x, fit_y, color='red', alpha=0.8)
+
+    ls_ax.plot(1/frequency, power, linestyle='-', linewidth=1, marker='', color='dimgrey')
+    for level in false_alarm_levels:
+        ls_ax.axhline(level)
+
+    # Sort out labels etc
+    oc_ax.set_xlabel('Epoch')
+    oc_ax.set_ylabel('O-C (minutes)')
+
+    ls_ax.set_xlabel('Period (Epochs)')
+    ls_ax.set_ylabel('Power')
+
+    oc_ax.tick_params('both', which='both', direction='in', top=True, right=True)
+    ls_ax.tick_params('both', which='both', direction='in', top=True, right=True)
+
+    ls_ax.set_xscale('log')
+
+    fig.tight_layout()
+    fig.savefig('O-C.jpg', bbox_inches='tight')
