@@ -276,7 +276,7 @@ def oc():
 
     fap = ls.false_alarm_probability(power.max())
     
-    levels = [0.1, 0.05, 0.01]
+    levels = [0.99, 0.5, 0.1, 0.05, 0.01]
     false_alarm_levels = ls.false_alarm_level(levels)
     #print(frequency, power)
     pack = {'FAP':false_alarm_levels, 'Percentage':levels}
@@ -302,9 +302,11 @@ def oc():
     ls_ax.scatter(1/frequency, power, color='b', alpha=0.01, zorder=1, s=10)
     ls_ax.plot(1/frequency, power, linestyle='-', linewidth=1, zorder=2,
                marker='', color='k')
+    pos = (1/frequency).max() - 2000
     for (level, i) in zip(false_alarm_levels, levels):
-        ls_ax.axhline(level, color='r', linestyle='--')
-        ls_ax.annotate(f'FAP {str(int(i*100))}'+'$\%$', (2, level*1.01), color='k')
+        ls_ax.axhline(level, color='r', linestyle='--', alpha=0.8)
+        ls_ax.annotate(f'FAP {str(int(i*100))}'+'$\%$', 
+                       (pos, level*1.01), color='k')
     # Sort out labels etc
     oc_ax.set_xlabel('Epoch')
     oc_ax.set_ylabel('O-C (minutes)')
