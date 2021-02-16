@@ -267,7 +267,10 @@ def oc():
     ominuscerr = t0_cerr - t0_oerr
     ominusc *= 24 * 60
     ominuscerr *= 24 * 60
+    from sklearn.preprocessing import scale
+    ominusc = scale(ominusc)
 
+    
     # Do the Lomb-Scargel stuff.
     ls = LombScargle(epoch_no, ominusc, ominuscerr)
 
@@ -293,14 +296,15 @@ def oc():
 
     #Plot data
     oc_ax.errorbar(epoch_no, ominusc, ominuscerr, marker='.', 
-                   elinewidth=0.8, color='b', linestyle='', 
+                   elinewidth=0.8, color='dimgrey', linestyle='', 
                    capsize=2, alpha=0.8, zorder=1)
-    oc_ax.scatter(epoch_no, ominusc, marker='.', color='black', zorder=2)
+    oc_ax.scatter(epoch_no, ominusc, marker='.', color='dimgrey', zorder=2)
     oc_ax.axhline(0, color='black', linestyle='--', linewidth=1)
     oc_ax.plot(fit_x, fit_y, color='red', alpha=0.8)
     
-    ls_ax.scatter(1/frequency, power, color='b', alpha=0.01, zorder=1, s=10)
-    ls_ax.plot(1/frequency, power, linestyle='-', linewidth=1, zorder=2,
+    
+    #ls_ax.scatter(1/frequency, power, color='dimgrey', alpha=0.1, zorder=1, s=10)
+    ls_ax.plot(1/frequency, power, linestyle='-', linewidth=0.75, zorder=2,
                marker='', color='k')
     pos = (1/frequency).max() - 2000
     for (level, i) in zip(false_alarm_levels, levels):
