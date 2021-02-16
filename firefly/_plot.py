@@ -276,15 +276,16 @@ def oc():
 
     fap = ls.false_alarm_probability(power.max())
     
-    false_alarm_levels = ls.false_alarm_level([0.1, 0.05, 0.01])
+    levels = [0.1, 0.05, 0.01]
+    false_alarm_levels = ls.false_alarm_level(levels)
     #print(frequency, power)
-
+    pack = {'FAP':false_alarm_levels, 'Percentage':levels}
     # Get the best frequency for plotting??
     fit_x = np.linspace(epoch_no.min(), epoch_no.max(), 1000)
     fit_y = ls.model(fit_x, frequency[np.argmax(power)])
     
      # Make figure and axes
-    fig = plt.figure(figsize=(15,10))
+    fig = plt.figure(figsize=(12,8))
     gs = gridspec.GridSpec(2, 1)
 
     oc_ax = fig.add_subplot(gs[0])
@@ -297,11 +298,13 @@ def oc():
     oc_ax.scatter(epoch_no, ominusc, marker='.', color='black', zorder=2)
     oc_ax.axhline(0, color='black', linestyle='--', linewidth=1)
     oc_ax.plot(fit_x, fit_y, color='red', alpha=0.8)
-
-    ls_ax.plot(1/frequency, power, linestyle='-', linewidth=1, marker='', color='dimgrey')
-    for level in false_alarm_levels:
-        ls_ax.axhline(level)
-
+    
+    ls_ax.scatter(1/frequency, power, color='b', alpha=0.01, zorder=1, s=10)
+    ls_ax.plot(1/frequency, power, linestyle='-', linewidth=1, zorder=2,
+               marker='', color='k')
+    for (level, i) in zip(false_alarm_levels, levels):
+        ls_ax.axhline(level, color='r', linestyle='--')
+        ls_ax.annotate(f'FAP {str(int(i*100))}'+'$\%$', (2, level*1.01), color='k')
     # Sort out labels etc
     oc_ax.set_xlabel('Epoch')
     oc_ax.set_ylabel('O-C (minutes)')
@@ -309,8 +312,8 @@ def oc():
     ls_ax.set_xlabel('Period (Epochs)')
     ls_ax.set_ylabel('Power')
 
-    oc_ax.tick_params('both', which='both', direction='in', top=True, right=True)
-    ls_ax.tick_params('both', which='both', direction='in', top=True, right=True)
+    oc_ax.tick_params('both', which='both', direction='in', bottom=True, left=True)
+    ls_ax.tick_params('both', which='both', direction='in', bottom=True, left=True)
 
     ls_ax.set_xscale('log')
 
