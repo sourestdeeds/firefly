@@ -244,26 +244,18 @@ def mw():
     plot_instance.savefig('mw_zoom_in.png')
     
 
-def oc():
-    '''
-    Loads in the t0 and errors
-    '''
-
-    #path = '../outputs/full_analysis_results/independent_LDC_results.csv'
-    path_ttv = 'ttv_results.csv'
-    path = 'Complete_results.csv'
+def oc(t0, t0_err, file='Complete_Results.csv'):
+    path_ttv = file
     data_ttv = pd.read_csv(path_ttv).set_index('Parameter') \
                 .filter(like = 't0', axis=0).drop(['Telescope', 'Filter'], axis=1)
-    data = pd.read_csv(path).set_index('Parameter') \
-                .filter(like = 't0', axis=0).drop(['Telescope', 'Filter'], axis=1)
     
-    t0_o = data['Best'] .values
-    t0_oerr = data['Error'].astype(float) .values
+    t0_o = t0 # data['Best'] .values
+    t0_oerr = t0_err # data['Error'].astype(float) .values
     t0_c = data_ttv['Best'] .values
     t0_cerr = data_ttv['Error'].astype(float) .values
     epoch_no = (data_ttv['Epoch'].astype(int) + 1) . values
     
-    ominusc = t0_c  - t0_o
+    ominusc = t0_c - t0_o
     ominuscerr = t0_cerr - t0_oerr
     ominusc *= 24 * 60
     ominuscerr *= 24 * 60
@@ -271,23 +263,20 @@ def oc():
     ominusc = scale(ominusc)
 
     
-    # Do the Lomb-Scargel stuff.
+    # Generalised Lomb Scargle
     ls = LombScargle(epoch_no, ominusc, ominuscerr)
-
-    #frequency, power = ls.autopower(minimum_frequency=1/200, maximum_frequency=1/100)
     frequency, power = ls.autopower(nyquist_factor=1, samples_per_peak=100)#minimum_frequency=1/150, maximum_frequency=1/0.5)
-
+    # False Alarm Probability
     fap = ls.false_alarm_probability(power.max())
-    
     levels = [0.99, 0.5, 0.1, 0.05, 0.01]
     false_alarm_levels = ls.false_alarm_level(levels)
-    #print(frequency, power)
     pack = {'FAP':false_alarm_levels, 'Percentage':levels}
+    
     # Get the best frequency for plotting??
     fit_x = np.linspace(epoch_no.min(), epoch_no.max(), 1000)
     fit_y = ls.model(fit_x, frequency[np.argmax(power)])
     
-     # Make figure and axes
+    # Make figure and axes
     fig = plt.figure(figsize=(12,8))
     gs = gridspec.GridSpec(2, 1)
 
@@ -301,7 +290,6 @@ def oc():
     oc_ax.scatter(epoch_no, ominusc, marker='.', color='dimgrey', zorder=2)
     oc_ax.axhline(0, color='black', linestyle='--', linewidth=1)
     oc_ax.plot(fit_x, fit_y, color='red', alpha=0.8)
-    
     
     #ls_ax.scatter(1/frequency, power, color='dimgrey', alpha=0.1, zorder=1, s=10)
     ls_ax.plot(1/frequency, power, linestyle='-', linewidth=0.75, zorder=2,
