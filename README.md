@@ -1,6 +1,6 @@
 # **firefly**
-A target selector for use with TransitFit to fit TESS lightcurves.
-
+### A target selector for use with TransitFit to fit TESS lightcurves.
+![alt text](https://github.com/sourestdeeds/firefly/blob/main/firefly/data/filter_0.png?raw=true)
 #### Installation
 ```bash
 python setup.py install
