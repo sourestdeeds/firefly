@@ -55,7 +55,7 @@ Priors generated from the EU Archive for WASP-43 b (TIC 36734222).
 | t0          | gaussian       |    2.45573e+06 |   0.007       |          |
 | a           | gaussian       |    0.01526     |   0.0001526   |          |
 | inc         | gaussian       |   82.33        |   0.8233      |          |
-| w           | gaussian       |  328           | 164           |          |
+| w           | gaussian       |  328           |  20           |          |
 | ecc         | gaussian       |    0.0035      |   0.00175     |          |
 | rp          | uniform        |    0.143652    |   0.175575    | 0        |
 | host_T      | fixed          | 4520           |  90.4         |          |
@@ -120,7 +120,7 @@ Priors generated from the EU Archive for WASP-43 b (TIC 36734222).
 | t0          | gaussian       |    2.45573e+06 |   0.007       |          |
 | a           | gaussian       |    0.01526     |   0.0001526   |          |
 | inc         | gaussian       |   82.33        |   0.8233      |          |
-| w           | gaussian       |  328           | 164           |          |
+| w           | gaussian       |  328           |  20           |          |
 | ecc         | gaussian       |    0.0035      |   0.00175     |          |
 | rp          | uniform        |    0.143652    |   0.175575    | 0        |
 | host_T      | fixed          | 4520           |  90.4         |          |
