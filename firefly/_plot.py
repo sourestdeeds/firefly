@@ -313,3 +313,103 @@ def oc(t0, t0_err, file='Complete_Results.csv'):
 
     fig.tight_layout()
     fig.savefig('O-C.jpg', bbox_inches='tight')
+   
+  
+def oc_fold(t0, t0err, file='Complete_results.csv'):
+    '''
+    Loads in the t0 and errors
+    '''
+
+    path_ttv = file
+    data_ttv = pd.read_csv(path_ttv).set_index('Parameter') \
+                .filter(like = 't0', axis=0).drop(['Telescope', 'Filter'], axis=1)
+    
+    t0_o = t0 #data['Best'] .values
+    t0_oerr = t0err # data['Error'].astype(float) .values
+    t0_c = data_ttv['Best'] .values
+    t0_cerr = data_ttv['Error'].astype(float) .values
+    epoch_no = (data_ttv['Epoch'].astype(int) + 1) . values
+    
+    ominusc = t0_c  - t0_o
+    ominuscerr = t0_cerr - t0_oerr
+    ominusc *= 24 * 60
+    ominuscerr *= 24 * 60
+    from sklearn.preprocessing import scale
+    ominusc = scale(ominusc)
+    
+    
+    # Do the Lomb-Scargel stuff.
+    ls = LombScargle(epoch_no, ominusc, ominuscerr)
+
+    #frequency, power = ls.autopower(minimum_frequency=1/200, maximum_frequency=1/100)
+    frequency, power = ls.autopower(nyquist_factor=1, samples_per_peak=100)#minimum_frequency=1/150, maximum_frequency=1/0.5)
+    best_f = frequency[np.argmax(power)]
+    best_P = 1/frequency[np.argmax(power)]
+    epoch_phase = (epoch_no - (epoch_no //best_P) * best_P)/best_P
+    epoch_phase = scale(epoch_phase)
+    ominusc_phase = (ominusc - (ominusc //best_P) * best_P)/best_P
+    ominusc_phase = scale(ominusc_phase)
+    fap = ls.false_alarm_probability(power.max())
+    
+    levels = [0.99, 0.5, 0.1, 0.05, 0.01]
+    false_alarm_levels = ls.false_alarm_level(levels)
+    #print(frequency, power)
+    pack = {'FAP':false_alarm_levels, 'Percentage':levels}
+    # Fits
+    fit_x = np.linspace(epoch_no.min(), epoch_no.max(), 1000)
+    fit_y = ls.model(fit_x, frequency[np.argmax(power)])
+    
+    fit_x_phase = (fit_x - (fit_x //best_P) * best_P)/best_P
+    fit_x_phase = scale(fit_x_phase)
+    # Make figure and axes
+    fig = plt.figure(figsize=(12,8))
+    gs = gridspec.GridSpec(3, 1)
+
+    oc_ax = fig.add_subplot(gs[0])
+    phase_ax = fig.add_subplot(gs[1])
+    ls_ax = fig.add_subplot(gs[2])
+    #t = np.arange(len(epoch_no))
+    #Plot data
+    oc_ax.errorbar(epoch_no, ominusc, ominuscerr, marker='.', 
+                   elinewidth=0.8, color='dimgrey', linestyle='', 
+                   capsize=2, alpha=0.8, zorder=1)
+    oc_ax.scatter(epoch_no, ominusc, marker='.', zorder=2, color='dimgrey')
+    oc_ax.axhline(0, color='black', linestyle='--', linewidth=1)
+    oc_ax.plot(fit_x, fit_y, color='red', alpha=0.8)
+    
+    phase_ax.errorbar(epoch_phase, ominusc_phase, ominuscerr, marker='.', 
+                      elinewidth=0.8, color='dimgrey', linestyle='', capsize=2,
+                      alpha=0.8, zorder=1)
+    phase_ax.scatter(epoch_phase, ominusc_phase, color='dimgrey',
+                     marker='.',  zorder=2, alpha=0.5)
+    phase_ax.axhline(0, color='black', linestyle='--', linewidth=1)
+    phase_ax.plot(fit_x_phase[np.argsort(fit_x_phase)], 
+               fit_y[np.argsort(fit_x_phase)], color='red', alpha=0.8)
+    
+    #ls_ax.scatter(1/frequency, power, color='dimgrey', alpha=0.1, zorder=1, s=10)
+    ls_ax.plot(1/frequency, power, linestyle='-', linewidth=0.75, zorder=2,
+               marker='', color='k')
+
+    
+    
+    pos = (1/frequency).max() - 2000
+    for (level, i) in zip(false_alarm_levels, levels):
+        ls_ax.axhline(level, color='r', linestyle='--', alpha=0.8)
+        ls_ax.annotate(f'FAP {str(int(i*100))}'+'$\%$', 
+                       (pos, level*1.01), color='k')
+    # Sort out labels etc
+    oc_ax.set_xlabel('Epoch')
+    oc_ax.set_ylabel('O-C (minutes)')
+    phase_ax.set_xlabel('Phase')
+    phase_ax.set_ylabel('O-C (minutes)')
+
+    ls_ax.set_xlabel('Period (Epochs)')
+    ls_ax.set_ylabel('Power')
+
+    oc_ax.tick_params('both', which='both', direction='in', bottom=True, left=True)
+    ls_ax.tick_params('both', which='both', direction='in', bottom=True, left=True)
+
+    ls_ax.set_xscale('log')
+
+    fig.tight_layout()
+    fig.savefig('O-C_fold.jpg', bbox_inches='tight')
