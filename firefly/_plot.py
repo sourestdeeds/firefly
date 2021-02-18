@@ -364,7 +364,8 @@ def oc_fold(t0, t0err, file='Complete_results.csv'):
     # Make figure and axes
     fig = plt.figure(figsize=(12,8))
     gs = gridspec.GridSpec(3, 1)
-
+    plt.set_cmap('plasma')
+    
     oc_ax = fig.add_subplot(gs[0])
     phase_ax = fig.add_subplot(gs[1])
     ls_ax = fig.add_subplot(gs[2])
@@ -373,14 +374,14 @@ def oc_fold(t0, t0err, file='Complete_results.csv'):
     oc_ax.errorbar(epoch_no, ominusc, ominuscerr, marker='.', 
                    elinewidth=0.8, color='dimgrey', linestyle='', 
                    capsize=2, alpha=0.8, zorder=1)
-    oc_ax.scatter(epoch_no, ominusc, marker='.', zorder=2, color='dimgrey')
+    oc_ax.scatter(epoch_no, ominusc, marker='.', zorder=2, c=epoch_no)
     oc_ax.axhline(0, color='black', linestyle='--', linewidth=1)
     oc_ax.plot(fit_x, fit_y, color='red', alpha=0.8)
     
     phase_ax.errorbar(epoch_phase, ominusc_phase, ominuscerr, marker='.', 
                       elinewidth=0.8, color='dimgrey', linestyle='', capsize=2,
                       alpha=0.8, zorder=1)
-    phase_ax.scatter(epoch_phase, ominusc_phase, color='dimgrey',
+    phase_ax.scatter(epoch_phase, ominusc_phase, c=epoch_no,
                      marker='.',  zorder=2, alpha=0.5)
     phase_ax.axhline(0, color='black', linestyle='--', linewidth=1)
     phase_ax.plot(fit_x_phase[np.argsort(fit_x_phase)], 
