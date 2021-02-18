@@ -401,8 +401,8 @@ def oc_fold(t0, t0err, file='Complete_results.csv'):
     # Sort out labels etc
     oc_ax.set_xlabel('Epoch')
     oc_ax.set_ylabel('O-C (minutes)')
-    phase_ax.set_xlabel('Phase')
-    phase_ax.set_ylabel('O-C (minutes)')
+    phase_ax.set_xlabel('Epoch Phase')
+    phase_ax.set_ylabel('O-C Phase')
 
     ls_ax.set_xlabel('Period (Epochs)')
     ls_ax.set_ylabel('Power')
