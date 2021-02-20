@@ -244,7 +244,7 @@ def mw():
     plot_instance.savefig('mw_zoom_in.png')
     
 
-def oc(t0, t0_err, file='Complete_Results.csv'):
+def oc(t0, t0_err, file='Complete_Results.csv', exoplanet=None):
     path_ttv = file
     data_ttv = pd.read_csv(path_ttv).set_index('Parameter') \
                 .filter(like = 't0', axis=0).drop(['Telescope', 'Filter'], axis=1)
@@ -263,9 +263,10 @@ def oc(t0, t0_err, file='Complete_Results.csv'):
     ominusc = scale(ominusc)
 
     
-    # Generalised Lomb Scargle
+    # Generalised Lomb Scargle Floating Mean
     ls = LombScargle(epoch_no, ominusc, ominuscerr)
-    frequency, power = ls.autopower(nyquist_factor=1, samples_per_peak=100)#minimum_frequency=1/150, maximum_frequency=1/0.5)
+    frequency, power = ls.autopower(nyquist_factor=1, samples_per_peak=100)
+    
     # False Alarm Probability
     fap = ls.false_alarm_probability(power.max())
     levels = [0.99, 0.5, 0.1, 0.05, 0.01]
@@ -276,6 +277,11 @@ def oc(t0, t0_err, file='Complete_Results.csv'):
     fit_x = np.linspace(epoch_no.min(), epoch_no.max(), 1000)
     fit_y = ls.model(fit_x, frequency[np.argmax(power)])
     
+    
+    fig, ax = plt.subplots(figsize=(15,15))
+    
+    ax=plt.subplot(311)
+        
     # Make figure and axes
     fig = plt.figure(figsize=(12,8))
     gs = gridspec.GridSpec(2, 1)
@@ -310,12 +316,14 @@ def oc(t0, t0_err, file='Complete_Results.csv'):
     ls_ax.tick_params('both', which='both', direction='in', bottom=True, left=True)
 
     ls_ax.set_xscale('log')
-
     fig.tight_layout()
-    fig.savefig('O-C.jpg', bbox_inches='tight')
+    if exoplanet==None:
+        fig.savefig('O-C.jpg', bbox_inches='tight')
+    else:
+        fig.savefig(f'firefly/{exoplanet}/O-C.jpg', bbox_inches='tight')
    
   
-def oc_fold(t0, t0err, file='Complete_results.csv'):
+def oc_fold(t0, t0err, file='Complete_results.csv', exoplanet=None):
     '''
     Loads in the t0 and errors
     '''
@@ -342,7 +350,7 @@ def oc_fold(t0, t0err, file='Complete_results.csv'):
     ls = LombScargle(epoch_no, ominusc, ominuscerr)
 
     #frequency, power = ls.autopower(minimum_frequency=1/200, maximum_frequency=1/100)
-    frequency, power = ls.autopower(nyquist_factor=1, samples_per_peak=100)#minimum_frequency=1/150, maximum_frequency=1/0.5)
+    frequency, power = ls.autopower(nyquist_factor=1, samples_per_peak=100)
     best_f = frequency[np.argmax(power)]
     best_P = 1/frequency[np.argmax(power)]
     epoch_phase = (epoch_no - (epoch_no //best_P) * best_P)/best_P
@@ -413,4 +421,7 @@ def oc_fold(t0, t0err, file='Complete_results.csv'):
     ls_ax.set_xscale('log')
 
     fig.tight_layout()
-    fig.savefig('O-C_fold.jpg', bbox_inches='tight')
+    if exoplanet==None:
+        fig.savefig('O-C.jpg', bbox_inches='tight')
+    else:
+        fig.savefig(f'firefly/{exoplanet}/O-C_fold.jpg', bbox_inches='tight')
