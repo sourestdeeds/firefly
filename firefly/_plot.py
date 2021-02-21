@@ -428,6 +428,6 @@ def oc_fold(t0, t0err, file='Complete_results.csv', exoplanet=None):
 
     fig.tight_layout()
     if exoplanet==None:
-        fig.savefig('O-C.jpg', bbox_inches='tight')
+        fig.savefig('O-C_fold.jpg', bbox_inches='tight')
     else:
         fig.savefig(f'firefly/{exoplanet}/O-C_fold.jpg', bbox_inches='tight')
