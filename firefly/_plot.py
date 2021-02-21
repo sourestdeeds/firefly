@@ -305,7 +305,7 @@ def oc(t0, t0_err, file='Complete_Results.csv', exoplanet=None):
         ls_ax.axhline(level, color='r', linestyle='--', alpha=0.8)
         ls_ax.annotate(f'{str(int(i*100))}'+'$\%$',
                        (pos, level*1.018), color='k', ha='center')
-    ls_ax.annotate(f'Period: {int(period)}\nFalse Alarm Probability: {fap*100:.2f}$\%$',
+    ls_ax.annotate(f'Period: {int(period)}\nFAP: {fap*100:.2f}$\%$',
                     (period, power.max()*1.03), color='k', weight='bold')
     # Sort out labels etc
     oc_ax.set_xlabel('Epoch')
