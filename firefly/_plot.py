@@ -300,12 +300,13 @@ def oc(t0, t0_err, file='Complete_Results.csv', exoplanet=None):
     #ls_ax.scatter(1/frequency, power, color='dimgrey', alpha=0.1, zorder=1, s=10)
     ls_ax.plot(1/frequency, power, linestyle='-', linewidth=0.75, zorder=2,
                marker='', color='k')
-    pos = len(epoch_no)*0.9
+    pos = len(epoch_no)*0.985
     for (level, i) in zip(false_alarm_levels, levels):
         ls_ax.axhline(level, color='r', linestyle='--', alpha=0.8)
-        ls_ax.annotate(f'FAP {str(int(i*100))}'+'$\%$', 
-                       (pos, level*1.01), color='k')
-    ls_ax.annotate(f'{int(period)}', (period*0.97, power.max()*1.03), color='k')
+        ls_ax.annotate(f'{str(int(i*100))}'+'$\%$',
+                       (pos, level*1.018), color='k', ha='center')
+    ls_ax.annotate(f'Period: {int(period)}\nFalse Alarm Probability: {fap*100:.2f}$\%$',
+                    (period, power.max()*1.03), color='k', weight='bold')
     # Sort out labels etc
     oc_ax.set_xlabel('Epoch')
     oc_ax.set_ylabel('O-C (minutes)')
@@ -362,7 +363,7 @@ def oc_fold(t0, t0err, file='Complete_results.csv', exoplanet=None):
     ominusc_phase = scale(ominusc_phase)
     fap = ls.false_alarm_probability(power.max())
     
-    levels = [0.99, 0.5, 0.05, 0.01]
+    levels = [0.5, 0.05, 0.01]
     false_alarm_levels = ls.false_alarm_level(levels)
     #print(frequency, power)
     pack = {'FAP':false_alarm_levels, 'Percentage':levels}
@@ -403,17 +404,18 @@ def oc_fold(t0, t0err, file='Complete_results.csv', exoplanet=None):
     ls_ax.plot(1/frequency, power, linestyle='-', linewidth=0.75, zorder=2,
                marker='', color='k')
     
-    pos = len(epoch_no)*0.9
+    pos = len(epoch_no)*0.985
     for (level, i) in zip(false_alarm_levels, levels):
         ls_ax.axhline(level, color='r', linestyle='--', alpha=0.8)
-        ls_ax.annotate(f'FAP {str(int(i*100))}'+'$\%$', 
-                       (pos, level*1.01), color='k')
-    ls_ax.annotate(f'{int(period)}', (period*0.97, power.max()*1.03), color='k')
+        ls_ax.annotate(f'{str(int(i*100))}'+'$\%$',
+                       (pos, level*1.018), color='k', ha='center')
+    ls_ax.annotate(f'Period: {int(period)}\nFalse Alarm Probability: {fap*100:.2f}$\%$',
+                    (period*1.03, power.max()*1.03), color='k', weight='bold', ha='center')
     # Sort out labels etc
     oc_ax.set_xlabel('Epoch')
     oc_ax.set_ylabel('O-C (minutes)')
     phase_ax.set_xlabel('Epoch Phase')
-    phase_ax.set_ylabel('O-C Phase')
+    phase_ax.set_ylabel('O-C (minutes)')
 
     ls_ax.set_xlabel('Period (Epochs)')
     ls_ax.set_ylabel('Power')
