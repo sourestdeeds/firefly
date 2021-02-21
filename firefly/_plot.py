@@ -308,7 +308,7 @@ def oc(t0, t0_err, file='Complete_Results.csv', exoplanet=None):
     if fap > 0.5:
         pass
     else:
-        ls_ax.annotate(f'Period: {int(period)}\nFAP: {fap*100:.2f}$\%$',
+        ls_ax.annotate(f'Period: {int(period)}\n{fap*100:.2f}$\%$',
                         (period*1.03, power.max()*1.03), color='k', weight='bold', ha='center')
     # Sort out labels etc
     oc_ax.set_xlabel('Epoch')
@@ -328,7 +328,8 @@ def oc(t0, t0_err, file='Complete_Results.csv', exoplanet=None):
     if exoplanet==None:
         fig.savefig('O-C.jpg', bbox_inches='tight')
     else:
-        fig.savefig(f'firefly/{exoplanet}/O-C.jpg', bbox_inches='tight')
+        fig.savefig(f"firefly/{exoplanet}/{exoplanet.lower().replace(' ', '')}_o-c.jpg", 
+                    bbox_inches='tight')
    
   
 def oc_fold(t0, t0err, file='Complete_results.csv', exoplanet=None):
@@ -416,7 +417,7 @@ def oc_fold(t0, t0err, file='Complete_results.csv', exoplanet=None):
     if fap > 0.5:
         pass
     else:
-        ls_ax.annotate(f'Period: {int(period)}\nFAP: {fap*100:.2f}$\%$',
+        ls_ax.annotate(f'Period: {int(period)}\n{fap*100:.2f}$\%$',
                         (period*1.03, power.max()*1.03), color='k', weight='bold', ha='center')
     # Sort out labels etc
     oc_ax.set_xlabel('Epoch')
@@ -438,4 +439,5 @@ def oc_fold(t0, t0err, file='Complete_results.csv', exoplanet=None):
     if exoplanet==None:
         fig.savefig('O-C_fold.jpg', bbox_inches='tight')
     else:
-        fig.savefig(f'firefly/{exoplanet}/O-C_fold.jpg', bbox_inches='tight')
+        fig.savefig(f"firefly/{exoplanet}/{exoplanet.lower().replace(' ', '')}_o-c.jpg", 
+                    bbox_inches='tight')
