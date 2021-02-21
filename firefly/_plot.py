@@ -322,7 +322,9 @@ def oc(t0, t0_err, file='Complete_Results.csv', exoplanet=None):
 
     ls_ax.set_xscale('linear')
     ls_ax.set_xlim([0, len(epoch_no)])
-    upper_y = false_alarm_levels[2] * 1.5
+    upper_y_fap = false_alarm_levels[2] * 1.5
+    upper_y_pow = max(power) * 1.2
+    upper_y = np.max([upper_y_fap, upper_y_pow])
     ls_ax.set_ylim([-0.01, upper_y])
     fig.tight_layout()
     if exoplanet==None:
@@ -431,7 +433,9 @@ def oc_fold(t0, t0err, file='Complete_results.csv', exoplanet=None):
     oc_ax.tick_params('both', which='both', direction='in', bottom=True, left=True)
     ls_ax.tick_params('both', which='both', direction='in', bottom=True, left=True)
     ls_ax.set_xlim([0, len(epoch_no)])
-    upper_y = false_alarm_levels[2] * 1.5
+    upper_y_fap = false_alarm_levels[2] * 1.5
+    upper_y_pow = max(power) * 1.2
+    upper_y = np.max([upper_y_fap, upper_y_pow])
     ls_ax.set_ylim([-0.01, upper_y])
     ls_ax.set_xscale('linear')
 
