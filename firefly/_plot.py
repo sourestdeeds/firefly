@@ -269,10 +269,10 @@ def oc(t0, t0_err, file='Complete_Results.csv', exoplanet=None):
     
     # False Alarm Probability
     fap = ls.false_alarm_probability(power.max())
-    levels = [0.99, 0.5, 0.1, 0.05, 0.01]
+    levels = [0.99, 0.5, 0.05, 0.01]
     false_alarm_levels = ls.false_alarm_level(levels)
     pack = {'FAP':false_alarm_levels, 'Percentage':levels}
-    
+    period = 1/frequency[np.argmax(power)]
     # Get the best frequency for plotting??
     fit_x = np.linspace(epoch_no.min(), epoch_no.max(), 1000)
     fit_y = ls.model(fit_x, frequency[np.argmax(power)])
@@ -300,11 +300,12 @@ def oc(t0, t0_err, file='Complete_Results.csv', exoplanet=None):
     #ls_ax.scatter(1/frequency, power, color='dimgrey', alpha=0.1, zorder=1, s=10)
     ls_ax.plot(1/frequency, power, linestyle='-', linewidth=0.75, zorder=2,
                marker='', color='k')
-    pos = (1/frequency).max() - 2000
+    pos = len(epoch_no)*0.9
     for (level, i) in zip(false_alarm_levels, levels):
         ls_ax.axhline(level, color='r', linestyle='--', alpha=0.8)
         ls_ax.annotate(f'FAP {str(int(i*100))}'+'$\%$', 
                        (pos, level*1.01), color='k')
+    ls_ax.annotate(f'{int(period)}', (period*0.97, power.max()*1.03), color='k')
     # Sort out labels etc
     oc_ax.set_xlabel('Epoch')
     oc_ax.set_ylabel('O-C (minutes)')
@@ -315,7 +316,9 @@ def oc(t0, t0_err, file='Complete_Results.csv', exoplanet=None):
     oc_ax.tick_params('both', which='both', direction='in', bottom=True, left=True)
     ls_ax.tick_params('both', which='both', direction='in', bottom=True, left=True)
 
-    ls_ax.set_xscale('log')
+    ls_ax.set_xscale('linear')
+    ls_ax.set_xlim([0, len(epoch_no)])
+    ls_ax.set_ylim([0, power.max()*1.2])
     fig.tight_layout()
     if exoplanet==None:
         fig.savefig('O-C.jpg', bbox_inches='tight')
@@ -359,10 +362,11 @@ def oc_fold(t0, t0err, file='Complete_results.csv', exoplanet=None):
     ominusc_phase = scale(ominusc_phase)
     fap = ls.false_alarm_probability(power.max())
     
-    levels = [0.99, 0.5, 0.1, 0.05, 0.01]
+    levels = [0.99, 0.5, 0.05, 0.01]
     false_alarm_levels = ls.false_alarm_level(levels)
     #print(frequency, power)
     pack = {'FAP':false_alarm_levels, 'Percentage':levels}
+    period = 1/frequency[np.argmax(power)]
     # Fits
     fit_x = np.linspace(epoch_no.min(), epoch_no.max(), 1000)
     fit_y = ls.model(fit_x, frequency[np.argmax(power)])
@@ -386,10 +390,10 @@ def oc_fold(t0, t0err, file='Complete_results.csv', exoplanet=None):
     oc_ax.axhline(0, color='black', linestyle='--', linewidth=1)
     oc_ax.plot(fit_x, fit_y, color='red', alpha=0.8)
     
-    phase_ax.errorbar(epoch_phase, ominusc_phase, ominuscerr, marker='.', 
+    phase_ax.errorbar(epoch_phase, ominusc, ominuscerr, marker='.',
                       elinewidth=0.8, color='dimgrey', linestyle='', capsize=2,
                       alpha=0.8, zorder=1)
-    phase_ax.scatter(epoch_phase, ominusc_phase, c=epoch_no,
+    phase_ax.scatter(epoch_phase, ominusc, c=epoch_no,
                      marker='.',  zorder=2, alpha=0.5)
     phase_ax.axhline(0, color='black', linestyle='--', linewidth=1)
     phase_ax.plot(fit_x_phase[np.argsort(fit_x_phase)], 
@@ -398,14 +402,13 @@ def oc_fold(t0, t0err, file='Complete_results.csv', exoplanet=None):
     #ls_ax.scatter(1/frequency, power, color='dimgrey', alpha=0.1, zorder=1, s=10)
     ls_ax.plot(1/frequency, power, linestyle='-', linewidth=0.75, zorder=2,
                marker='', color='k')
-
     
-    
-    pos = (1/frequency).max() - 2000
+    pos = len(epoch_no)*0.9
     for (level, i) in zip(false_alarm_levels, levels):
         ls_ax.axhline(level, color='r', linestyle='--', alpha=0.8)
         ls_ax.annotate(f'FAP {str(int(i*100))}'+'$\%$', 
                        (pos, level*1.01), color='k')
+    ls_ax.annotate(f'{int(period)}', (period*0.97, power.max()*1.03), color='k')
     # Sort out labels etc
     oc_ax.set_xlabel('Epoch')
     oc_ax.set_ylabel('O-C (minutes)')
@@ -417,8 +420,9 @@ def oc_fold(t0, t0err, file='Complete_results.csv', exoplanet=None):
 
     oc_ax.tick_params('both', which='both', direction='in', bottom=True, left=True)
     ls_ax.tick_params('both', which='both', direction='in', bottom=True, left=True)
-
-    ls_ax.set_xscale('log')
+    ls_ax.set_xlim([0, len(epoch_no)])
+    ls_ax.set_ylim([0, power.max()*1.2])
+    ls_ax.set_xscale('linear')
 
     fig.tight_layout()
     if exoplanet==None:
