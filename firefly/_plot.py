@@ -290,8 +290,8 @@ def oc(t0, t0_err, file='Complete_Results.csv', exoplanet=None):
     ls_ax = fig.add_subplot(gs[1])
 
     #Plot data
-    oc_ax.errorbar(epoch_no, ominusc, ominuscerr, marker='.', 
-                   elinewidth=0.8, color='dimgrey', linestyle='', 
+    oc_ax.errorbar(epoch_no, ominusc, ominuscerr, marker='.',
+                   elinewidth=0.8, color='dimgrey', linestyle='',
                    capsize=2, alpha=0.8, zorder=1)
     oc_ax.scatter(epoch_no, ominusc, marker='.', color='dimgrey', zorder=2)
     oc_ax.axhline(0, color='black', linestyle='--', linewidth=1)
@@ -300,7 +300,7 @@ def oc(t0, t0_err, file='Complete_Results.csv', exoplanet=None):
     #ls_ax.scatter(1/frequency, power, color='dimgrey', alpha=0.1, zorder=1, s=10)
     ls_ax.plot(1/frequency, power, linestyle='-', linewidth=0.75, zorder=2,
                marker='', color='k')
-    pos = len(epoch_no)*0.985
+    pos = period * 1.97
     for (level, i) in zip(false_alarm_levels, levels):
         ls_ax.axhline(level, color='r', linestyle='--', alpha=0.8)
         ls_ax.annotate(f'{str(int(i*100))}'+'$\%$',
@@ -321,7 +321,7 @@ def oc(t0, t0_err, file='Complete_Results.csv', exoplanet=None):
     ls_ax.tick_params('both', which='both', direction='in', bottom=True, left=True)
 
     ls_ax.set_xscale('linear')
-    ls_ax.set_xlim([0, len(epoch_no)])
+    ls_ax.set_xlim([0, period * 2])
     upper_y_fap = false_alarm_levels[2] * 1.5
     upper_y_pow = max(power) * 1.2
     upper_y = np.max([upper_y_fap, upper_y_pow])
@@ -330,7 +330,7 @@ def oc(t0, t0_err, file='Complete_Results.csv', exoplanet=None):
     if exoplanet==None:
         fig.savefig('O-C.jpg', bbox_inches='tight')
     else:
-        fig.savefig(f"firefly/{exoplanet}/{exoplanet.lower().replace(' ', '')}_o-c.jpg", 
+        fig.savefig(f"firefly/{exoplanet}/{exoplanet.lower().replace(' ', '')}_o-c.jpg",
                     bbox_inches='tight')
    
   
@@ -391,8 +391,8 @@ def oc_fold(t0, t0err, file='Complete_results.csv', exoplanet=None):
     ls_ax = fig.add_subplot(gs[2])
     #t = np.arange(len(epoch_no))
     #Plot data
-    oc_ax.errorbar(epoch_no, ominusc, ominuscerr, marker='.', 
-                   elinewidth=0.8, color='dimgrey', linestyle='', 
+    oc_ax.errorbar(epoch_no, ominusc, ominuscerr, marker='.',
+                   elinewidth=0.8, color='dimgrey', linestyle='',
                    capsize=2, alpha=0.8, zorder=1)
     oc_ax.scatter(epoch_no, ominusc, marker='.', zorder=2, c=epoch_no)
     oc_ax.axhline(0, color='black', linestyle='--', linewidth=1)
@@ -404,14 +404,14 @@ def oc_fold(t0, t0err, file='Complete_results.csv', exoplanet=None):
     phase_ax.scatter(epoch_phase, ominusc, c=epoch_no,
                      marker='.',  zorder=2, alpha=0.5)
     phase_ax.axhline(0, color='black', linestyle='--', linewidth=1)
-    phase_ax.plot(fit_x_phase[np.argsort(fit_x_phase)], 
+    phase_ax.plot(fit_x_phase[np.argsort(fit_x_phase)],
                fit_y[np.argsort(fit_x_phase)], color='red', alpha=0.8)
     
     #ls_ax.scatter(1/frequency, power, color='dimgrey', alpha=0.1, zorder=1, s=10)
     ls_ax.plot(1/frequency, power, linestyle='-', linewidth=0.75, zorder=2,
                marker='', color='k')
     
-    pos = len(epoch_no)*0.985
+    pos = period * 1.97
     for (level, i) in zip(false_alarm_levels, levels):
         ls_ax.axhline(level, color='r', linestyle='--', alpha=0.8)
         ls_ax.annotate(f'{str(int(i*100))}'+'$\%$',
@@ -432,7 +432,9 @@ def oc_fold(t0, t0err, file='Complete_results.csv', exoplanet=None):
 
     oc_ax.tick_params('both', which='both', direction='in', bottom=True, left=True)
     ls_ax.tick_params('both', which='both', direction='in', bottom=True, left=True)
-    ls_ax.set_xlim([0, len(epoch_no)])
+ 
+    ls_ax.set_xlim([0, period * 2])
+    
     upper_y_fap = false_alarm_levels[2] * 1.5
     upper_y_pow = max(power) * 1.2
     upper_y = np.max([upper_y_fap, upper_y_pow])
@@ -443,5 +445,5 @@ def oc_fold(t0, t0err, file='Complete_results.csv', exoplanet=None):
     if exoplanet==None:
         fig.savefig('O-C_fold.jpg', bbox_inches='tight')
     else:
-        fig.savefig(f"firefly/{exoplanet}/{exoplanet.lower().replace(' ', '')}_o-c.jpg", 
+        fig.savefig(f"firefly/{exoplanet}/{exoplanet.lower().replace(' ', '')}_fold_o-c.jpg",
                     bbox_inches='tight')
