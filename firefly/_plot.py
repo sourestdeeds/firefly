@@ -353,6 +353,27 @@ def oc_fold(t0, t0err, file='Complete_results.csv', exoplanet=None):
     from sklearn.preprocessing import scale
     ominusc = scale(ominusc)
     
+    # chi 2 stuff
+    from scipy.stats import chi2_contingency
+    from scipy.stats import chi2
+    table = [np.abs(ominusc),np.abs(ominuscerr)]
+    stat, p, dof, expected = chi2_contingency(table)
+    prob = 0.95
+    critical = chi2.ppf(prob, dof)
+    #chi2 = np.sum((0 - ominusc)**2 / ominuscerr**2)
+    # if abs(stat) >= critical:
+    # 	print('Dependent (reject H0)')
+    # else:
+    # 	print('Independent (fail to reject H0)')
+    # interpret p-value
+    alpha = 1.0 - prob
+    print('significance=%.3f, p=%.3f' % (alpha, p))
+    if p <= alpha:
+        hyp = 'Dependent (reject $H_{0}$)'
+    	#print('Dependent (reject H0)')
+    else:
+        hyp = 'Independent (fail to reject $H_{0}$)'
+    	#print('Independent (fail to reject H0)')
     
     # Do the Lomb-Scargel stuff.
     ls = LombScargle(epoch_no, ominusc, ominuscerr)
@@ -394,6 +415,9 @@ def oc_fold(t0, t0err, file='Complete_results.csv', exoplanet=None):
     oc_ax.scatter(epoch_no, ominusc, marker='.', zorder=2, c=epoch_no)
     oc_ax.axhline(0, color='black', linestyle='--', linewidth=1)
     oc_ax.plot(fit_x, fit_y, color='red', alpha=0.8)
+    oc_ax.annotate(f'$\chi^{2}$: {critical:.2f}\np: {p:.4f}\n{hyp}',
+                        (len(epoch_no)/2, -(ominusc.max()+ominuscerr.max())*0.8), 
+                          color='k', weight='bold', ha='center')
     
     phase_ax.errorbar(epoch_phase, ominusc, ominuscerr, marker='.',
                       elinewidth=0.8, color='dimgrey', linestyle='', capsize=2,
