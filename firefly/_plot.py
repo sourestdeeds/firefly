@@ -416,7 +416,7 @@ def oc_fold(t0, t0err, file='Complete_results.csv', exoplanet=None):
     oc_ax.axhline(0, color='black', linestyle='--', linewidth=1)
     oc_ax.plot(fit_x, fit_y, color='red', alpha=0.8)
     oc_ax.annotate(f'$\chi^{2}$: {critical:.2f}\np: {p:.4f}\n{hyp}',
-                        (len(epoch_no)/2, -(ominusc.max()+ominuscerr.max())*0.8), 
+                        (len(epoch_no)/2, -(ominusc.max()+ominuscerr.max())), 
                           color='k', weight='bold', ha='center')
     
     phase_ax.errorbar(epoch_phase, ominusc, ominuscerr, marker='.',
