@@ -463,5 +463,5 @@ def oc_fold(t0, t0err, file='Complete_results.csv', exoplanet=None):
     if exoplanet==None:
         fig.savefig('O-C_fold.jpg', bbox_inches='tight')
     else:
-        fig.savefig(f"firefly/{exoplanet}/{exoplanet.lower().replace(' ', '')}_fold_o-c.jpg",
+        fig.savefig(f"firefly/{exoplanet}/{exoplanet.lower().replace(' ', '')}_o-c.jpg",
                     bbox_inches='tight')
