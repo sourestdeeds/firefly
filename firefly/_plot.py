@@ -373,7 +373,7 @@ def oc_fold(t0, t0err, file='Complete_results.csv', exoplanet=None):
     # Do the Lomb-Scargel stuff.
     ls = LombScargle(epoch_no, ominusc, ominuscerr)
 
-    frequency, power = ls.autopower(nyquist_factor=1, samples_per_peak=100)
+    frequency, power = ls.autopower(nyquist_factor=1, samples_per_peak=10)
     best_f = frequency[np.argmax(power)]
     best_P = 1/frequency[np.argmax(power)]
     epoch_phase = (epoch_no - (epoch_no //best_P) * best_P)/best_P
