@@ -234,6 +234,8 @@ def _retrieval(
         hlsp=['SPOC'],
         cadence=120,
         # TransitFit Variables
+        walks=25,
+        slices=5,
         cutoff=0.25,
         window=2.5,
         nlive=300,
@@ -321,6 +323,8 @@ def _retrieval(
             host_logg=host_logg,
             host_z=host_z,
             host_r=host_r,
+            walks=walks,
+            slices=slices,
             nlive=nlive,
             fit_ttv=fit_ttv,
             detrending_list=detrending_list,
