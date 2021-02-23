@@ -31,7 +31,7 @@ def _auto_input_check(targets, curve_sample):
 def firefly(
         # Firefly Interface
         targets,
-        archive='eu',
+        archive='nasa',
         curve_sample=1,
         clean=False,
         cache=False,
@@ -40,6 +40,8 @@ def firefly(
         hlsp=['SPOC'],
         cadence=[120],
         # TransitFit Variables
+        walks=25,
+        slices=5,
         cutoff=0.25,
         window=5,
         nlive=625,
@@ -51,7 +53,7 @@ def firefly(
         ld_fit_method='coupled',
         max_batch_parameters=25,
         batch_overlap=2,
-        dlogz=None,
+        dlogz=0.01,
         maxiter=None,
         maxcall=None,
         dynesty_bounding='multi',
@@ -331,6 +333,8 @@ def firefly(
             hlsp=hlsp,
             cadence=cadence,
             # TransitFit Variables
+            walks=walks,
+            slices=slices,
             cutoff=cutoff,
             window=window,
             nlive=nlive,
@@ -381,6 +385,8 @@ def firefly(
             f'auto={auto}\n'
             f'hlsp={str(hlsp)}\n'
             f'cadence={str(cadence)}\n'
+            f'walks={str(walks)}\n'
+            f'slices={str(slices)}\n'
             f'cutoff={str(cutoff)}\n'
             f'window={str(window)}\n'
             f'nlive={str(nlive)}\n'
