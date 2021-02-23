@@ -7,7 +7,7 @@ The backend for auto_retrieval.
 """
 
 from ._archive import priors, _tic, _load_csv, _search
-from ._plot import oc, oc_fold
+from ._plot import oc_fold
 
 from transitfit import split_lightcurve_file, run_retrieval
 from astroquery.mast import Observations as obs
@@ -441,7 +441,6 @@ def _retrieval(
             t0 = s['pl_tranmid'][0]
             t0err = s['pl_tranmiderr1'][0]
             file = f'firefly/{exoplanet}/output_parameters/Complete_results.csv'
-            oc(t0, t0err, file=file, exoplanet=exoplanet)
             oc_fold(t0, t0err, file=file, exoplanet=exoplanet)
         except Exception as e:
             print(e)
