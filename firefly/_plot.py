@@ -365,10 +365,10 @@ def oc_fold(t0, t0err, file='Complete_results.csv', exoplanet=None):
     alpha = 1.0 - prob
     if p <= alpha:
         hyp = 'Dependent (reject $H_{0}$)'
-    	#print('Dependent (reject H0)')
+        #print('Dependent (reject H0)')
     else:
         hyp = 'Independent (fail to reject $H_{0}$)'
-    	#print('Independent (fail to reject H0)')
+        #print('Independent (fail to reject H0)')
     
     # Do the Lomb-Scargel stuff.
     ls = LombScargle(epoch_no, ominusc, ominuscerr)
@@ -401,23 +401,23 @@ def oc_fold(t0, t0err, file='Complete_results.csv', exoplanet=None):
     ls_ax = fig.add_subplot(gs[2])
     #t = np.arange(len(epoch_no))
     #Plot data
-    oc_ax.errorbar(epoch_no, ominusc, ominuscerr, marker='.', 
-                   elinewidth=0.8, color='dimgrey', linestyle='', 
+    oc_ax.errorbar(epoch_no, ominusc, ominuscerr, marker='.',
+                   elinewidth=0.8, color='dimgrey', linestyle='',
                    capsize=2, alpha=0.8, zorder=1)
     oc_ax.scatter(epoch_no, ominusc, marker='.', zorder=2, c=epoch_no)
     oc_ax.axhline(0, color='black', linestyle='--', linewidth=1)
     oc_ax.plot(fit_x, fit_y, color='red', alpha=0.8)
     oc_ax.annotate(f'$\chi^{2}$: {stat:.2f}\np: {p:.4f}\n{hyp}',
-                        (len(epoch_no)*0.9, ominusc.max()*0.6), 
+                        (len(epoch_no)*0.9, ominusc.max()*0.8),
                         color='k', weight='bold', ha='center')
-    oc_ax.set_ylim([-ominusc.max()*1.2, ominusc.max()*1.2])
+    oc_ax.set_ylim([ominusc.min()*1.5, ominusc.max()*2])
     phase_ax.errorbar(epoch_phase, ominusc, ominuscerr, marker='.',
                       elinewidth=0.8, color='dimgrey', linestyle='', capsize=2,
                       alpha=0.8, zorder=1)
     phase_ax.scatter(epoch_phase, ominusc, c=epoch_no,
                      marker='.',  zorder=2, alpha=0.5)
     phase_ax.axhline(0, color='black', linestyle='--', linewidth=1)
-    phase_ax.plot(fit_x_phase[np.argsort(fit_x_phase)], 
+    phase_ax.plot(fit_x_phase[np.argsort(fit_x_phase)],
                fit_y[np.argsort(fit_x_phase)], color='red', alpha=0.8)
     
     #ls_ax.scatter(1/frequency, power, color='dimgrey', alpha=0.1, zorder=1, s=10)
@@ -443,7 +443,7 @@ def oc_fold(t0, t0err, file='Complete_results.csv', exoplanet=None):
     oc_ax.tick_params('both', which='both', direction='in', bottom=True, left=True)
     ls_ax.tick_params('both', which='both', direction='in', bottom=True, left=True)
     
-    #upper_x = 
+    #upper_x =
     ls_ax.set_xlim([0, period * 2])
     
     upper_y_fap = false_alarm_levels[2] * 1.5
@@ -456,5 +456,5 @@ def oc_fold(t0, t0err, file='Complete_results.csv', exoplanet=None):
     if exoplanet==None:
         fig.savefig('O-C_fold.jpg', bbox_inches='tight')
     else:
-        fig.savefig(f"firefly/{exoplanet}/{exoplanet.lower().replace(' ', '').replace('-', '')}_o-c.jpg", 
+        fig.savefig(f"firefly/{exoplanet}/{exoplanet.lower().replace(' ', '').replace('-', '')}_o-c.jpg",
                     bbox_inches='tight')
