@@ -448,7 +448,7 @@ def _retrieval(
         os.makedirs('firefly/ttv', exist_ok=True)
         os.makedirs(f'firefly/ttv/{fitting_mode}', exist_ok=True)
         archive_folder = f'firefly/ttv/{fitting_mode}/{archive_name}'
-        make_archive(archive_folder, format='gztar',
+        make_archive(archive_folder, format='zip',
                      root_dir=f'{os.getcwd()}/firefly/',
                      base_dir=f'{exoplanet}')
     else:
