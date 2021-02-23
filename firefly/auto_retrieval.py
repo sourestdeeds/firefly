@@ -40,8 +40,8 @@ def firefly(
         hlsp=['SPOC'],
         cadence=[120],
         # TransitFit Variables
-        walks=25,
-        slices=5,
+        walks=100,
+        slices=10,
         cutoff=0.25,
         window=5,
         nlive=625,
