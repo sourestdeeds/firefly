@@ -357,7 +357,7 @@ def oc_fold(t0, t0err, file='Complete_results.csv', exoplanet=None):
     
     # chi 2 stuff
     from scipy.stats import chi2_contingency
-    table = [np.abs(ominusc), np.abs(ominusc)+np.abs(ominuscerr)]
+    table = [np.abs(ominusc), np.abs(ominuscerr)]
     stat, p, dof, expected = chi2_contingency(table, correction=False)
     chi2_red = stat/dof
     sigma = np.sqrt(2./len(ominusc))
