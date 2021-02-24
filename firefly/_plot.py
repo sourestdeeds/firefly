@@ -409,7 +409,8 @@ def oc_fold(t0, t0err, file='Complete_results.csv', exoplanet=None):
     oc_ax.scatter(epoch_no, ominusc, marker='.', zorder=2, c=epoch_no)
     oc_ax.axhline(0, color='black', linestyle='--', linewidth=1)
     oc_ax.plot(fit_x, fit_y, color='red', alpha=0.8)
-    oc_ax.annotate(f'$\chi^{2}$: {chi2_red:.2f}\n{nsig:.2f}$\sigma$\n{hyp}\nMAE: {loss:.2f}',
+    red = 'dof'
+    oc_ax.annotate(f'$\chi^2_{{{red}}} = {chi2_red:.2f}\, ({nsig:.2f}\sigma)$\n{hyp}\n$\mu_{{error}}= {loss:.2f}$',
                         (len(epoch_no)*0.9, ominusc.max()*0.8),
                         color='k', weight='bold', ha='center')
     oc_ax.set_ylim([ominusc.min()*1.5, ominusc.max()*2])
