@@ -33,7 +33,7 @@ def firefly(
         targets,
         archive='nasa',
         curve_sample=1,
-        clean=False,
+        clean=True,
         cache=False,
         auto=True,
         # MAST Search
