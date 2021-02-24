@@ -20,7 +20,6 @@ import seaborn as sns
 mpl.rcParams['figure.dpi'] = 300
 
 base_context = {
-
                 "font.size": 18,
                 "axes.labelsize": 18,
                 "axes.titlesize": 14,
@@ -363,6 +362,7 @@ def oc_fold(t0, t0err, file='Complete_results.csv', exoplanet=None):
     sigma = np.sqrt(2./len(ominusc))
     nsig = (chi2_red-1)/sigma
     
+    prob = 0.95
     alpha = 1.0 - prob
     if p <= alpha:
         hyp = 'Dependent (reject $H_{0}$)'
@@ -409,7 +409,7 @@ def oc_fold(t0, t0err, file='Complete_results.csv', exoplanet=None):
     oc_ax.axhline(0, color='black', linestyle='--', linewidth=1)
     oc_ax.plot(fit_x, fit_y, color='red', alpha=0.8)
     oc_ax.annotate(f'$\chi^{2}$: {chi2_red:.2f}\n{nsig:.2f}$\sigma$\n{hyp}\nMAE: {loss:.2f}',
-                        (len(epoch_no)*0.9, ominusc.max()*0.8), 
+                        (len(epoch_no)*0.9, ominusc.max()*0.8),
                         color='k', weight='bold', ha='center')
     oc_ax.set_ylim([ominusc.min()*1.5, ominusc.max()*2])
     phase_ax.errorbar(epoch_phase, ominusc, ominuscerr, marker='.',
@@ -459,3 +459,4 @@ def oc_fold(t0, t0err, file='Complete_results.csv', exoplanet=None):
     else:
         fig.savefig(f"firefly/{exoplanet}/{exoplanet.lower().replace(' ', '').replace('-', '')}_o-c.jpg",
                     bbox_inches='tight')
+    return chi2_red, nsig, loss, fap

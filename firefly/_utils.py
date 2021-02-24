@@ -382,6 +382,8 @@ def _retrieval(
         f'curve_sample={str(curve_sample)}\n'
         f'clean={clean}\n'
         f'cache={cache}\n'
+        f'walks={str(walks)}\n'
+        f'slices={str(slices)}\n'
         f'cutoff={str(cutoff)}\n'
         f'window={str(window)}\n'
         f'nlive={str(nlive)}\n'
