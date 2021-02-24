@@ -353,7 +353,8 @@ def oc_fold(t0, t0err, file='Complete_results.csv', exoplanet=None):
     #ominusc = scale(ominusc)
     #ominuscerr = scale(ominuscerr)
     
-    
+    from sklearn.metrics import mean_absolute_error
+    loss = mean_absolute_error(ominusc,ominuscerr)
     # chi 2 stuff
     from scipy.stats import chi2_contingency
     table = [np.abs(ominusc), np.abs(ominuscerr)]
