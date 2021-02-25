@@ -221,6 +221,9 @@ def _fits(exoplanet,
         DEFAULT_BITMASK = [
             AttitudeTweak, SafeMode, CoarsePoint, EarthPoint, Desat, ManualExclude
         ]
+        HARD_BITMASK = [
+            DEFAULT_BITMASK, ApertureCosmic, CollateralCosmic, Straylight, Straylight2
+        ]
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Extract all light curves to a single csv file
         TESS_fits['TIME'] = TESS_fits['TIME'] + 2457000
@@ -432,33 +435,13 @@ def _retrieval(
             'pl_orblper':w, 'pl_orblpererr1':werr, 'Transits':int(len(df)),
             'Date':now, 'Archive':archive.upper()}
     df = DataFrame(data, index=[0])
-    summary_master = 'firefly/data/spear.csv'
-    if fit_ttv==False:
-        if not os.path.exists(summary_master):
-            df.to_csv(summary_master, index=False)
-        else:
-            add = read_csv(summary_master)
-            add = add.append(df)
-            add['pl_name'] = \
-                Categorical(add['pl_name'],
-                ordered=True,
-                categories=natsorted(add['pl_name'].unique()))
-            add = add.sort_values('pl_name')
-            add .to_csv(summary_master, index=False)
-    if clean==True:
-        try:
-            rmtree(f'{exo_folder}/output_parameters/quicksaves')
-            rmtree(f'{exo_folder}/output_parameters/filter_0_parameters/quicksaves')
-        except Exception:
-            pass
     sci_prod = ' '.join(hlsp)
     archive_name = f"{exoplanet} {archive.upper()} {sci_prod} {now}"
     if fit_ttv==True:
         try:
             url = 'https://raw.githubusercontent.com/sourestdeeds/firefly/' +\
                   'main/firefly/data/spear.csv?token=ACSJ3D2P5KIFJ6ZAR2C3BH3AHJYZA'
-            spearnet = read_csv(url) \
-                .set_index('pl_name')
+            spearnet = read_csv(url).set_index('pl_name')
             s = spearnet.loc[[exoplanet]]
             t0 = s['pl_tranmid'][0]
             t0err = s['pl_tranmiderr1'][0]
@@ -473,11 +456,29 @@ def _retrieval(
                      root_dir=f'{os.getcwd()}/firefly/',
                      base_dir=f'{exoplanet}')
     else:
+        summary_master = 'firefly/data/spear.csv'
+        if not os.path.exists(summary_master):
+            df.to_csv(summary_master, index=False)
+        else:
+            add = read_csv(summary_master)
+            add = add.append(df)
+            add['pl_name'] = \
+                Categorical(add['pl_name'],
+                ordered=True,
+                categories=natsorted(add['pl_name'].unique()))
+            add = add.sort_values('pl_name')
+            add .to_csv(summary_master, index=False)
         os.makedirs(f'firefly/{fitting_mode}', exist_ok=True)
         archive_folder = f'firefly/{fitting_mode}/{archive_name}'
         make_archive(archive_folder, format='zip',
                      root_dir=f'{os.getcwd()}/firefly/',
                      base_dir=f'{exoplanet}')
+    if clean==True:
+        try:
+            rmtree(f'{exo_folder}/output_parameters/quicksaves')
+            rmtree(f'{exo_folder}/output_parameters/filter_0_parameters/quicksaves')
+        except Exception:
+            pass
     rmtree(f'{exo_folder}')
     return archive_name
 
