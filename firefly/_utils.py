@@ -187,7 +187,14 @@ def _fits(exoplanet,
     # Extract Time series
     csv_in_dir = []
     for j, fitsfile in enumerate(lc_links):
-        TESS_fits =  Table.read(fitsfile, cache=cache)
+        TESS_fits = None
+        while TESS_fits == None:
+            try:
+                TESS_fits = Table.read(fitsfile, cache=cache)
+            except:
+                pass
+            if TESS_fits != None:
+                pass
         source = f'{exo_folder}/mastDownload'
         mast_name = data['obs_id'][j]
         os.makedirs(f'{source}/{mast_name}', exist_ok=True)
