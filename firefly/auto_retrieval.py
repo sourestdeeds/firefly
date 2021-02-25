@@ -58,7 +58,8 @@ def firefly(
         maxcall=None,
         dynesty_bounding='multi',
         normalise=True,
-        detrend=True
+        detrend=True,
+        detrending_limits=[[-10,10]]
 ):
     '''
     Automated version of retrieval. For a single target the procedure is:
@@ -351,7 +352,8 @@ def firefly(
             maxcall=maxcall,
             dynesty_bounding=dynesty_bounding,
             normalise=normalise,
-            detrend=detrend
+            detrend=detrend,
+            detrending_limits=detrending_limits
         )
         success = f'{os.getcwd()}/firefly/{archive_name}.zip'
         print(f'\nData location: {success}\n'

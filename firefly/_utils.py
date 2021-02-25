@@ -272,7 +272,8 @@ def _retrieval(
         maxcall=None,
         dynesty_bounding='multi',
         normalise=True,
-        detrend=True
+        detrend=True,
+        detrending_limits=[[-10,10]]
 ):
     
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -360,6 +361,7 @@ def _retrieval(
             dynesty_bounding=dynesty_bounding,
             normalise=normalise,
             detrend=detrend,
+            detrending_limits=detrending_limits,
             results_output_folder=results_output_folder,
             final_lightcurve_folder=fitted_lightcurve_folder,
             plot_folder=plot_folder
