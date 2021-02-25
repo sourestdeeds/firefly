@@ -43,7 +43,7 @@ def firefly(
         walks=100,
         slices=10,
         cutoff=0.25,
-        window=5,
+        window=8,
         nlive=625,
         fit_ttv=False,
         detrending_list=[['nth order', 2]],
