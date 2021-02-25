@@ -447,6 +447,7 @@ def oc_fold(t0, t0err, file='Complete_results.csv', exoplanet=None):
     ls_ax.set_ylabel('Power')
 
     oc_ax.tick_params('both', which='both', direction='in', bottom=True, left=True)
+    phase_ax.tick_params('both', which='both', direction='in', bottom=True, left=True)
     ls_ax.tick_params('both', which='both', direction='in', bottom=True, left=True)
     
     #upper_x =
