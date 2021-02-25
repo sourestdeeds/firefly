@@ -13,7 +13,7 @@ from transitfit import split_lightcurve_file, run_retrieval
 from astroquery.mast import Observations as obs
 from datetime import datetime
 from tabulate import tabulate
-from astropy.io import fits
+from astropy.table import Table
 from pandas import DataFrame, read_csv, Categorical
 from shutil import rmtree, make_archive
 from natsort import natsorted
@@ -187,29 +187,42 @@ def _fits(exoplanet,
     # Extract Time series
     csv_in_dir = []
     for j, fitsfile in enumerate(lc_links):
-        with fits.open(fitsfile, cache=cache) as TESS_fits:
-            source = f'{exo_folder}/mastDownload'
-            mast_name = data['obs_id'][j]
-            os.makedirs(f'{source}/{mast_name}', exist_ok=True)
-            TESS_fits.writeto(f'{source}/{mast_name}/{mast_name}.fits',
-                              overwrite=True)
-            if provenance_name[j]=='SPOC':
-                time = TESS_fits[1].data['TIME'] + 2457000
-                flux = TESS_fits[1].data['PDCSAP_FLUX']
-                flux_err = TESS_fits[1].data['PDCSAP_FLUX_ERR']
-            elif provenance_name[j]=='TASOC':
-                time = TESS_fits[1].data['TIME'] + 2457000
-                flux = TESS_fits[1].data['FLUX_RAW']
-                flux_err = TESS_fits[1].data['FLUX_RAW_ERR']
-            elif provenance_name[j]=='TESS-SPOC':
-                time = TESS_fits[1].data['TIME'] + 2457000
-                flux = TESS_fits[1].data['PDCSAP_FLUX']
-                flux_err = TESS_fits[1].data['PDCSAP_FLUX_ERR']
+        TESS_fits =  Table.read(fitsfile, cache=cache)
+        source = f'{exo_folder}/mastDownload'
+        mast_name = data['obs_id'][j]
+        os.makedirs(f'{source}/{mast_name}', exist_ok=True)
+        TESS_fits.write(f'{source}/{mast_name}/{mast_name}.fits',
+                          overwrite=True)
+        TESS_fits = TESS_fits.to_pandas()
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        # Quality Masks
+        AttitudeTweak = 1
+        SafeMode = 2
+        CoarsePoint = 4
+        EarthPoint = 8
+        Argabrightening = 16
+        Desat = 32
+        ApertureCosmic = 64
+        ManualExclude = 128
+        Discontinuity = 256
+        ImpulsiveOutlier = 512
+        CollateralCosmic = 1024
+        #: The first stray light flag is set manually by MIT based on visual inspection.
+        Straylight = 2048
+        #: The second stray light flag is set automatically by Ames/SPOC based on background level thresholds.
+        Straylight2 = 4096
+        DEFAULT_BITMASK = [
+            AttitudeTweak, SafeMode, CoarsePoint, EarthPoint, Desat, ManualExclude
+        ]
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Extract all light curves to a single csv file
+        TESS_fits['TIME'] = TESS_fits['TIME'] + 2457000
         csv_name = f'{source}/{mast_name}/{mast_name}.csv'
-        write_dict = {'Time': time, 'Flux': flux, 'Flux err': flux_err}
-        df = DataFrame(write_dict)
+        df = TESS_fits[['TIME', 'PDCSAP_FLUX', 'PDCSAP_FLUX_ERR', 'QUALITY']]
+        df = df[~df['QUALITY'].isin(DEFAULT_BITMASK)].drop('QUALITY', axis=1)
+        df = df.rename(columns = {'TIME':'Time',
+                                  'PDCSAP_FLUX':'Flux',
+                                  'PDCSAP_FLUX_ERR':'Flux err'})
         df.to_csv(csv_name, index=False, na_rep='nan')
         csv_in_dir.append(f'{os.getcwd()}/{csv_name}')
         
@@ -382,8 +395,6 @@ def _retrieval(
         f'curve_sample={str(curve_sample)}\n'
         f'clean={clean}\n'
         f'cache={cache}\n'
-        f'walks={str(walks)}\n'
-        f'slices={str(slices)}\n'
         f'cutoff={str(cutoff)}\n'
         f'window={str(window)}\n'
         f'nlive={str(nlive)}\n'
@@ -446,7 +457,6 @@ def _retrieval(
             oc_fold(t0, t0err, file=file, exoplanet=exoplanet)
         except Exception as e:
             print(e)
-            pass
         os.makedirs('firefly/ttv', exist_ok=True)
         os.makedirs(f'firefly/ttv/{fitting_mode}', exist_ok=True)
         archive_folder = f'firefly/ttv/{fitting_mode}/{archive_name}'
