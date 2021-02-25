@@ -410,9 +410,12 @@ def oc_fold(t0, t0err, file='Complete_results.csv', exoplanet=None):
     oc_ax.axhline(0, color='black', linestyle='--', linewidth=1)
     oc_ax.plot(fit_x, fit_y, color='red', alpha=0.8)
     red = 'dof'
-    oc_ax.annotate(f'$\chi^2_{{{red}}} = {chi2_red:.2f}\, ({nsig:.2f}\sigma)$\n{hyp}\n$\mu_{{error}}= {loss:.2f}$',
-                        (len(epoch_no)*0.9, ominusc.max()*0.8),
-                        color='k', weight='bold', ha='center')
+    from matplotlib.offsetbox import AnchoredText
+    txt = AnchoredText(f'$\chi^2_{{{red}}} = {chi2_red:.2f}\, ({nsig:.2f}\sigma)$' +\
+                       f'\n{hyp}\n$\mu_{{error}}= {loss:.2f}$',
+                       loc='upper right', frameon=False,
+                       prop=dict(fontweight="bold"))
+    oc_ax.add_artist(txt)
     oc_ax.set_ylim([ominusc.min()*1.5, ominusc.max()*2])
     phase_ax.errorbar(epoch_phase, ominusc, ominuscerr, marker='.',
                       elinewidth=0.8, color='dimgrey', linestyle='', capsize=2,
