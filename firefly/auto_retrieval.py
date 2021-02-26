@@ -39,6 +39,7 @@ def firefly(
         # MAST Search
         hlsp=['SPOC'],
         cadence=[120],
+        bitmask='default',
         # TransitFit Variables
         walks=100,
         slices=10,
@@ -153,6 +154,10 @@ def firefly(
     cadence : int list, [20, 120, 600, 1800]
         The exposure time. Options are 20, 120, 600 or 1800.
         The default is 120.
+    bitmask : str, 'default' or 'hard'
+        Filter out bad cadences.
+        The default is 'default'.
+        None will override the bitmask and use all cadences.
     cutoff : float, optional
         If there are no data within
         
@@ -333,6 +338,7 @@ def firefly(
             # MAST Search
             hlsp=hlsp,
             cadence=cadence,
+            bitmask=bitmask,
             # TransitFit Variables
             walks=walks,
             slices=slices,

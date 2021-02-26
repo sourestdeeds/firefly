@@ -140,6 +140,7 @@ def _fits(exoplanet,
           cache,
           hlsp=['SPOC', 'TESS-SPOC', 'TASOC'],
           cadence=[120],
+          bitmask='default'
 ):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # MAST Search
@@ -233,8 +234,14 @@ def _fits(exoplanet,
         TESS_fits['TIME'] = TESS_fits['TIME'] + 2457000
         csv_name = f'{source}/{mast_name}/{mast_name}.csv'
         _df = TESS_fits[['TIME', 'PDCSAP_FLUX', 'PDCSAP_FLUX_ERR', 'QUALITY']]
-        df = _df[~_df['QUALITY'].isin(DEFAULT_BITMASK)].drop('QUALITY', axis=1)
-        print(f'Removed {len(_df)-len(df)} bad cadences.')
+        if bitmask=='default':
+            df = _df[~_df['QUALITY'].isin(DEFAULT_BITMASK)].drop('QUALITY', axis=1)
+            print(f'Removed {len(_df)-len(df)} bad cadences.')
+        elif bitmask=='hard':
+            df = _df[~_df['QUALITY'].isin(HARD_BITMASK)].drop('QUALITY', axis=1)
+            print(f'Removed {len(_df)-len(df)} bad cadences.')
+        else:
+            df = _df.drop('QUALITY', axis=1)
         df = df.rename(columns = {'TIME':'Time',
                                   'PDCSAP_FLUX':'Flux',
                                   'PDCSAP_FLUX_ERR':'Flux err'})
@@ -261,6 +268,7 @@ def _retrieval(
         # MAST Search
         hlsp=['SPOC'],
         cadence=120,
+        bitmask='default',
         # TransitFit Variables
         walks=25,
         slices=5,
@@ -306,7 +314,7 @@ def _retrieval(
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Split the Light curves
     split_curve_in_dir = []
-    csv_in_dir = _fits(exoplanet, exo_folder, cache, hlsp, cadence)
+    csv_in_dir = _fits(exoplanet, exo_folder, cache, hlsp, cadence, bitmask)
     for i, csvfile in enumerate(csv_in_dir):
         split_curves = split_lightcurve_file(csvfile, t0=t0, P=P, t14=t14,
                                              cutoff=cutoff, window=window)
