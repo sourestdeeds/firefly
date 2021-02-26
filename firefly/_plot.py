@@ -481,7 +481,7 @@ def read_fitted_lc(exoplanet, P, transits):
     lc_all = lk.LightCurve(time, flux, flux_err)
     fit_all = lc['Best fit curve'] .values.tolist()
     for i in range(1,epoch_no):
-        file = f'ff/{exoplanet}/fitted_lightcurves/t0_f0_e{i}_detrended.csv'
+        file = f'firefly/{exoplanet}/fitted_lightcurves/t0_f0_e{i}_detrended.csv'
         lc = pd.read_csv(file)[['Time', 'Normalised flux',
                                 'Flux uncertainty','Best fit curve']]
         time = lc['Time'] .values
@@ -494,7 +494,7 @@ def read_fitted_lc(exoplanet, P, transits):
     lc_all = lc_all.fold(P)
     return lc_all
 
-def density_scatter(exoplanet, P, ax=None, sort=True):
+def density_scatter(exoplanet, P, transits, ax=None, sort=True):
     """
     Scatter plot colored by 2d histogram
     """
@@ -504,9 +504,9 @@ def density_scatter(exoplanet, P, ax=None, sort=True):
     #from matplotlib.colors import Normalize
     from scipy.interpolate import interpn
     from sklearn.preprocessing import scale
-    lc_all = read_fitted_lc(exoplanet, P)
-    bin_tot = len(lc_all)
-    bins=[bin_tot/400,bin_tot/400]
+    lc_all = read_fitted_lc(exoplanet, P, transits)
+    bin_tot = int(len(lc_all)/400)
+    bins=[bin_tot,bin_tot]
     x, y, yerr = lc_all.time, lc_all.flux, lc_all.flux_err
     if ax is None :
         fig , ax = plt.subplots(figsize=(10,6))
