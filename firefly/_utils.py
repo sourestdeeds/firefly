@@ -218,11 +218,15 @@ def _fits(exoplanet,
         Straylight = 2048
         #: The second stray light flag is set automatically by Ames/SPOC based on background level thresholds.
         Straylight2 = 4096
+        PlanetSearchExclude = 8192
+        BadCalibrationExclude = 16384
+        IsuffTargetsErrorCorr = 32768
         DEFAULT_BITMASK = [
-            AttitudeTweak, SafeMode, CoarsePoint, EarthPoint, Desat, ManualExclude
+            AttitudeTweak, SafeMode, CoarsePoint, EarthPoint, Desat, ManualExclude,
+            ImpulsiveOutlier, Argabrightening, BadCalibrationExclude#, Straylight2
         ]
         HARD_BITMASK = [
-            DEFAULT_BITMASK, ApertureCosmic, CollateralCosmic, Straylight, Straylight2
+            DEFAULT_BITMASK, Straylight2
         ]
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Extract all light curves to a single csv file
@@ -427,14 +431,6 @@ def _retrieval(
         file=open(exo_folder+'/variables.txt', 'w')
     )
     now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
-    data = {'pl_name':exoplanet, 'pl_orbper':P, 'pl_orbpererr1':Perr,
-            'pl_tranmid':t0, 'pl_tranmiderr1':t0err,
-            'pl_orbsmax':a, 'pl_orbsmaxerr1':aerr, 'pl_radj':rp,
-            'pl_radjerr1':rperr, 'pl_orbincl':inc,
-            'pl_orbinclerr1':incerr, 'pl_orbeccen':ecc, 'pl_orbeccenerr1':eccerr,
-            'pl_orblper':w, 'pl_orblpererr1':werr, 'Transits':int(len(df)),
-            'Date':now, 'Archive':archive.upper()}
-    df = DataFrame(data, index=[0])
     sci_prod = ' '.join(hlsp)
     archive_name = f"{exoplanet} {archive.upper()} {sci_prod} {now}"
     if fit_ttv==True:
@@ -456,6 +452,15 @@ def _retrieval(
                      root_dir=f'{os.getcwd()}/firefly/',
                      base_dir=f'{exoplanet}')
     else:
+        data = {'pl_name':exoplanet, 'pl_orbper':P, 'pl_orbpererr1':Perr,
+                'pl_tranmid':t0, 'pl_tranmiderr1':t0err,
+                'pl_orbsmax':a, 'pl_orbsmaxerr1':aerr, 'pl_radj':rp,
+                'pl_radjerr1':rperr, 'pl_orbincl':inc,
+                'pl_orbinclerr1':incerr, 'pl_orbeccen':ecc, 'pl_orbeccenerr1':eccerr,
+                'pl_orblper':w, 'pl_orblpererr1':werr, 'Transits':int(len(df)),
+                'Date':now, 'Archive':archive.upper()
+        }
+        df = DataFrame(data, index=[0])
         summary_master = 'firefly/data/spear.csv'
         if not os.path.exists(summary_master):
             df.to_csv(summary_master, index=False)
