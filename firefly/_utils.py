@@ -227,7 +227,8 @@ def _fits(exoplanet,
             ImpulsiveOutlier, Argabrightening, BadCalibrationExclude#, Straylight2
         ]
         HARD_BITMASK = [
-            DEFAULT_BITMASK, Straylight2
+            AttitudeTweak, SafeMode, CoarsePoint, EarthPoint, Desat, ManualExclude,
+            ImpulsiveOutlier, Argabrightening, BadCalibrationExclude, Straylight2
         ]
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Extract all light curves to a single csv file
