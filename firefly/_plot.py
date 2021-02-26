@@ -525,9 +525,8 @@ def density_scatter(exoplanet, transits, ax=None, sort=True):
         x, y, z = x[idx], y[idx], z[idx]
     plt.set_cmap('hot')
     ax.scatter(x, y, c=z, zorder=2, s=5)
-    ax.errorbar(x, y,
-                  yerr, color='k',
-                  alpha=0.1, zorder=1, capsize=2, ls='none')
+    ax.errorbar(x, y, yerr, color='dimgrey',
+                  alpha=0.3, zorder=1, capsize=2, ls='none')
     ax.plot(fitx, fity, marker='', color='k')
     plt.xlabel('Phase')
     plt.ylabel('Normalised Flux')
