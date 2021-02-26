@@ -1,6 +1,7 @@
 from firefly import tess
 from multiprocessing import Pool
 from subprocess import run
+from pandas import read_csv
 import signal
 
 
@@ -18,7 +19,8 @@ class timeout:
         
         
 def main(exoplanet):
-    max_runtime = 60 * 60 * 24 * 7
+    # Kill process in 5 days
+    max_runtime = 60 * 60 * 24 * 5
     with timeout(seconds=max_runtime):
         print(f'Executing firefly on {exoplanet}')
         run(['python', 'main.py', f'{exoplanet}'])
@@ -28,8 +30,11 @@ def main(exoplanet):
 processes = 1
 # Define various lists to pass
 # targets, all_targets, ttv_targets = tess(archive='nasa', survey=None)
-all_targets = read_csv('nasa_tess_viable.csv') \
-              .sort_values('Epochs', ascending=False)['Exoplanet'].tolist()
+all_targets = \
+    read_csv('https://raw.githubusercontent.com/sourestdeeds/' +\
+             'firefly/main/firefly/data/Targets/' +\
+             'nasa_tess_viable.csv?token=ACSJ3DZQMUVPSRCDCVEN4OLAIGBAS') \
+             .sort_values('Epochs', ascending=False)['Exoplanet'].tolist()
 # all_targets = [
 #     'wasp100b', 'wasp126b', 'lhs1815b', 'kepler42c', 'wasp119b',
 #     'wasp18b', 'hip65ab', 'l9859b', 'gj1252b', 'wasp62b',
@@ -39,4 +44,4 @@ all_targets = read_csv('nasa_tess_viable.csv') \
 exoplanet = all_targets[::2]
 if __name__ == '__main__':
     with Pool(processes=processes) as pool:
-        pool.map(main, exoplanet)
+        pool.map(main, exoplanet, chunksize=1)

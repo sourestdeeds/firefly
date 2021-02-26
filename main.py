@@ -23,15 +23,19 @@ def main(exoplanet):
         clean=True,
         cache=False,
         auto=True,
+        # MAST Search
+        hlsp=['SPOC'],
+        cadence=[120],
+        bitmask='default',
         # TransitFit Variables
         walks=25,
         slices=5,
         cutoff=0.25,
-        window=2,
+        window=8,
         nlive=625,
-        fit_ttv=True,
+        fit_ttv=False,
         detrending_list=[['nth order', 2]],
-        dynesty_sample='rwalk',
+        dynesty_sample='rslice',
         fitting_mode='folded',
         limb_darkening_model='quadratic',
         ld_fit_method='coupled',
@@ -42,7 +46,8 @@ def main(exoplanet):
         maxcall=None,
         dynesty_bounding='multi',
         normalise=True,
-        detrend=True
+        detrend=True,
+        detrending_limits=[[-10,10]]
         )
 
 
