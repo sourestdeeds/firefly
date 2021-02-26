@@ -468,10 +468,10 @@ def oc_fold(t0, t0err, file='Complete_results.csv', exoplanet=None):
     return chi2_red, nsig, loss, fap
   
   
-  def read_fitted_lc(exoplanet, P):
+  def read_fitted_lc(exoplanet, P, transits):
     import lightkurve as lk
-    epoch_no = 164
-    file = f'ff/{exoplanet}/fitted_lightcurves/t0_f0_e0_detrended.csv'
+    epoch_no = transits
+    file = f'firefly/{exoplanet}/fitted_lightcurves/t0_f0_e0_detrended.csv'
     lc = pd.read_csv(file)[['Time', 'Normalised flux', 
                             'Flux uncertainty', 'Best fit curve']]
     fitx = lc['Best fit curve'] .values.tolist()
@@ -527,7 +527,7 @@ def density_scatter(exoplanet, P, ax=None, sort=True, bins=[250,250]):
                   alpha=0.1, zorder=1, capsize=2, ls='none')
     plt.xlabel('Phase')
     plt.ylabel('Flux')
-    fig.savefig(f'{exoplanet}_density.png', bbox_inches='tight')
+    fig.savefig(f'firefly/{exoplanet}/{exoplanet}_density.png', bbox_inches='tight')
     #norm = Normalize(vmin = np.min(z), vmax = np.max(z))
     #cbar = fig.colorbar(cm.ScalarMappable(norm = norm), ax=ax)
     #cbar.ax.set_ylabel('Density')
