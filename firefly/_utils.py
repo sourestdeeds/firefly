@@ -234,7 +234,7 @@ def _fits(exoplanet,
         csv_name = f'{source}/{mast_name}/{mast_name}.csv'
         _df = TESS_fits[['TIME', 'PDCSAP_FLUX', 'PDCSAP_FLUX_ERR', 'QUALITY']]
         df = _df[~_df['QUALITY'].isin(DEFAULT_BITMASK)].drop('QUALITY', axis=1)
-        print(f'\nRemoved {len(_df)-len(df)} bad cadences.')
+        print(f'Removed {len(_df)-len(df)} bad cadences.')
         df = df.rename(columns = {'TIME':'Time',
                                   'PDCSAP_FLUX':'Flux',
                                   'PDCSAP_FLUX_ERR':'Flux err'})
