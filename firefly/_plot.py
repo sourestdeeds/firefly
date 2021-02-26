@@ -505,12 +505,13 @@ def density_scatter(exoplanet, transits, ax=None, sort=True):
     from scipy.interpolate import interpn
     # from sklearn.preprocessing import scale
     lc_all, fitx, fity = read_fitted_lc(exoplanet, transits)
-    bin_tot = len(lc_all)//400
     bin_tot=250
+    if len(lc_all) < bin_tot:
+        bint_tot = len(lc_all)
     bins=[bin_tot,bin_tot]
     x, y, yerr = lc_all.time, lc_all.flux, lc_all.flux_err
     if ax is None :
-        fig, ax = plt.subplots(figsize=(10,6))
+        fig, ax = plt.subplots(figsize=(12,8))
     data, x_e, y_e = np.histogram2d(x, y, bins=bins, density=True)
     z = interpn( ( 0.5*(x_e[1:] + x_e[:-1]), 0.5*(y_e[1:]+y_e[:-1]) ),
                 data, np.vstack([x,y]).T, method="splinef2d",
