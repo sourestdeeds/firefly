@@ -7,7 +7,7 @@ The backend for auto_retrieval.
 """
 
 from ._archive import priors, _tic, _load_csv, _search
-from ._plot import oc_fold
+from ._plot import oc_fold, density_scatter
 
 from transitfit import split_lightcurve_file, run_retrieval
 from astroquery.mast import Observations as obs
@@ -411,6 +411,10 @@ def _retrieval(
         werr = float(master['Error'].iloc[7])
     except ValueError:
         werr = float()
+    try:
+        density_scatter(exoplanet=exoplanet, P=P, transits=int(len(df)))
+    except Exception as e:
+        print(e)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Archive and sort
     print(
