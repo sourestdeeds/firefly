@@ -412,7 +412,7 @@ def _retrieval(
     except ValueError:
         werr = float()
     try:
-        density_scatter(exoplanet=exoplanet, P=P, transits=int(len(df)))
+        density_scatter(exoplanet=exoplanet, transits=int(len(df)))
     except Exception as e:
         print(e)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#

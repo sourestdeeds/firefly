@@ -468,33 +468,33 @@ def oc_fold(t0, t0err, file='Complete_results.csv', exoplanet=None):
     return chi2_red, nsig, loss, fap
   
   
-def read_fitted_lc(exoplanet, P, transits):
+def read_fitted_lc(exoplanet, transits):
     import lightkurve as lk
     epoch_no = transits
     file = f'firefly/{exoplanet}/fitted_lightcurves/t0_f0_e0_detrended.csv'
-    lc = pd.read_csv(file)[['Time', 'Normalised flux',
+    lc = pd.read_csv(file)[['Phase', 'Normalised flux',
                             'Flux uncertainty', 'Best fit curve']]
-    fitx = lc['Best fit curve'] .values.tolist()
-    time = lc['Time'] .values
+    fitx = lc['Phase'] .values.tolist()
+    fity = lc['Best fit curve'] .values.tolist()
+    time = lc['Phase'] .values
     flux = lc['Normalised flux'] .values
     flux_err = lc['Flux uncertainty'] .values
     lc_all = lk.LightCurve(time, flux, flux_err)
     fit_all = lc['Best fit curve'] .values.tolist()
     for i in range(1,epoch_no):
         file = f'firefly/{exoplanet}/fitted_lightcurves/t0_f0_e{i}_detrended.csv'
-        lc = pd.read_csv(file)[['Time', 'Normalised flux',
+        lc = pd.read_csv(file)[['Phase', 'Normalised flux',
                                 'Flux uncertainty','Best fit curve']]
-        time = lc['Time'] .values
+        time = lc['Phase'] .values
         flux = lc['Normalised flux'] .values
         flux_err = lc['Flux uncertainty'] .values
         fit = lc['Best fit curve'] .values .tolist()
         lc = lk.LightCurve(time, flux, flux_err)
         lc_all.append(lc, inplace=True)
         fit_all.extend(fit)
-    lc_all = lc_all.fold(P)
-    return lc_all
+    return lc_all, fitx, fity
 
-def density_scatter(exoplanet, P, transits, ax=None, sort=True):
+def density_scatter(exoplanet, transits, ax=None, sort=True):
     """
     Scatter plot colored by 2d histogram
     """
@@ -503,14 +503,15 @@ def density_scatter(exoplanet, P, transits, ax=None, sort=True):
     #from matplotlib import cm
     #from matplotlib.colors import Normalize
     from scipy.interpolate import interpn
-    from sklearn.preprocessing import scale
-    lc_all = read_fitted_lc(exoplanet, P, transits)
-    bin_tot = int(len(lc_all)/400)
+    # from sklearn.preprocessing import scale
+    lc_all, fitx, fity = read_fitted_lc(exoplanet, transits)
+    bin_tot = len(lc_all)//400
+    bin_tot=250
     bins=[bin_tot,bin_tot]
     x, y, yerr = lc_all.time, lc_all.flux, lc_all.flux_err
     if ax is None :
-        fig , ax = plt.subplots(figsize=(10,6))
-    data , x_e, y_e = np.histogram2d(x, y, bins=bins, density=True )
+        fig, ax = plt.subplots(figsize=(10,6))
+    data, x_e, y_e = np.histogram2d(x, y, bins=bins, density=True)
     z = interpn( ( 0.5*(x_e[1:] + x_e[:-1]), 0.5*(y_e[1:]+y_e[:-1]) ),
                 data, np.vstack([x,y]).T, method="splinef2d",
                 bounds_error=False)
@@ -519,16 +520,17 @@ def density_scatter(exoplanet, P, transits, ax=None, sort=True):
     z[np.where(np.isnan(z))] = 0.0
 
     # Sort the points by density, so that the densest points are plotted last
-    if sort :
+    if sort:
         idx = z.argsort()
         x, y, z = x[idx], y[idx], z[idx]
     plt.set_cmap('hot')
-    ax.scatter(scale(x), y, c=z, zorder=2, s=5)
-    ax.errorbar(scale(x), y,
+    ax.scatter(x, y, c=z, zorder=2, s=5)
+    ax.errorbar(x, y,
                   yerr, color='k',
                   alpha=0.1, zorder=1, capsize=2, ls='none')
+    ax.plot(fitx, fity, marker='', color='k')
     plt.xlabel('Phase')
-    plt.ylabel('Flux')
+    plt.ylabel('Normalised Flux')
     fig.savefig(f'firefly/{exoplanet}/{exoplanet}_density.png', bbox_inches='tight')
     #norm = Normalize(vmin = np.min(z), vmax = np.max(z))
     #cbar = fig.colorbar(cm.ScalarMappable(norm = norm), ax=ax)
