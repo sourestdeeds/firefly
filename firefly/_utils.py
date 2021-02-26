@@ -232,8 +232,9 @@ def _fits(exoplanet,
     # Extract all light curves to a single csv file
         TESS_fits['TIME'] = TESS_fits['TIME'] + 2457000
         csv_name = f'{source}/{mast_name}/{mast_name}.csv'
-        df = TESS_fits[['TIME', 'PDCSAP_FLUX', 'PDCSAP_FLUX_ERR', 'QUALITY']]
-        df = df[~df['QUALITY'].isin(DEFAULT_BITMASK)].drop('QUALITY', axis=1)
+        _df = TESS_fits[['TIME', 'PDCSAP_FLUX', 'PDCSAP_FLUX_ERR', 'QUALITY']]
+        df = _df[~_df['QUALITY'].isin(DEFAULT_BITMASK)].drop('QUALITY', axis=1)
+        print(f'\nRemoved {len(_df)-len(df)} bad cadences.')
         df = df.rename(columns = {'TIME':'Time',
                                   'PDCSAP_FLUX':'Flux',
                                   'PDCSAP_FLUX_ERR':'Flux err'})
