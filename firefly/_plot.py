@@ -489,6 +489,13 @@ def read_fitted_lc(exoplanet, transits):
         flux = lc['Normalised flux'] .values
         flux_err = lc['Flux uncertainty'] .values
         fit = lc['Best fit curve'] .values .tolist()
+        
+        fitx_temp = lc['Phase'] .values.tolist()
+        fity_temp = lc['Best fit curve'] .values.tolist()
+        if len(fitx) < len(fitx_temp):
+            fitx = lc['Phase'] .values.tolist()
+        if len(fity) < len(fity_temp):
+            fity = lc['Best fit curve'] .values.tolist()
         lc = lk.LightCurve(time, flux, flux_err)
         lc_all.append(lc, inplace=True)
         fit_all.extend(fit)
