@@ -450,13 +450,36 @@ def _retrieval(
     if fit_ttv==True:
         try:
             url = 'https://raw.githubusercontent.com/sourestdeeds/firefly/' +\
-                  'main/firefly/data/spear.csv?token=ACSJ3D2P5KIFJ6ZAR2C3BH3AHJYZA'
+                  'main/firefly/data/spear.csv?token=ACSJ3D3DAHF3NDPFYHDXHMTAIOXVI'
             spearnet = read_csv(url).set_index('pl_name')
             s = spearnet.loc[[exoplanet]]
             t0 = s['pl_tranmid'][0]
             t0err = s['pl_tranmiderr1'][0]
             file = f'firefly/{exoplanet}/output_parameters/Complete_results.csv'
-            oc_fold(t0, t0err, file=file, exoplanet=exoplanet)
+            chi2_red, nsig, loss, fap, period = oc_fold(t0, t0err, file=file, exoplanet=exoplanet)
+            data = {'pl_name':exoplanet, 'red_chi2':chi2_red, 'sigma':nsig, 'mean_avg_err':loss,
+                    'fap':fap, 'o-c_period':period,
+                    'pl_orbper':P, 'pl_orbpererr1':Perr,
+                    'pl_tranmid':t0, 'pl_tranmiderr1':t0err,
+                    'pl_orbsmax':a, 'pl_orbsmaxerr1':aerr, 'pl_radj':rp,
+                    'pl_radjerr1':rperr, 'pl_orbincl':inc,
+                    'pl_orbinclerr1':incerr, 'pl_orbeccen':ecc, 'pl_orbeccenerr1':eccerr,
+                    'pl_orblper':w, 'pl_orblpererr1':werr, 'Transits':int(len(df)),
+                    'Date':now, 'Archive':archive.upper()
+            }
+            df = DataFrame(data, index=[0])
+            summary_master = 'firefly/data/spear_ttv.csv'
+            if not os.path.exists(summary_master):
+                df.to_csv(summary_master, index=False)
+            else:
+                add = read_csv(summary_master)
+                add = add.append(df)
+                add['pl_name'] = \
+                    Categorical(add['pl_name'],
+                    ordered=True,
+                    categories=natsorted(add['pl_name'].unique()))
+                add = add.sort_values('pl_name')
+                add .to_csv(summary_master, index=False)
         except Exception as e:
             print(e)
         os.makedirs('firefly/ttv', exist_ok=True)
