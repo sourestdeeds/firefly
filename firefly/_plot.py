@@ -551,11 +551,36 @@ def density_scatter(exoplanet, transits, sort=True):
     res_ax.set_ylabel('Residual')
     plt.subplots_adjust(hspace=.0)
     fig[0].savefig(f'firefly/{exoplanet}/{exoplanet}_density.png', bbox_inches='tight')
-    #norm = Normalize(vmin = np.min(z), vmax = np.max(z))
-    #cbar = fig.colorbar(cm.ScalarMappable(norm = norm), ax=ax)
-    #cbar.ax.set_ylabel('Density')
-
-    return ax
+    
+    # No errorbar
+    fig = plt.subplots(figsize=(12,8))
+    gs = gridspec.GridSpec(2, 1, height_ratios=[3,1])
+    ax = plt.subplot(gs[0])
+    res_ax = plt.subplot(gs[1])
+    
+    plt.set_cmap('hot')
+    res_ax.scatter(x, diff, s=5, alpha=0.8, c=z, edgecolor='none')
+    res_ax.axhline(y=0, color='k', linestyle='--')
+    
+    plt.set_cmap('hot')
+    ax.scatter(x, y, c=z, zorder=2, s=5)
+    ax.plot(fitx, fity, marker='', color='k')
+    plt.xlabel('Phase')
+    ax.set_ylabel('Normalised Flux')
+    res_ax.set_ylabel('Residual')
+    plt.subplots_adjust(hspace=.0)
+    fig[0].savefig(f'firefly/{exoplanet}/{exoplanet}_density_noerr.png', bbox_inches='tight')
+    # No resid or err
+    fig = plt.subplots(figsize=(12,6))
+    gs = gridspec.GridSpec(1, 1)
+    ax = plt.subplot(gs[0])
+    
+    plt.set_cmap('hot')
+    ax.scatter(x, y, c=z, zorder=2, s=5)
+    ax.plot(fitx, fity, marker='', color='k')
+    plt.xlabel('Phase')
+    ax.set_ylabel('Normalised Flux')
+    fig[0].savefig(f'firefly/{exoplanet}/{exoplanet}_density_noresiderr.png', bbox_inches='tight')
 
 
 def density_scatter_noresid(exoplanet, transits, sort=True):
