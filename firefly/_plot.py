@@ -492,9 +492,65 @@ def read_fitted_lc(exoplanet, transits):
         lc = lk.LightCurve(time, flux, flux_err)
         lc_all.append(lc, inplace=True)
         fit_all.extend(fit)
-    return lc_all, fitx, fity
+    return lc_all, fitx, fity, fit_all
 
-def density_scatter(exoplanet, transits, ax=None, sort=True):
+def density_scatter(exoplanet, transits, sort=True):
+    """
+    Scatter plot colored by 2d histogram
+    """
+    import numpy as np
+    import matplotlib.pyplot as plt
+    #from matplotlib import cm
+    #from matplotlib.colors import Normalize
+    from scipy.interpolate import interpn
+    # from sklearn.preprocessing import scale
+    lc_all, fitx, fity, fit_all = read_fitted_lc(exoplanet, transits)
+    bin_tot=250
+    if len(lc_all) < bin_tot:
+        bint_tot = len(lc_all)
+    bins=[bin_tot,bin_tot]
+    x, y, yerr = lc_all.time, lc_all.flux, lc_all.flux_err
+    diff = fit_all - y
+    
+    data, x_e, y_e = np.histogram2d(x, y, bins=bins, density=True)
+    z = interpn( ( 0.5*(x_e[1:] + x_e[:-1]), 0.5*(y_e[1:]+y_e[:-1]) ),
+                data, np.vstack([x,y]).T, method="splinef2d",
+                bounds_error=False)
+
+    #To be sure to plot all data
+    z[np.where(np.isnan(z))] = 0.0
+
+    # Sort the points by density, so that the densest points are plotted last
+    if sort:
+        idx = z.argsort()
+        x, y, z, diff = x[idx], y[idx], z[idx], diff[idx]
+        
+    fig = plt.subplots(figsize=(12,8))
+    gs = gridspec.GridSpec(2, 1, height_ratios=[3,1])
+    ax = plt.subplot(gs[0])
+    res_ax = plt.subplot(gs[1])
+    
+    plt.set_cmap('hot')
+    res_ax.scatter(x, diff, s=5, alpha=0.8, c=z, edgecolor='none')
+    res_ax.axhline(y=0, color='k', linestyle='--')
+    
+    plt.set_cmap('hot')
+    ax.scatter(x, y, c=z, zorder=2, s=5)
+    ax.errorbar(x, y, yerr, color='dimgrey',
+                  alpha=0.3, zorder=1, capsize=2, ls='none')
+    ax.plot(fitx, fity, marker='', color='k')
+    plt.xlabel('Phase')
+    ax.set_ylabel('Normalised Flux')
+    res_ax.set_ylabel('Residual')
+    fig[0].savefig(f'firefly/{exoplanet}/{exoplanet}_density.png', bbox_inches='tight')
+    #norm = Normalize(vmin = np.min(z), vmax = np.max(z))
+    #cbar = fig.colorbar(cm.ScalarMappable(norm = norm), ax=ax)
+    #cbar.ax.set_ylabel('Density')
+
+    return ax
+
+
+def density_scatter_noresid(exoplanet, transits, sort=True):
     """
     Scatter plot colored by 2d histogram
     """
@@ -510,8 +566,7 @@ def density_scatter(exoplanet, transits, ax=None, sort=True):
         bint_tot = len(lc_all)
     bins=[bin_tot,bin_tot]
     x, y, yerr = lc_all.time, lc_all.flux, lc_all.flux_err
-    if ax is None :
-        fig, ax = plt.subplots(figsize=(12,8))
+    fig, ax = plt.subplots(figsize=(12,8))
     data, x_e, y_e = np.histogram2d(x, y, bins=bins, density=True)
     z = interpn( ( 0.5*(x_e[1:] + x_e[:-1]), 0.5*(y_e[1:]+y_e[:-1]) ),
                 data, np.vstack([x,y]).T, method="splinef2d",
