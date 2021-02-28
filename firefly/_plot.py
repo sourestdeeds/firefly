@@ -470,7 +470,7 @@ def oc_fold(t0, t0err, file='Complete_results.csv', exoplanet=None):
   
   
 def read_fitted_lc(exoplanet, transits):
-    import lightkurve as lk
+    from lightkurve import LightCurve
     epoch_no = transits
     file = f'firefly/{exoplanet}/fitted_lightcurves/t0_f0_e0_detrended.csv'
     lc = pd.read_csv(file)[['Phase', 'Normalised flux',
@@ -480,7 +480,7 @@ def read_fitted_lc(exoplanet, transits):
     time = lc['Phase'] .values
     flux = lc['Normalised flux'] .values
     flux_err = lc['Flux uncertainty'] .values
-    lc_all = lk.LightCurve(time, flux, flux_err)
+    lc_all = LightCurve(time, flux, flux_err)
     fit_all = lc['Best fit curve'] .values.tolist()
     for i in range(1,epoch_no):
         file = f'firefly/{exoplanet}/fitted_lightcurves/t0_f0_e{i}_detrended.csv'
@@ -497,7 +497,7 @@ def read_fitted_lc(exoplanet, transits):
             fitx = lc['Phase'] .values.tolist()
         if len(fity) < len(fity_temp):
             fity = lc['Best fit curve'] .values.tolist()
-        lc = lk.LightCurve(time, flux, flux_err)
+        lc = LightCurve(time, flux, flux_err)
         lc_all.append(lc, inplace=True)
         fit_all.extend(fit)
     lc_all, mask = lc_all.remove_outliers(sigma_upper=3, sigma_lower=5, return_mask=True)
