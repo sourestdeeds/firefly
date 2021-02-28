@@ -139,7 +139,7 @@ def clip(df):
     flux = df['PDCSAP_FLUX']
     flux_err = df['PDCSAP_FLUX_ERR']
     lc = LightCurve(time, flux, flux_err)
-    lc = lc.remove_outliers(sigma_upper=5, sigma_lower=6)
+    lc = lc.remove_outliers(sigma_upper=5, sigma_lower=10)
     df_new = DataFrame()
     df_new['TIME'] = lc.time
     df_new['PDCSAP_FLUX'] = lc.flux
