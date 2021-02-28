@@ -559,7 +559,7 @@ def density_scatter(exoplanet, transits, sort=True):
     fig = plt.subplots(figsize=(12,8))
     gs = gridspec.GridSpec(2, 1, height_ratios=[3,1])
     ax = plt.subplot(gs[0])
-    res_ax = plt.subplot(gs[1])
+    res_ax = plt.subplot(gs[1], sharex=ax)
     
     plt.set_cmap('hot')
     res_ax.scatter(x, diff, s=5, alpha=0.8, c=z, edgecolor='none')
