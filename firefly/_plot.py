@@ -538,7 +538,7 @@ def density_scatter(exoplanet, transits, sort=True):
     fig = plt.subplots(figsize=(12,8))
     gs = gridspec.GridSpec(2, 1, height_ratios=[3,1])
     ax = plt.subplot(gs[0])
-    res_ax = plt.subplot(gs[1])
+    res_ax = plt.subplot(gs[1], sharex=ax)
     
     plt.set_cmap('hot')
     res_ax.scatter(x, diff, s=5, alpha=0.8, c=z, edgecolor='none')
@@ -584,6 +584,20 @@ def density_scatter(exoplanet, transits, sort=True):
     plt.xlabel('Phase')
     ax.set_ylabel('Normalised Flux')
     fig[0].savefig(f'firefly/{exoplanet}/{exoplanet}_density_noresiderr.png', bbox_inches='tight')
+    
+    # No resid
+    fig = plt.subplots(figsize=(12,6))
+    gs = gridspec.GridSpec(1, 1)
+    ax = plt.subplot(gs[0])
+    
+    plt.set_cmap('hot')
+    ax.errorbar(x, y, yerr, color='dimgrey',
+                  alpha=0.3, zorder=1, capsize=2, ls='none')
+    ax.scatter(x, y, c=z, zorder=2, s=5)
+    ax.plot(fitx, fity, marker='', color='k')
+    plt.xlabel('Phase')
+    ax.set_ylabel('Normalised Flux')
+    fig[0].savefig(f'firefly/{exoplanet}/{exoplanet}_density_noresid.png', bbox_inches='tight')
 
 
 def density_scatter_noresid(exoplanet, transits, sort=True):
