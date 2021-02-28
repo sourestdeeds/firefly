@@ -500,7 +500,9 @@ def read_fitted_lc(exoplanet, transits):
         lc = LightCurve(time, flux, flux_err)
         lc_all.append(lc, inplace=True)
         fit_all.extend(fit)
-    lc_all, mask = lc_all.remove_outliers(sigma_upper=3, sigma_lower=5, return_mask=True)
+    from astropy.stats.funcs import mad_std
+    lc_all, mask = lc_all.remove_outliers(sigma_upper=3,
+                        sigma_lower=5, return_mask=True, stdfunc=mad_std)
     fit_all = np.array(fit_all)[~mask]
     return lc_all, fitx, fity, fit_all
 

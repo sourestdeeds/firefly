@@ -135,11 +135,12 @@ def _discover_search(tic_id):
 
 def clip(df):
     from lightkurve import LightCurve
+    from astropy.stats.funcs import mad_std
     time = df['TIME']
     flux = df['PDCSAP_FLUX']
     flux_err = df['PDCSAP_FLUX_ERR']
     lc = LightCurve(time, flux, flux_err)
-    lc = lc.remove_outliers(sigma_upper=5, sigma_lower=10)
+    lc = lc.remove_outliers(sigma_upper=5, sigma_lower=10, stdfunc=mad_std)
     df_new = DataFrame()
     df_new['TIME'] = lc.time
     df_new['PDCSAP_FLUX'] = lc.flux
