@@ -500,10 +500,10 @@ def read_fitted_lc(exoplanet, transits):
         lc = LightCurve(time, flux, flux_err)
         lc_all.append(lc, inplace=True)
         fit_all.extend(fit)
-    from astropy.stats.funcs import mad_std
-    lc_all, mask = lc_all.remove_outliers(sigma_upper=3,
-                        sigma_lower=5, return_mask=True, stdfunc=mad_std)
-    fit_all = np.array(fit_all)[~mask]
+    #from astropy.stats.funcs import mad_std
+    #lc_all, mask = lc_all.remove_outliers(sigma_upper=3,
+    #                    sigma_lower=5, return_mask=True, stdfunc=mad_std)
+    #fit_all = np.array(fit_all)[~mask]
     return lc_all, fitx, fity, fit_all
 
 def density_scatter(exoplanet, transits, sort=True):
@@ -523,6 +523,13 @@ def density_scatter(exoplanet, transits, sort=True):
     bins=[bin_tot,bin_tot]
     x, y, yerr = lc_all.time, lc_all.flux, lc_all.flux_err
     diff = fit_all - y
+    
+    from astropy.stats.funcs import mad_std
+    from astropy.stats.sigma_clipping import sigma_clip
+    clip = sigma_clip(diff, sigma=4, stdfunc=mad_std)
+    mask = clip.mask
+    diff = diff[~mask]
+    x, y, yerr = x[~mask], y[~mask], yerr[~mask]
     
     data, x_e, y_e = np.histogram2d(x, y, bins=bins, density=True)
     z = interpn( ( 0.5*(x_e[1:] + x_e[:-1]), 0.5*(y_e[1:]+y_e[:-1]) ),
