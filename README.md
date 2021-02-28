@@ -1,7 +1,7 @@
 # **firefly**
 ### A target selector for use with TransitFit to fit TESS lightcurves.
 <p align="center">
-  <img src="https://raw.githubusercontent.com/sourestdeeds/firefly/main/firefly/data/filter_0.png?token=ACSJ3D4Q5KKOXKR5SQQK5V3AILKSA">
+  <img src="https://raw.githubusercontent.com/sourestdeeds/firefly/main/firefly/data/filter_0.png?token=ACSJ3D3FAPWIYOWBBLZOPITAIVJU6">
 </p>
 
 #### Installation
