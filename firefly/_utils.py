@@ -132,8 +132,20 @@ def _discover_search(tic_id):
     # Plot the final output
     for k, csv in enumerate(csv_in_dir):
         lc_plot(csv)
-        
-        
+
+def clip(df):
+    from lightkurve import LightCurve
+    time = df['TIME']
+    flux = df['PDCSAP_FLUX']
+    flux_err = df['PDCSAP_FLUX_ERR']
+    lc = LightCurve(time, flux, flux_err)
+    lc = lc.remove_outliers(sigma_upper=5, sigma_lower=6)
+    df_new = DataFrame()
+    df_new['TIME'] = lc.time
+    df_new['PDCSAP_FLUX'] = lc.flux
+    df_new['PDCSAP_FLUX_ERR'] = lc.flux_err
+    print(f'Sigma clipped {len(df)-len(df_new)} cadences.')
+    return df_new
 
 def _fits(exoplanet,
           exo_folder,
@@ -241,6 +253,7 @@ def _fits(exoplanet,
         elif bitmask=='hard':
             df = _df[~_df['QUALITY'].isin(HARD_BITMASK)].drop('QUALITY', axis=1)
             print(f'Removed {len(_df)-len(df)} bad cadences.')
+            df = clip(df)
         else:
             df = _df.drop('QUALITY', axis=1)
         df = df.rename(columns = {'TIME':'Time',
@@ -515,12 +528,12 @@ def _retrieval(
         make_archive(archive_folder, format='zip',
                      root_dir=f'{os.getcwd()}/firefly/',
                      base_dir=f'{exoplanet}')
-    if clean==True:
-        try:
-            rmtree(f'{exo_folder}/output_parameters/quicksaves')
-            rmtree(f'{exo_folder}/output_parameters/filter_0_parameters/quicksaves')
-        except Exception:
-            pass
+    #if clean==True:
+    try:
+        rmtree(f'{exo_folder}/output_parameters/quicksaves')
+        rmtree(f'{exo_folder}/output_parameters/filter_0_parameters/quicksaves')
+    except Exception:
+        pass
     rmtree(f'{exo_folder}')
     return archive_name
 
