@@ -461,6 +461,12 @@ def _retrieval(
     now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
     sci_prod = ' '.join(hlsp)
     archive_name = f"{exoplanet} {archive.upper()} {sci_prod} {now}"
+    if clean==True:
+        try:
+            rmtree(f'{exo_folder}/output_parameters/quicksaves')
+            rmtree(f'{exo_folder}/output_parameters/filter_0_parameters/quicksaves')
+        except Exception:
+            pass
     if fit_ttv==True:
         try:
             url = 'https://raw.githubusercontent.com/sourestdeeds/firefly/' +\
@@ -529,12 +535,6 @@ def _retrieval(
         make_archive(archive_folder, format='zip',
                      root_dir=f'{os.getcwd()}/firefly/',
                      base_dir=f'{exoplanet}')
-    #if clean==True:
-    try:
-        rmtree(f'{exo_folder}/output_parameters/quicksaves')
-        rmtree(f'{exo_folder}/output_parameters/filter_0_parameters/quicksaves')
-    except Exception:
-        pass
     rmtree(f'{exo_folder}')
     return archive_name
 
