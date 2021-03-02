@@ -253,10 +253,10 @@ def _download_archive():
                 print(f'Caching the {i.upper()} Exoplanet Archive.')
                 df = read_csv(download_link)
                 df.to_csv(csv, index=False)
-            two_days_ago = datetime.now() - timedelta(days=2)
+            seven_days_ago = datetime.now() - timedelta(days=2)
             filetime = datetime.fromtimestamp(os.path.getctime(csv))
-            if filetime < two_days_ago:
-                print(f'{i.upper()} Archive is 2 days old. Updating.')
+            if filetime < seven_days_ago:
+                print(f'{i.upper()} Archive is 7 days old. Updating.')
                 df = read_csv(download_link)
                 df.to_csv(csv, index=False)
             else:
@@ -567,7 +567,7 @@ def tess(archive='eu', survey=None):
 
 
 def gen_tess(archive='eu'):
-    _download_archive()
+    #_download_archive()
     _load_csv()
     here = os.path.dirname(os.path.abspath(__file__))
     mast_csv = f'{here}/data/Search/TESS_lc.csv.xz'
