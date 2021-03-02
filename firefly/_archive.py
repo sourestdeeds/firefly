@@ -38,7 +38,10 @@ def _load_csv():
     Coverts all 4 archives to have the same column structure.
 
     '''
-    _download_archive()
+    try:
+        _download_archive()
+    except:
+        pass
     nasa_csv = 'firefly/data/nasa.csv.gz'
     eu_csv = 'firefly/data/eu.csv.gz'
     oec_csv = 'firefly/data/oec.csv.gz'
