@@ -526,7 +526,7 @@ def density_scatter(exoplanet, transits, sort=True):
     
     from astropy.stats.funcs import mad_std
     from astropy.stats.sigma_clipping import sigma_clip
-    clip = sigma_clip(diff, sigma=4, stdfunc=mad_std)
+    clip = sigma_clip(diff, sigma=5, stdfunc=mad_std)
     mask = clip.mask
     diff = diff[~mask]
     x, y, yerr = x[~mask], y[~mask], yerr[~mask]
