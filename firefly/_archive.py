@@ -253,7 +253,7 @@ def _download_archive():
                 print(f'Caching the {i.upper()} Exoplanet Archive.')
                 df = read_csv(download_link)
                 df.to_csv(csv, index=False)
-            seven_days_ago = datetime.now() - timedelta(days=2)
+            seven_days_ago = datetime.now() - timedelta(days=7)
             filetime = datetime.fromtimestamp(os.path.getctime(csv))
             if filetime < seven_days_ago:
                 print(f'{i.upper()} Archive is 7 days old. Updating.')
