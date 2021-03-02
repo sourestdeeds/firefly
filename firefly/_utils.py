@@ -254,7 +254,7 @@ def _fits(exoplanet,
         elif bitmask=='hard':
             df = _df[~_df['QUALITY'].isin(HARD_BITMASK)].drop('QUALITY', axis=1)
             print(f'Removed {len(_df)-len(df)} bad cadences.')
-            df = clip(df)
+            # df = clip(df)
         else:
             df = _df.drop('QUALITY', axis=1)
         df = df.rename(columns = {'TIME':'Time',
