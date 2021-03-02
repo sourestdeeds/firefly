@@ -38,10 +38,7 @@ def _load_csv():
     Coverts all 4 archives to have the same column structure.
 
     '''
-    try:
-        _download_archive()
-    except:
-        pass
+    _download_archive()
     nasa_csv = 'firefly/data/nasa.csv.gz'
     eu_csv = 'firefly/data/eu.csv.gz'
     oec_csv = 'firefly/data/oec.csv.gz'
@@ -249,19 +246,23 @@ def _download_archive():
     ]
     archive = ['nasa', 'eu', 'oec', 'org', 'tep']
     for i, download_link in enumerate(download_links):
-        i = archive[i]
-        csv = f'firefly/data/{i}.csv.gz'
-        if not os.path.exists(csv):
-            print(f'Caching the {i.upper()} Exoplanet Archive.')
-            df = read_csv(download_link)
-            df.to_csv(csv, index=False)
-        two_days_ago = datetime.now() - timedelta(days=2)
-        filetime = datetime.fromtimestamp(os.path.getctime(csv))
-        if filetime < two_days_ago:
-            print(f'{i.upper()} Archive is 2 days old. Updating.')
-            df = read_csv(download_link)
-            df.to_csv(csv, index=False)
-        else:
+        try:
+            i = archive[i]
+            csv = f'firefly/data/{i}.csv.gz'
+            if not os.path.exists(csv):
+                print(f'Caching the {i.upper()} Exoplanet Archive.')
+                df = read_csv(download_link)
+                df.to_csv(csv, index=False)
+            two_days_ago = datetime.now() - timedelta(days=2)
+            filetime = datetime.fromtimestamp(os.path.getctime(csv))
+            if filetime < two_days_ago:
+                print(f'{i.upper()} Archive is 2 days old. Updating.')
+                df = read_csv(download_link)
+                df.to_csv(csv, index=False)
+            else:
+                pass
+        except Exception:
+            print(f'Could not contact the server for the {i.upper()} archive.')
             pass
 
 
@@ -327,8 +328,9 @@ def priors(exoplanet, archive='eu', save=False, user=True):
     '''
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Download NASA archive
-    _download_archive()
+    #_download_archive()
     if user==True:
+        _download_archive()
         _load_csv()
         highest, ratios = _search_all(exoplanet)
         exoplanet = highest[0]
