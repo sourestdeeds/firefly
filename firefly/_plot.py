@@ -526,6 +526,7 @@ def density_scatter(exoplanet, transits, sort=True):
     
     from astropy.stats.funcs import mad_std
     from astropy.stats.sigma_clipping import sigma_clip
+    mad = mad_std(diff)
     clip = sigma_clip(diff, sigma=5, stdfunc=mad_std)
     mask = clip.mask
     diff = diff[~mask]
@@ -607,6 +608,7 @@ def density_scatter(exoplanet, transits, sort=True):
     plt.xlabel('Phase')
     ax.set_ylabel('Normalised Flux')
     fig[0].savefig(f'firefly/{exoplanet}/{exoplanet}_density_noresid.png', bbox_inches='tight')
+    return mad
 
 
 def density_scatter_noresid(exoplanet, transits, sort=True):
