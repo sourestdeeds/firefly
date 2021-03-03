@@ -47,7 +47,13 @@ def main(exoplanet):
         dynesty_bounding='multi',
         normalise=True,
         detrend=True,
-        detrending_limits=[[-10,10]]
+        detrending_limits=[[-10,10]],
+        # Plotting
+        plot=True,
+        marker_color='dimgray',
+        line_color='black',
+        bin_data=True,
+        binned_color='red',
         )
 
 
