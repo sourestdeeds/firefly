@@ -220,7 +220,7 @@ def _download_archive():
         # NASA COMP
         'https://exoplanetarchive.ipac.caltech.edu/' +\
         'TAP/sync?query=select+' +\
-        'pl_name,tic_id,pl_orbper,pl_orbsmax,pl_radj,pl_orbeccen,ttv_flag,' +\
+        'pl_name,tic_id,pl_orbper,pl_orbsmax,pl_radj,pl_bmasse,pl_bmassj,pl_orbeccen,ttv_flag,' +\
         'st_teff,st_rad,st_mass,st_met,st_logg,pl_tranmid,pl_trandur,' +\
         'st_tefferr1,st_raderr1,st_meterr1,st_loggerr1,' +\
         'pl_orbincl,pl_orblper,ra,dec,glat,glon,sy_dist,sy_plx' +\
@@ -308,7 +308,7 @@ def _IQR(df, sigma=1):
     return df[trueList]
   
     
-def priors(exoplanet, archive='eu', save=False, user=True):
+def priors(exoplanet, archive='eu', save=False, user=True, auto=True):
     '''
     Generates priors from 4 exoplanet archives, nasa, eu, oec and exoplanets.org
 
@@ -519,7 +519,7 @@ def priors(exoplanet, archive='eu', save=False, user=True):
     repack = DataFrame(cols, columns=['Parameter', 'Distribution',
                                       'Input A', 'Input B', 'Filter'])
     is_nan = repack.isnull().values.any()
-    if is_nan and user==False:
+    if (is_nan and user==False and auto==True):
         raise NaNError(f'Skipping {exoplanet} due to missing prior data.')
     if archive=='all':
         print(f'\nPriors generated from the NASA, EU, OEC and ORG Archives for'

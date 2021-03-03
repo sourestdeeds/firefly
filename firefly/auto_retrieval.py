@@ -60,7 +60,13 @@ def firefly(
         dynesty_bounding='multi',
         normalise=True,
         detrend=True,
-        detrending_limits=[[-10,10]]
+        detrending_limits=[[-10,10]],
+        # Plotting
+        plot=True,
+        marker_color='dimgray',
+        line_color='black',
+        bin_data=True,
+        binned_color='red',
 ):
     '''
     Automated version of retrieval. For a single target the procedure is:
@@ -359,7 +365,13 @@ def firefly(
             dynesty_bounding=dynesty_bounding,
             normalise=normalise,
             detrend=detrend,
-            detrending_limits=detrending_limits
+            detrending_limits=detrending_limits,
+            # Plotting
+            plot=plot,
+            marker_color=marker_color,
+            line_color=line_color,
+            bin_data=bin_data,
+            binned_color=binned_color,
         )
         success = f'{os.getcwd()}/firefly/{archive_name}.zip'
         print(f'\nData location: {success}\n'

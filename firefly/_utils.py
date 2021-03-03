@@ -304,7 +304,13 @@ def _retrieval(
         dynesty_bounding='multi',
         normalise=True,
         detrend=True,
-        detrending_limits=[[-10,10]]
+        detrending_limits=[[-10,10]],
+        # Plotting
+        plot=True,
+        marker_color='dimgray',
+        line_color='black',
+        bin_data=True,
+        binned_color='red',
 ):
     
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -316,10 +322,10 @@ def _retrieval(
     # Download Archive
     if archive=='nasa':
         host_T, host_z, host_r, host_logg, t0, P, t14, repack, ra, dec, dist = \
-            priors(exoplanet, archive=archive, save=True, user=False)
+            priors(exoplanet, archive=archive, save=True, user=False, auto=auto)
     else:
         host_T, host_z, host_r, host_logg, t0, P, t14, repack = \
-            priors(exoplanet, archive=archive, save=True, user=False)
+            priors(exoplanet, archive=archive, save=True, user=False, auto=auto)
     if auto==False:
         answer = ''
         while answer!='y':
@@ -360,6 +366,8 @@ def _retrieval(
     data = data_path
     priors_csv = f'{exo_folder}/{exoplanet} Priors.csv'
     filters = 'firefly/data/TESS_filter_path.csv'
+    os.makedirs('firefly/data/ldtk', exist_ok=True)
+    ldtk_cache = 'firefly/data/ldtk'
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Output folders
     results_output_folder = f'{exo_folder}/output_parameters'
@@ -384,6 +392,7 @@ def _retrieval(
             fitting_mode=fitting_mode,
             limb_darkening_model=limb_darkening_model,
             ld_fit_method=ld_fit_method,
+            ldtk_cache=ldtk_cache,
             max_batch_parameters=max_batch_parameters,
             batch_overlap=batch_overlap,
             dlogz=dlogz,
@@ -395,7 +404,12 @@ def _retrieval(
             detrending_limits=detrending_limits,
             results_output_folder=results_output_folder,
             final_lightcurve_folder=fitted_lightcurve_folder,
-            plot_folder=plot_folder
+            plot_folder=plot_folder,
+            plot=plot,
+            marker_color=marker_color,
+            line_color=line_color,
+            bin_data=bin_data,
+            binned_color=binned_color,
         )
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Save Best Values
