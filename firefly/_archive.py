@@ -48,10 +48,13 @@ def _load_csv():
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # NASA
     exo_nasa = read_csv(nasa_csv)
+    cols = exo_nasa.columns.tolist()
+    blank = DataFrame(columns=cols)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # SPEARNET
     try:
         exo_spearnet = read_csv(spearnet_csv)
+        exo_spearnet = exo_spearnet.append(blank)
     except:
         pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -66,6 +69,7 @@ def _load_csv():
                       'pl_orbeccen', 'pl_orbincl', 'pl_orblper', 'pl_tranmid', 'st_met',
                       'st_meterr1', 'st_mass','st_rad',
                       'st_raderr1', 'st_teff', 'st_tefferr1']
+    exo_eu = exo_eu.append(blank)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # OEC
     col_subset_oec = ['name', 'radius', 'period',
@@ -76,6 +80,7 @@ def _load_csv():
     exo_oec.columns = ['pl_name', 'pl_radj', 'pl_orbper', 'pl_orbsmax',
                       'pl_orbeccen', 'pl_orblper','pl_orbincl', 'st_mass',
                       'st_rad', 'st_met', 'st_teff']
+    exo_oec = exo_oec.append(blank)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # ORG
     col_subset_org = ['NAME', 'R', 'PER',
@@ -88,6 +93,7 @@ def _load_csv():
                       'st_logg', 'st_loggerr1','st_mass', 'pl_name',
                       'pl_orbper', 'pl_radj', 'st_rad', 'st_raderr1', 'pl_orbsmax',
                       'st_teff', 'st_tefferr1', 'pl_tranmid']
+    exo_org = exo_org.append(blank)
     
 
 def _search(exoplanet):
@@ -335,11 +341,17 @@ def priors(exoplanet, archive='eu', save=False, user=True, auto=True):
         highest, ratios = _search_all(exoplanet)
         exoplanet = highest[0]
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    try:
-        archive_list = [exo_nasa, exo_eu, exo_org, exo_oec, exo_spearnet]
-    except:
-        archive_list = [exo_nasa, exo_eu, exo_org, exo_oec]
-    exo_archive = concat(archive_list).set_index('pl_name')
+    archive_list = [exo_nasa, exo_eu, exo_org, exo_oec, exo_spearnet]
+    if archive=='nasa':
+        exo_archive = archive_list[0].set_index('pl_name')
+    elif archive=='eu':
+        exo_archive = archive_list[1].set_index('pl_name')
+    elif archive=='org':
+        exo_archive = archive_list[2].set_index('pl_name')
+    elif archive=='spearnet':
+        exo_archive = archive_list[4].set_index('pl_name')
+    elif archive=='all':
+        exo_archive = concat(archive_list).set_index('pl_name')
     # if archive =='all':
     #     exo_archive = concat(archive_list)
     #     exo_archive = exo_archive[exo_archive['pl_name'].notna()]
@@ -353,7 +365,7 @@ def priors(exoplanet, archive='eu', save=False, user=True, auto=True):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Pick Out Chosen Exoplanet Priors
     try:
-        choice = DataFrame(exo_archive).loc[[exoplanet]]
+        choice = exo_archive.loc[[exoplanet]]
     except KeyError:
         sys.exit('The chosen target is either spelt incorrectly, or does not '
                  'exist in the EU archive.')
@@ -363,19 +375,12 @@ def priors(exoplanet, archive='eu', save=False, user=True, auto=True):
     except IndexError:
         tic = 'N/A'
     # Choose Archive
-    if archive=='nasa':
-        df = choice.iloc[[0]]
-    elif archive=='eu':
-        df = choice.iloc[[1]]
-    # elif archive=='oec':
-    #     df = df.iloc[[1]]
-    elif archive=='org':
-        df = choice.iloc[[2]]
-    elif archive=='spearnet':
-        df = choice.iloc[[4]]
-        s_limb = choice.mean()
+    if archive=='spearnet':
+        exo_limb = archive_list[0].set_index('pl_name')
+        choice_limb = exo_limb.loc[[exoplanet]]
+        s_limb = choice_limb.mean()
     # Turn into a series
-    s = df.iloc[0]
+    s = choice.iloc[0]
     t0 = s.loc['pl_tranmid']
     if archive=='all':
         t0 = choice['pl_tranmid'].max()
@@ -389,8 +394,8 @@ def priors(exoplanet, archive='eu', save=False, user=True, auto=True):
     w = s.loc['pl_orblper']
     ecc = s.loc['pl_orbeccen']
     rp = s.loc['pl_radj']
-    rs = s.loc['st_rad']
     # rserr = s.loc['st_raderr1']
+    rs = s.loc['st_rad']
     z = s.loc['st_met']
     zerr =  s.loc['st_meterr1']
     ms = s.loc['st_mass']
