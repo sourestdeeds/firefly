@@ -429,23 +429,6 @@ def priors(exoplanet, archive='eu', save=False, user=True, auto=True):
     #     a = (((P * 24 * 60 * 60)**2 * G * ms * sol /
     #           (4 * np.pi**2))**(1 / 3)) / AU
     # w
-    if (np.isnan(w) or w==0):
-        w = 90
-    # ecc
-    if np.isnan(ecc):
-        ecc = 0
-    # t14
-    if np.isnan(t14):
-        t14 = estimate_t14(rp, rs, a, P)
-    # logg
-    if np.isnan(logg):
-        logg, err_logg = calculate_logg((ms, ms * 1e-2), (rs, rs * 1e-2))
-        host_logg = (logg, err_logg)
-    # z
-    if (np.isnan(zerr) and z!=0):
-        host_z = (z, 0.05)
-    if (np.isnan(z) or z==0):
-        host_z = (0, 0.05)
     if archive=='spearnet':
         Perr = s.loc['pl_orbpererr1']
         aerr = s.loc['pl_orbsmaxerr1']
@@ -465,6 +448,23 @@ def priors(exoplanet, archive='eu', save=False, user=True, auto=True):
         host_r = (rs, rs * 5e-2)
         host_logg = (logg, logg * 2e-2)
         t14 = estimate_t14(rp, rs, a, P)
+    if (np.isnan(w) or w==0):
+        w = 90
+    # ecc
+    if np.isnan(ecc):
+        ecc = 0
+    # t14
+    if np.isnan(t14):
+        t14 = estimate_t14(rp, rs, a, P)
+    # logg
+    if np.isnan(logg):
+        logg, err_logg = calculate_logg((ms, ms * 1e-2), (rs, rs * 1e-2))
+        host_logg = (logg, err_logg)
+    # z
+    if (np.isnan(zerr) and z!=0):
+        host_z = (z, 0.05)
+    if (np.isnan(z) or z==0):
+        host_z = (0, 0.05)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Assign Exoplanet Priors to TransitFit
     radius_const = 0.1027626851
