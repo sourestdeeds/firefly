@@ -485,8 +485,7 @@ def _retrieval(
             pass
     if fit_ttv==True:
         try:
-            url = 'https://raw.githubusercontent.com/sourestdeeds/firefly/' +\
-                  'main/firefly/data/spear.csv?token=ACSJ3D3DAHF3NDPFYHDXHMTAIOXVI'
+            url = 'firefly/data/spear.csv'
             spearnet = read_csv(url).set_index('pl_name')
             s = spearnet.loc[[exoplanet]]
             t0 = s['pl_tranmid'][0]

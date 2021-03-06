@@ -70,7 +70,7 @@
 """
 
 name = 'firefly'
-__version__ = '0.7.8'
+__version__ = '0.7.8j'
 
 from .auto_retrieval import firefly
 from ._archive import priors, tess, tess_candidate, gen_tess, gen_tess_ttv
