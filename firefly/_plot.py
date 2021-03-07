@@ -350,10 +350,10 @@ def oc_fold(t0, t0err, transits_per_sector, sector_list,
     t0_cerr = data_ttv['Error'].astype(float) .values
     epoch_no = (data_ttv['Epoch'].astype(int) + 1) . values
     
-    ominusc = t0_c  - t0_o
-    ominuscerr = t0_cerr - t0_oerr
-    ominusc *= 24 * 60
-    ominuscerr *= 24 * 60
+    ominusc = t0_o  - t0_c
+    ominuscerr = t0_cerr
+    ominusc *= 24 * 60 * 60
+    ominuscerr *= 24 * 60 * 60
     
     ominusc_elapsed = []
     ominuscerr_elapsed = []
@@ -374,21 +374,22 @@ def oc_fold(t0, t0err, transits_per_sector, sector_list,
     from sklearn.metrics import mean_absolute_error
     loss = mean_absolute_error(ominusc,ominuscerr)
     # chi 2 stuff
-    from scipy.stats import chi2_contingency
-    table = [np.abs(ominusc), np.abs(ominuscerr)]
-    stat, p, dof, expected = chi2_contingency(table, correction=False)
-    chi2_red = stat/dof
-    chi2_red = np.sum((0 - ominusc)**2 / ominuscerr**2)/len(ominusc)
+    # from scipy.stats import chi2_contingency
+    # table = [np.abs(ominusc), np.abs(ominuscerr)]
+    # stat, p, dof, expected = chi2_contingency(table, correction=False)
+    # chi2_red = stat/dof
+    dof = len(ominusc)
+    chi2_red = np.sum((ominusc)**2 / (t0_cerr)**2)/dof
     sigma = np.sqrt(2./len(ominusc))
     nsig = (chi2_red-1)/sigma
     prob = 0.95
     alpha = 1.0 - prob
-    if p <= alpha:
-        hyp = 'Dependent (reject $H_{0}$)'
-        #print('Dependent (reject H0)')
-    else:
-        hyp = 'Independent (fail to reject $H_{0}$)'
-        #print('Independent (fail to reject H0)')
+    # if p <= alpha:
+    #     hyp = 'Dependent (reject $H_{0}$)'
+    #     #print('Dependent (reject H0)')
+    # else:
+    #     hyp = 'Independent (fail to reject $H_{0}$)'
+    #     #print('Independent (fail to reject H0)')
     ls = LombScargle(epoch_no, ominusc, ominuscerr)
                 
     ominusc = np.array(ominusc_elapsed)
@@ -435,7 +436,7 @@ def oc_fold(t0, t0err, transits_per_sector, sector_list,
     red = 'dof'
     from matplotlib.offsetbox import AnchoredText
     txt = AnchoredText(f'$\chi^2_{{{red}}} = {chi2_red:.2f}\, ({nsig:.2f}\sigma)$' +\
-                        f'\n{hyp}\n$\mu_{{error}}= {loss:.2f}$',
+                        f'\n$\mu_{{error}}= {loss:.2f}$',
                         loc='upper right', frameon=False,
                         prop=dict(fontweight="bold"))
     oc_ax.add_artist(txt)
@@ -462,9 +463,9 @@ def oc_fold(t0, t0err, transits_per_sector, sector_list,
                         (period, power.max()*1.03), color='k', weight='bold', ha='center')
     # Sort out labels etc
     oc_ax.set_xlabel('Epoch')
-    oc_ax.set_ylabel('O-C (minutes)')
+    oc_ax.set_ylabel('O-C (seconds)')
     phase_ax.set_xlabel('Epoch Phase')
-    phase_ax.set_ylabel('O-C (minutes)')
+    phase_ax.set_ylabel('O-C (seconds)')
 
     ls_ax.set_xlabel('Period (Epochs)')
     ls_ax.set_ylabel('Power')
