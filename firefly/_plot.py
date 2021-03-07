@@ -378,9 +378,9 @@ def oc_fold(t0, t0err, transits_per_sector, sector_list,
     table = [np.abs(ominusc), np.abs(ominuscerr)]
     stat, p, dof, expected = chi2_contingency(table, correction=False)
     chi2_red = stat/dof
+    chi2_red = np.sum((0 - ominusc)**2 / ominuscerr**2)/len(ominusc)
     sigma = np.sqrt(2./len(ominusc))
     nsig = (chi2_red-1)/sigma
-    
     prob = 0.95
     alpha = 1.0 - prob
     if p <= alpha:
@@ -394,7 +394,6 @@ def oc_fold(t0, t0err, transits_per_sector, sector_list,
     ominusc = np.array(ominusc_elapsed)
     ominuscerr = np.array(ominuscerr_elapsed)
     epoch_no = np.array(range(1,(len(ominusc)+1)))
-    
     # Do the Lomb-Scargel stuff.
     # ls = LombScargle(epoch_no, ominusc, ominuscerr)
     max_p = len(ominusc)//2
