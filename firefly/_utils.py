@@ -416,27 +416,29 @@ def _retrieval(
     master = read_csv(f'{exo_folder}/output_parameters/Complete_results.csv',
                       index_col='Parameter')
     master = master[['Best', 'Error']]
-    P = master['Best'].iloc[0]
+    P = master['Best'].filter(like = 'P', axis=0)
     try:
-        Perr = float(master['Error'].iloc[0])
+        Perr = float(master['Error'].filter(like = 'P', axis=0))
     except ValueError:
         Perr = float()
-    t0 = master['Best'].iloc[1]
-    t0err = float(master['Error'].iloc[1])
-    a = master['Best'].iloc[3]
-    aerr = float(master['Error'].iloc[3])
-    rp = master['Best'].iloc[4]
-    rperr = float(master['Error'].iloc[4])
-    inc = master['Best'].iloc[5]
-    incerr = float(master['Error'].iloc[5])
-    ecc = master['Best'].iloc[6]
+    t0 = master['Best'].filter(like = 't0', axis=0)[0]
+    t0err = float(master['Error'].filter(like = 't0', axis=0)[0])
+    a = master['Best'].filter(like = 'a/AU', axis=0)
+    aerr = float(master['Error'].filter(like = 'a/AU', axis=0))
+    ar = master['Best'].filter(like = 'a/r*', axis=0)
+    arerr = float(master['Error'].filter(like = 'a/r*', axis=0))
+    rp = master['Best'].filter(like = 'rp', axis=0)
+    rperr = float(master['Error'].filter(like = 'rp', axis=0))
+    inc = master['Best'].filter(like = 'inc', axis=0)
+    incerr = float(master['Error'].filter(like = 'inc', axis=0))
+    ecc = master['Best'].filter(like = 'ecc', axis=0)
     try:
-        eccerr = float(master['Error'].iloc[6])
+        eccerr = float(master['Error'].filter(like = 'ecc', axis=0))
     except ValueError:
         eccerr = float()
-    w = master['Best'].iloc[7]
+    w = master['Best'].filter(like = 'w', axis=0)
     try:
-        werr = float(master['Error'].iloc[7])
+        werr = float(master['Error'].filter(like = 'w', axis=0))
     except ValueError:
         werr = float()
     try:
