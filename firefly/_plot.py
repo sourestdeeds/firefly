@@ -596,23 +596,23 @@ def density_scatter(exoplanet, transits, sort=True):
     ax = plt.subplot(gs[0])
     res_ax = plt.subplot(gs[1], sharex=ax)
     
-    plt.set_cmap('rocket')
+    plt.set_cmap('hot')
     res_ax.errorbar(x, diff, yerr, color='dimgrey',
-                  alpha=0.3, zorder=1, capsize=2, ls='none')
+                  alpha=0.2, zorder=1, capsize=2, ls='none')
     res_ax.scatter(x, diff, s=5, alpha=0.8, c=z, edgecolor='none', zorder=2)
     # Binned Points
     res_ax.scatter(res_stat[1][:len(res_stat[0])], res_stat[0],
                    s=10, alpha=1, color='white', zorder=4)
     # Binned errors
     res_ax.errorbar(res_stat[1][:len(res_stat[0])], res_stat[0], stat_err[0]/3, color='white',
-                  alpha=0.6, zorder=3, capsize=2, ls='none')
+                  alpha=0.8, zorder=4, capsize=2, ls='none')
     res_ax.axhline(y=0, color='k', linestyle='--', zorder=5)
     
-    plt.set_cmap('rocket')
+    plt.set_cmap('hot')
     ax.scatter(x, y, c=z, zorder=2, s=5, edgecolor='none')
     ax.errorbar(x, y, yerr, color='dimgrey',
-                  alpha=0.3, zorder=1, capsize=2, ls='none')
-    ax.plot(fitx, fity, marker='', color='k', zorder=4)
+                  alpha=0.2, zorder=1, capsize=2, ls='none')
+    ax.plot(fitx, fity, marker='', color='k', zorder=4, lw=2)
     ax.add_artist(txt)
     ax.errorbar(stat[1][:len(stat[0])], stat[0], stat_err[0]/6, color='white',
                   alpha=0.8, capsize=2, ls='none', zorder=3)
@@ -642,7 +642,7 @@ def density_scatter(exoplanet, transits, sort=True):
     
     plt.set_cmap('Greys')
     ax.scatter(x, y, c=z, zorder=2, s=5, edgecolor='none')
-    ax.plot(fitx, fity, marker='', color='k', zorder=4)
+    ax.plot(fitx, fity, marker='', color='r', zorder=4, lw=2)
     ax.scatter(stat[1][:len(stat[0])], stat[0], zorder=3, s=10, color='k')
     # ax.errorbar(stat[1][:len(stat[0])], stat[0], stat_err[0]/6, color='k',
     #               alpha=0.8, capsize=2, ls='none', zorder=3)
@@ -666,7 +666,7 @@ def density_scatter(exoplanet, transits, sort=True):
     plt.set_cmap('Greys')
     ax.scatter(x, y, c=z, zorder=2, s=5)
     ax.scatter(stat[1][:len(stat[0])], stat[0], zorder=3, s=10, color='k')
-    ax.plot(fitx, fity, marker='', color='k', zorder=3)
+    ax.plot(fitx, fity, marker='', color='r', zorder=3, lw=2)
     ax.add_artist(txt)
     plt.xlabel('Phase')
     ax.set_ylabel('Normalised Flux')
@@ -682,12 +682,12 @@ def density_scatter(exoplanet, transits, sort=True):
     gs = gridspec.GridSpec(1, 1)
     ax = plt.subplot(gs[0])
     
-    plt.set_cmap('rocket')
+    plt.set_cmap('hot')
     ax.errorbar(x, y, yerr, color='dimgrey',
-                  alpha=0.3, zorder=1, capsize=2, ls='none')
+                  alpha=0.2, zorder=1, capsize=2, ls='none')
     ax.scatter(x, y, c=z, zorder=2, s=5, edgecolor='none')
     ax.scatter(stat[1][:len(stat[0])], stat[0], zorder=3, s=10, color='white')
-    ax.plot(fitx, fity, marker='', color='k', zorder=4)
+    ax.plot(fitx, fity, marker='', color='k', zorder=4, lw=2)
     ax.errorbar(stat[1][:len(stat[0])], stat[0], stat_err[0]/6, color='white',
                   alpha=0.8, capsize=2, ls='none', zorder=3)
     ax.add_artist(txt)
