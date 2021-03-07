@@ -470,26 +470,29 @@ def oc_fold(t0, t0err, file='Complete_results.csv', exoplanet=None):
   
   
 def read_fitted_lc(exoplanet, transits):
-    from lightkurve import LightCurve
+    from transitfit.lightcurve import LightCurve
     epoch_no = transits
-    file = f'firefly/{exoplanet}/fitted_lightcurves/t0_f0_e0_detrended.csv'
-    lc = pd.read_csv(file)[['Phase', 'Normalised flux',
-                            'Flux uncertainty', 'Best fit curve']]
-    fitx = lc['Phase'] .values.tolist()
-    fity = lc['Best fit curve'] .values.tolist()
-    time = lc['Phase'] .values
-    flux = lc['Normalised flux'] .values
-    flux_err = lc['Flux uncertainty'] .values
-    lc_all = LightCurve(time, flux, flux_err)
-    fit_all = lc['Best fit curve'] .values.tolist()
-    for i in range(1,epoch_no):
+    # file = f'firefly/{exoplanet}/fitted_lightcurves/t0_f0_e0_detrended.csv'
+    # lc = pd.read_csv(file)[['Phase', 'Normalised flux',
+    #                         'Flux uncertainty', 'Best fit curve']]
+    # fitx = lc['Phase'] .values.tolist()
+    # fity = lc['Best fit curve'] .values.tolist()
+    # time = lc['Phase'] .values
+    # flux = lc['Normalised flux'] .values
+    # flux_err = lc['Flux uncertainty'] .values
+    # lc_all = LightCurve(time, flux, flux_err)
+    # fit_all = lc['Best fit curve'] .values.tolist()
+    
+    time_all, flux_all, flux_err_all, fit_all = [], [], [], []
+    for i in range(0,epoch_no):
         file = f'firefly/{exoplanet}/fitted_lightcurves/t0_f0_e{i}_detrended.csv'
         lc = pd.read_csv(file)[['Phase', 'Normalised flux',
                                 'Flux uncertainty','Best fit curve']]
-        time = lc['Phase'] .values
-        flux = lc['Normalised flux'] .values
-        flux_err = lc['Flux uncertainty'] .values
-        fit = lc['Best fit curve'] .values .tolist()
+        time = lc['Phase'] .values .tolist()
+        flux = lc['Normalised flux'] .values .tolist()
+        flux_err = lc['Flux uncertainty'] .values .tolist()
+        fitx = lc['Phase'] .values .tolist()
+        fity = lc['Best fit curve'] .values .tolist()
         
         fitx_temp = lc['Phase'] .values.tolist()
         fity_temp = lc['Best fit curve'] .values.tolist()
@@ -497,14 +500,15 @@ def read_fitted_lc(exoplanet, transits):
             fitx = lc['Phase'] .values.tolist()
         if len(fity) < len(fity_temp):
             fity = lc['Best fit curve'] .values.tolist()
-        lc = LightCurve(time, flux, flux_err)
-        lc_all.append(lc, inplace=True)
-        fit_all.extend(fit)
+        time_all.extend(time)
+        flux_all.extend(flux)
+        flux_err_all.extend(flux_err)
+        fit_all.extend(fity)
     #from astropy.stats.funcs import mad_std
     #lc_all, mask = lc_all.remove_outliers(sigma_upper=3,
     #                    sigma_lower=5, return_mask=True, stdfunc=mad_std)
     #fit_all = np.array(fit_all)[~mask]
-    return lc_all, fitx, fity, fit_all
+    return time_all, flux_all, flux_err_all, fitx, fity, fit_all
 
 def density_scatter(exoplanet, transits, sort=True):
     """
@@ -512,26 +516,39 @@ def density_scatter(exoplanet, transits, sort=True):
     """
     import numpy as np
     import matplotlib.pyplot as plt
-    #from matplotlib import cm
-    #from matplotlib.colors import Normalize
-    from scipy.interpolate import interpn
-    # from sklearn.preprocessing import scale
-    lc_all, fitx, fity, fit_all = read_fitted_lc(exoplanet, transits)
-    bin_tot=250
-    if len(lc_all) < bin_tot:
-        bint_tot = len(lc_all)
-    bins=[bin_tot,bin_tot]
-    x, y, yerr = lc_all.time, lc_all.flux, lc_all.flux_err
-    diff = fit_all - y
-    
     from astropy.stats.funcs import mad_std
     from astropy.stats.sigma_clipping import sigma_clip
+    from scipy.interpolate import interpn
+    from scipy import stats
+    from transitfit.lightcurve import LightCurve
+    # from sklearn.preprocessing import scale
+    time_all, flux_all, flux_err_all, fitx, fity, fit_all = read_fitted_lc(exoplanet, transits)
+    bin_tot=250
+    if len(fit_all) < bin_tot:
+        bint_tot = len(fit_all)
+    bins=[bin_tot,bin_tot]
+    x, y, yerr = np.array(time_all), np.array(flux_all), np.array(flux_err_all)
+    fit_all = np.array(fit_all)
+    diff = fit_all - y
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Sigma clipping
     mad = mad_std(diff)
     clip = sigma_clip(diff, sigma=5, stdfunc=mad_std)
     mask = clip.mask
     diff = diff[~mask]
     x, y, yerr = x[~mask], y[~mask], yerr[~mask]
+    fit_all = fit_all[~mask]
     
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    stat = stats.binned_statistic(x, y, statistic = 'median',
+                                  bins = np.linspace(x.min(), x.max(), 120))
+    stat_err = stats.binned_statistic(x, yerr, statistic = 'median',
+                                  bins = np.linspace(x.min(), x.max(), 120))
+    res_stat = stats.binned_statistic(x, diff, statistic = 'median',
+                                  bins = np.linspace(x.min(), x.max(), 120))
+    madbin = mad_std(res_stat[0])
+    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     data, x_e, y_e = np.histogram2d(x, y, bins=bins, density=True)
     z = interpn( ( 0.5*(x_e[1:] + x_e[:-1]), 0.5*(y_e[1:]+y_e[:-1]) ),
                 data, np.vstack([x,y]).T, method="splinef2d",
@@ -541,61 +558,98 @@ def density_scatter(exoplanet, transits, sort=True):
     z[np.where(np.isnan(z))] = 0.0
 
     # Sort the points by density, so that the densest points are plotted last
-    if sort:
-        idx = z.argsort()
-        x, y, z, diff = x[idx], y[idx], z[idx], diff[idx]
-        
+    idx = z.argsort()
+    x, y, z, diff = x[idx], y[idx], z[idx], diff[idx]
+    
+    from matplotlib.offsetbox import AnchoredText
+    txt = AnchoredText(f'$\sigma_{{unbinned}}={mad:.6f}$\n$' +\
+                       f'\sigma_{{binned}}={madbin:.6f}$',
+                       frameon=False,loc='upper right',
+                       prop=dict(fontweight="bold"))
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # All errorbars
     fig = plt.subplots(figsize=(12,8))
     gs = gridspec.GridSpec(2, 1, height_ratios=[3,1])
     ax = plt.subplot(gs[0])
     res_ax = plt.subplot(gs[1], sharex=ax)
     
-    plt.set_cmap('hot')
-    res_ax.scatter(x, diff, s=5, alpha=0.8, c=z, edgecolor='none')
-    res_ax.axhline(y=0, color='k', linestyle='--')
+    plt.set_cmap('Greys_r')
+    res_ax.errorbar(x, diff, yerr, color='dimgrey',
+                  alpha=0.3, zorder=1, capsize=2, ls='none')
+    res_ax.scatter(x, diff, s=5, alpha=0.8, c=z, edgecolor='none', zorder=2)
+    # Binned Points
+    res_ax.scatter(res_stat[1][:len(res_stat[0])], res_stat[0],
+                   s=10, alpha=0.8, edgecolor='none', color='yellow', zorder=4)
+    # Binned errors
+    res_ax.errorbar(res_stat[1][:len(res_stat[0])], res_stat[0], stat_err[0]/2, color='orange',
+                  alpha=0.6, zorder=3, capsize=2, ls='none')
+    res_ax.axhline(y=0, color='k', linestyle='--', zorder=5)
     
     plt.set_cmap('hot')
     ax.scatter(x, y, c=z, zorder=2, s=5)
     ax.errorbar(x, y, yerr, color='dimgrey',
                   alpha=0.3, zorder=1, capsize=2, ls='none')
-    ax.plot(fitx, fity, marker='', color='k')
+    ax.plot(fitx, fity, marker='', color='k', zorder=4)
+    ax.add_artist(txt)
+    # ax.errorbar(stat[1][:len(stat[0])], stat[0], stat_err[0], color='orange',
+    #               alpha=0.8, capsize=2, ls='none', zorder=3)
+    ax.scatter(stat[1][:len(stat[0])], stat[0], zorder=3, s=10, color='yellow')
     plt.xlabel('Phase')
     ax.set_ylabel('Normalised Flux')
     res_ax.set_ylabel('Residual')
     plt.subplots_adjust(hspace=.0)
     fig[0].savefig(f'firefly/{exoplanet}/{exoplanet}_density.png', bbox_inches='tight')
-    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # No errorbar
+    txt = AnchoredText(f'$\sigma_{{unbinned}}={mad:.6f}$\n$' +\
+                       f'\sigma_{{binned}}={madbin:.6f}$',
+                       frameon=False,loc='upper right',
+                       prop=dict(fontweight="bold"))
     fig = plt.subplots(figsize=(12,8))
     gs = gridspec.GridSpec(2, 1, height_ratios=[3,1])
     ax = plt.subplot(gs[0])
     res_ax = plt.subplot(gs[1], sharex=ax)
     
-    plt.set_cmap('hot')
-    res_ax.scatter(x, diff, s=5, alpha=0.8, c=z, edgecolor='none')
-    res_ax.axhline(y=0, color='k', linestyle='--')
+    plt.set_cmap('Greys_r')
+    res_ax.scatter(x, diff, s=5, alpha=0.8, c=z, edgecolor='none', zorder=1)
+    res_ax.scatter(res_stat[1][:len(stat[0])], res_stat[0],
+                   s=10, alpha=0.8, edgecolor='none', color='yellow', zorder=2)
+    res_ax.axhline(y=0, color='k', linestyle='--', zorder=3)
     
     plt.set_cmap('hot')
     ax.scatter(x, y, c=z, zorder=2, s=5)
-    ax.plot(fitx, fity, marker='', color='k')
+    ax.plot(fitx, fity, marker='', color='k', zorder=4)
+    ax.scatter(stat[1][:len(stat[0])], stat[0], zorder=3, s=10, color='yellow')
+    ax.add_artist(txt)
     plt.xlabel('Phase')
     ax.set_ylabel('Normalised Flux')
     res_ax.set_ylabel('Residual')
     plt.subplots_adjust(hspace=.0)
     fig[0].savefig(f'firefly/{exoplanet}/{exoplanet}_density_noerr.png', bbox_inches='tight')
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # No resid or err
+    txt = AnchoredText(f'$\sigma_{{unbinned}}={mad:.6f}$\n$' +\
+                       f'\sigma_{{binned}}={madbin:.6f}$',
+                       frameon=False,loc='upper right',
+                       prop=dict(fontweight="bold"))
     fig = plt.subplots(figsize=(12,6))
     gs = gridspec.GridSpec(1, 1)
     ax = plt.subplot(gs[0])
     
     plt.set_cmap('hot')
     ax.scatter(x, y, c=z, zorder=2, s=5)
-    ax.plot(fitx, fity, marker='', color='k')
+    ax.scatter(stat[1][:len(stat[0])], stat[0], zorder=3, s=10, color='yellow')
+    ax.plot(fitx, fity, marker='', color='k', zorder=3)
+    ax.add_artist(txt)
     plt.xlabel('Phase')
     ax.set_ylabel('Normalised Flux')
     fig[0].savefig(f'firefly/{exoplanet}/{exoplanet}_density_noresiderr.png', bbox_inches='tight')
-    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # No resid
+    txt = AnchoredText(f'$\sigma_{{unbinned}}={mad:.6f}$\n$' +\
+                       f'\sigma_{{binned}}={madbin:.6f}$',
+                       frameon=False,loc='upper right',
+                       prop=dict(fontweight="bold"))
     fig = plt.subplots(figsize=(12,6))
     gs = gridspec.GridSpec(1, 1)
     ax = plt.subplot(gs[0])
@@ -604,53 +658,11 @@ def density_scatter(exoplanet, transits, sort=True):
     ax.errorbar(x, y, yerr, color='dimgrey',
                   alpha=0.3, zorder=1, capsize=2, ls='none')
     ax.scatter(x, y, c=z, zorder=2, s=5)
-    ax.plot(fitx, fity, marker='', color='k')
+    ax.scatter(stat[1][:len(stat[0])], stat[0], zorder=3, s=10, color='yellow')
+    ax.plot(fitx, fity, marker='', color='k', zorder=4)
+    ax.add_artist(txt)
     plt.xlabel('Phase')
     ax.set_ylabel('Normalised Flux')
     fig[0].savefig(f'firefly/{exoplanet}/{exoplanet}_density_noresid.png', bbox_inches='tight')
-    return mad
-
-
-def density_scatter_noresid(exoplanet, transits, sort=True):
-    """
-    Scatter plot colored by 2d histogram
-    """
-    import numpy as np
-    import matplotlib.pyplot as plt
-    #from matplotlib import cm
-    #from matplotlib.colors import Normalize
-    from scipy.interpolate import interpn
-    # from sklearn.preprocessing import scale
-    lc_all, fitx, fity = read_fitted_lc(exoplanet, transits)
-    bin_tot=250
-    if len(lc_all) < bin_tot:
-        bint_tot = len(lc_all)
-    bins=[bin_tot,bin_tot]
-    x, y, yerr = lc_all.time, lc_all.flux, lc_all.flux_err
-    fig, ax = plt.subplots(figsize=(12,8))
-    data, x_e, y_e = np.histogram2d(x, y, bins=bins, density=True)
-    z = interpn( ( 0.5*(x_e[1:] + x_e[:-1]), 0.5*(y_e[1:]+y_e[:-1]) ),
-                data, np.vstack([x,y]).T, method="splinef2d",
-                bounds_error=False)
-
-    #To be sure to plot all data
-    z[np.where(np.isnan(z))] = 0.0
-
-    # Sort the points by density, so that the densest points are plotted last
-    if sort:
-        idx = z.argsort()
-        x, y, z = x[idx], y[idx], z[idx]
-    plt.set_cmap('hot')
-    ax.scatter(x, y, c=z, zorder=2, s=5)
-    ax.errorbar(x, y, yerr, color='dimgrey',
-                  alpha=0.3, zorder=1, capsize=2, ls='none')
-    ax.plot(fitx, fity, marker='', color='k')
-    plt.xlabel('Phase')
-    plt.ylabel('Normalised Flux')
-    plt.subplots_adjust(hspace=.0)
-    fig.savefig(f'firefly/{exoplanet}/{exoplanet}_density.png', bbox_inches='tight')
-    #norm = Normalize(vmin = np.min(z), vmax = np.max(z))
-    #cbar = fig.colorbar(cm.ScalarMappable(norm = norm), ax=ax)
-    #cbar.ax.set_ylabel('Density')
-
-    return ax
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    return mad, madbin

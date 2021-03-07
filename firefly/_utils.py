@@ -440,11 +440,12 @@ def _retrieval(
     except ValueError:
         werr = float()
     try:
-        mad = density_scatter(exoplanet=exoplanet, transits=int(len(df)))
+        mad, madbin = density_scatter(exoplanet=exoplanet, transits=int(len(df)))
     except Exception as e:
         print(e)
     t_depth = rp**2
-    sensitivity = t_depth/mad
+    sens = t_depth/mad
+    sens_bin = t_depth/madbin
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Archive and sort
     print(
@@ -500,8 +501,10 @@ def _retrieval(
                     'pl_radjerr1':rperr, 'pl_orbincl':inc,
                     'pl_orbinclerr1':incerr, 'pl_orbeccen':ecc, 'pl_orbeccenerr1':eccerr,
                     'pl_orblper':w, 'pl_orblpererr1':werr, 'Transits':int(len(df)),
-                    'Date':now, 'Archive':archive.upper(), 'sigma_unbinned':mad,
-                'Transit Depth':t_depth, 'Sensitivity':sensitivity
+                    'Date':now, 'Archive':archive.upper(), 'Unbinned Sigma':mad,
+                    'Binned Sigma':madbin,
+                'Transit Depth':t_depth, 'Sensitivity':sens,
+                'Binned Sensitivity':sens_bin
             }
             df = DataFrame(data, index=[0])
             summary_master = 'firefly/data/spear_ttv.csv'
@@ -531,8 +534,10 @@ def _retrieval(
                 'pl_radjerr1':rperr, 'pl_orbincl':inc,
                 'pl_orbinclerr1':incerr, 'pl_orbeccen':ecc, 'pl_orbeccenerr1':eccerr,
                 'pl_orblper':w, 'pl_orblpererr1':werr, 'Transits':int(len(df)),
-                'Date':now, 'Archive':archive.upper(), 'sigma_unbinned':mad,
-                'Transit Depth':t_depth, 'Sensitivity':sensitivity
+                'Date':now, 'Archive':archive.upper(), 'Unbinned Sigma':mad,
+                'Binned Sigma':madbin,
+                'Transit Depth':t_depth, 'Sensitivity':sens,
+                'Binned Sensitivity':sens_bin
         }
         df = DataFrame(data, index=[0])
         summary_master = 'firefly/data/spear.csv'
