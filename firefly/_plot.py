@@ -337,7 +337,7 @@ def oc_fold(t0, t0err, transits_per_sector, sector_list,
     '''
     sector_list = np.array(sector_list)
     
-    total_sectors = np.array(range(1, np.max(sector_list)+1))
+    total_sectors = np.array(range(np.min(sector_list), np.max(sector_list)+1))
     avg_transits = int(np.mean(transits_per_sector))
     elapsed_epochs = avg_transits * len(total_sectors)
     path_ttv = file
