@@ -43,7 +43,8 @@ def _load_csv():
     eu_csv = 'firefly/data/eu.csv.gz'
     oec_csv = 'firefly/data/oec.csv.gz'
     org_csv = 'firefly/data/org.csv.gz'
-    spearnet_csv = 'firefly/data/spear.csv'
+    here = os.path.dirname(os.path.abspath(__file__))
+    spearnet_csv = f'{here}/data/spear.csv'
     global exo_nasa, exo_eu, exo_oec, exo_org, exo_spearnet
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # NASA

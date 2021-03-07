@@ -492,8 +492,9 @@ def _retrieval(
             pass
     if fit_ttv==True:
         try:
-            url = 'firefly/data/spear.csv'
-            spearnet = read_csv(url).set_index('pl_name')
+            here = os.path.dirname(os.path.abspath(__file__))
+            spearnet_csv = f'{here}/data/spear.csv'
+            spearnet = read_csv(spearnet_csv).set_index('pl_name')
             s = spearnet.loc[[exoplanet]]
             t0ttv = s['pl_tranmid'][0]
             t0errttv = s['pl_tranmiderr1'][0]
