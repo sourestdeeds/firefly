@@ -491,11 +491,13 @@ def _retrieval(
             url = 'firefly/data/spear.csv'
             spearnet = read_csv(url).set_index('pl_name')
             s = spearnet.loc[[exoplanet]]
-            t0 = s['pl_tranmid'][0]
-            t0err = s['pl_tranmiderr1'][0]
+            t0ttv = s['pl_tranmid'][0]
+            t0errttv = s['pl_tranmiderr1'][0]
             file = f'firefly/{exoplanet}/output_parameters/Complete_results.csv'
-            chi2_red, nsig, loss, fap, period = oc_fold(t0, t0err, file=file, exoplanet=exoplanet)
-            data = {'pl_name':exoplanet, 'red_chi2':chi2_red, 'sigma':nsig, 'mean_avg_err':loss,
+            chi2_red, nsig, loss, fap, period = oc_fold(t0ttv, t0errttv,
+                                                        file=file, exoplanet=exoplanet)
+            data = {'pl_name':exoplanet, 'red_chi2':chi2_red, 'sigma':nsig,
+                    'mean_avg_err':loss,
                     'fap':fap, 'o-c_period':period,
                     'pl_orbper':P, 'pl_orbpererr1':Perr,
                     'pl_tranmid':t0, 'pl_tranmiderr1':t0err,
