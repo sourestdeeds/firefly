@@ -18,6 +18,7 @@ from pandas import DataFrame, read_csv, Categorical
 from shutil import rmtree, make_archive
 from natsort import natsorted
 from math import ceil
+import numpy as np
 import sys
 import os
 import random
@@ -152,7 +153,7 @@ def _fits(exoplanet,
           exo_folder,
           cache,
           hlsp=['SPOC', 'TESS-SPOC', 'TASOC'],
-          cadence=[120],
+          cadence=120,
           bitmask='default'
 ):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -170,12 +171,13 @@ def _fits(exoplanet,
         print(f'Search result contains no data products for {exoplanet}.')
         sys.exit(f'Search result contains no data products for {exoplanet}.')
     data = search[['obs_id', 'target_name', 'dataURL', 't_exptime',
-                   'provenance_name', 'project']]
+                   'provenance_name', 'project', 'sequence_number']]
     data['dataURL'] = ['https://mast.stsci.edu/api/v0.1/Download/file/?uri=' +\
                          data['dataURL'][i] for i in range(len(search))]
+    sector_list = natsorted(data['sequence_number'].values).tolist()
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Dataframe Checks
-    data = data[data['t_exptime'].isin(cadence)]
+    data = data[data['t_exptime']==120]
     data = data[~data.dataURL.str.endswith('_dvt.fits')].reset_index(drop=True)
     provenance_name = data['provenance_name'].tolist()
     lc_links = data['dataURL'].tolist()
@@ -262,14 +264,14 @@ def _fits(exoplanet,
                                   'PDCSAP_FLUX_ERR':'Flux err'})
         df.to_csv(csv_name, index=False, na_rep='nan')
         csv_in_dir.append(f'{os.getcwd()}/{csv_name}')
-        
+    csv_in_dir = natsorted(csv_in_dir)
     print('\nSplitting up the lightcurves into seperate epochs:\n')
     # csv_in_dir = []
     # for r, d, f in os.walk(source):
     #     for item in f:
     #         if '.csv' in item:
     #             csv_in_dir.append(os.path.join(r, item))
-    return csv_in_dir
+    return csv_in_dir, sector_list
     
 
 def _retrieval(
@@ -335,12 +337,14 @@ def _retrieval(
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Split the Light curves
     split_curve_in_dir = []
-    csv_in_dir = _fits(exoplanet, exo_folder, cache, hlsp, cadence, bitmask)
+    transits_per_sector = []
+    csv_in_dir, sector_list = _fits(exoplanet, exo_folder, cache, hlsp, cadence, bitmask)
     for i, csvfile in enumerate(csv_in_dir):
         split_curves = split_lightcurve_file(csvfile, t0=t0, P=P, t14=t14,
                                              cutoff=cutoff, window=window)
         split_curves = [s + '.csv' for s in split_curves]
         split_curve_in_dir.append(split_curves)
+        transits_per_sector.append(len(split_curves))
     split_curve_in_dir = [i for sub in split_curve_in_dir for i in sub]
     print(f'\nA total of {len(split_curve_in_dir)} lightcurves '
           'were generated.')
@@ -495,7 +499,9 @@ def _retrieval(
             t0errttv = s['pl_tranmiderr1'][0]
             file = f'firefly/{exoplanet}/output_parameters/Complete_results.csv'
             chi2_red, nsig, loss, fap, period = oc_fold(t0ttv, t0errttv,
-                                                        file=file, exoplanet=exoplanet)
+                                                        file=file, exoplanet=exoplanet,
+                                                        transits_per_sector=transits_per_sector,
+                                                        sector_list=sector_list)
             data = {'pl_name':exoplanet, 'red_chi2':chi2_red, 'sigma':nsig,
                     'mean_avg_err':loss,
                     'fap':fap, 'o-c_period':period,

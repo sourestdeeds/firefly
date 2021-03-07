@@ -330,11 +330,16 @@ def oc(t0, t0_err, file='Complete_Results.csv', exoplanet=None):
                     bbox_inches='tight')
    
   
-def oc_fold(t0, t0err, file='Complete_results.csv', exoplanet=None):
+def oc_fold(t0, t0err, transits_per_sector, sector_list,
+            file='Complete_results.csv', exoplanet=None):
     '''
     Loads in the t0 and errors
     '''
-
+    sector_list = np.array(sector_list)
+    
+    total_sectors = np.array(range(1, np.max(sector_list)+1))
+    avg_transits = int(np.mean(transits_per_sector))
+    elapsed_epochs = avg_transits * len(total_sectors)
     path_ttv = file
     data_ttv = pd.read_csv(path_ttv).set_index('Parameter') \
                 .filter(like = 't0', axis=0).drop(['Telescope', 'Filter'], axis=1)
@@ -349,9 +354,22 @@ def oc_fold(t0, t0err, file='Complete_results.csv', exoplanet=None):
     ominuscerr = t0_cerr - t0_oerr
     ominusc *= 24 * 60
     ominuscerr *= 24 * 60
-    #from sklearn.preprocessing import scale
-    #ominusc = scale(ominusc)
-    #ominuscerr = scale(ominuscerr)
+    
+    ominusc_elapsed = []
+    ominuscerr_elapsed = []
+    sector_mask = np.in1d(total_sectors,sector_list)
+    j = -1
+    for i, mask in enumerate(sector_mask):
+        if mask==True:
+            j += 1
+            ominusc_elapsed.extend(ominusc[:transits_per_sector[j]].tolist())
+            ominuscerr_elapsed.extend(ominuscerr[:transits_per_sector[j]].tolist())
+        elif mask==False:
+            a = np.empty((1,avg_transits))
+            a[:] = float('nan')
+            a = a.tolist()[0]
+            ominusc_elapsed.extend(a)
+            ominuscerr_elapsed.extend(a)
     
     from sklearn.metrics import mean_absolute_error
     loss = mean_absolute_error(ominusc,ominuscerr)
@@ -371,9 +389,14 @@ def oc_fold(t0, t0err, file='Complete_results.csv', exoplanet=None):
     else:
         hyp = 'Independent (fail to reject $H_{0}$)'
         #print('Independent (fail to reject H0)')
+    ls = LombScargle(epoch_no, ominusc, ominuscerr)
+                
+    ominusc = np.array(ominusc_elapsed)
+    ominuscerr = np.array(ominuscerr_elapsed)
+    epoch_no = np.array(range(1,(len(ominusc)+1)))
     
     # Do the Lomb-Scargel stuff.
-    ls = LombScargle(epoch_no, ominusc, ominuscerr)
+    # ls = LombScargle(epoch_no, ominusc, ominuscerr)
     max_p = len(ominusc)//2
     frequency, power = ls.autopower(nyquist_factor=1, samples_per_peak=10,
                                     minimum_frequency=1/max_p)
@@ -413,11 +436,11 @@ def oc_fold(t0, t0err, file='Complete_results.csv', exoplanet=None):
     red = 'dof'
     from matplotlib.offsetbox import AnchoredText
     txt = AnchoredText(f'$\chi^2_{{{red}}} = {chi2_red:.2f}\, ({nsig:.2f}\sigma)$' +\
-                       f'\n{hyp}\n$\mu_{{error}}= {loss:.2f}$',
-                       loc='upper right', frameon=False,
-                       prop=dict(fontweight="bold"))
+                        f'\n{hyp}\n$\mu_{{error}}= {loss:.2f}$',
+                        loc='upper right', frameon=False,
+                        prop=dict(fontweight="bold"))
     oc_ax.add_artist(txt)
-    oc_ax.set_ylim([ominusc.min()*1.5, ominusc.max()*2])
+    oc_ax.set_ylim([np.nanmin(ominusc)*1.5, np.nanmax(ominusc)*2])
     phase_ax.errorbar(epoch_phase, ominusc, ominuscerr, marker='.',
                       elinewidth=0.8, color='dimgrey', linestyle='', capsize=2,
                       alpha=0.8, zorder=1)
@@ -456,7 +479,7 @@ def oc_fold(t0, t0err, file='Complete_results.csv', exoplanet=None):
     
     upper_y_fap = false_alarm_levels[2] * 1.5
     upper_y_pow = max(power) * 1.2
-    upper_y = np.max([upper_y_fap, upper_y_pow])
+    upper_y = np.nanmax([upper_y_fap, upper_y_pow])
     ls_ax.set_ylim([-0.01, upper_y])
     ls_ax.set_xscale('linear')
 
@@ -540,11 +563,11 @@ def density_scatter(exoplanet, transits, sort=True):
     fit_all = fit_all[~mask]
     
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    stat = stats.binned_statistic(x, y, statistic = 'median',
+    stat = stats.binned_statistic(x, y, statistic = 'mean',
                                   bins = np.linspace(x.min(), x.max(), 120))
-    stat_err = stats.binned_statistic(x, yerr, statistic = 'median',
+    stat_err = stats.binned_statistic(x, yerr, statistic = 'mean',
                                   bins = np.linspace(x.min(), x.max(), 120))
-    res_stat = stats.binned_statistic(x, diff, statistic = 'median',
+    res_stat = stats.binned_statistic(x, diff, statistic = 'mean',
                                   bins = np.linspace(x.min(), x.max(), 120))
     madbin = mad_std(res_stat[0])
     
