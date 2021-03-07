@@ -562,43 +562,44 @@ def density_scatter(exoplanet, transits, sort=True):
     x, y, z, diff = x[idx], y[idx], z[idx], diff[idx]
     
     from matplotlib.offsetbox import AnchoredText
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # All errorbars
     txt = AnchoredText(f'$\sigma_{{unbinned}}={mad:.6f}$\n$' +\
                        f'\sigma_{{binned}}={madbin:.6f}$',
                        frameon=False,loc='upper right',
                        prop=dict(fontweight="bold"))
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # All errorbars
     fig = plt.subplots(figsize=(12,8))
     gs = gridspec.GridSpec(2, 1, height_ratios=[3,1])
     ax = plt.subplot(gs[0])
     res_ax = plt.subplot(gs[1], sharex=ax)
     
-    plt.set_cmap('Greys_r')
+    plt.set_cmap('rocket')
     res_ax.errorbar(x, diff, yerr, color='dimgrey',
                   alpha=0.3, zorder=1, capsize=2, ls='none')
     res_ax.scatter(x, diff, s=5, alpha=0.8, c=z, edgecolor='none', zorder=2)
     # Binned Points
     res_ax.scatter(res_stat[1][:len(res_stat[0])], res_stat[0],
-                   s=10, alpha=0.8, edgecolor='none', color='yellow', zorder=4)
+                   s=10, alpha=1, color='white', zorder=4)
     # Binned errors
-    res_ax.errorbar(res_stat[1][:len(res_stat[0])], res_stat[0], stat_err[0]/2, color='orange',
+    res_ax.errorbar(res_stat[1][:len(res_stat[0])], res_stat[0], stat_err[0]/3, color='white',
                   alpha=0.6, zorder=3, capsize=2, ls='none')
     res_ax.axhline(y=0, color='k', linestyle='--', zorder=5)
     
-    plt.set_cmap('hot')
-    ax.scatter(x, y, c=z, zorder=2, s=5)
+    plt.set_cmap('rocket')
+    ax.scatter(x, y, c=z, zorder=2, s=5, edgecolor='none')
     ax.errorbar(x, y, yerr, color='dimgrey',
                   alpha=0.3, zorder=1, capsize=2, ls='none')
     ax.plot(fitx, fity, marker='', color='k', zorder=4)
     ax.add_artist(txt)
-    # ax.errorbar(stat[1][:len(stat[0])], stat[0], stat_err[0], color='orange',
-    #               alpha=0.8, capsize=2, ls='none', zorder=3)
-    ax.scatter(stat[1][:len(stat[0])], stat[0], zorder=3, s=10, color='yellow')
+    ax.errorbar(stat[1][:len(stat[0])], stat[0], stat_err[0]/6, color='white',
+                  alpha=0.8, capsize=2, ls='none', zorder=3)
+    ax.scatter(stat[1][:len(stat[0])], stat[0], zorder=3, s=10, color='white')
     plt.xlabel('Phase')
     ax.set_ylabel('Normalised Flux')
     res_ax.set_ylabel('Residual')
     plt.subplots_adjust(hspace=.0)
-    fig[0].savefig(f'firefly/{exoplanet}/{exoplanet}_density.png', bbox_inches='tight')
+    fig[0].savefig(f'firefly/{exoplanet}/{exoplanet}_density.png',
+                   bbox_inches='tight')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # No errorbar
     txt = AnchoredText(f'$\sigma_{{unbinned}}={mad:.6f}$\n$' +\
@@ -610,22 +611,25 @@ def density_scatter(exoplanet, transits, sort=True):
     ax = plt.subplot(gs[0])
     res_ax = plt.subplot(gs[1], sharex=ax)
     
-    plt.set_cmap('Greys_r')
+    plt.set_cmap('Greys')
     res_ax.scatter(x, diff, s=5, alpha=0.8, c=z, edgecolor='none', zorder=1)
     res_ax.scatter(res_stat[1][:len(stat[0])], res_stat[0],
-                   s=10, alpha=0.8, edgecolor='none', color='yellow', zorder=2)
+                   s=10, alpha=0.8, edgecolor='none', color='k', zorder=2)
     res_ax.axhline(y=0, color='k', linestyle='--', zorder=3)
     
-    plt.set_cmap('hot')
-    ax.scatter(x, y, c=z, zorder=2, s=5)
+    plt.set_cmap('Greys')
+    ax.scatter(x, y, c=z, zorder=2, s=5, edgecolor='none')
     ax.plot(fitx, fity, marker='', color='k', zorder=4)
-    ax.scatter(stat[1][:len(stat[0])], stat[0], zorder=3, s=10, color='yellow')
+    ax.scatter(stat[1][:len(stat[0])], stat[0], zorder=3, s=10, color='k')
+    # ax.errorbar(stat[1][:len(stat[0])], stat[0], stat_err[0]/6, color='k',
+    #               alpha=0.8, capsize=2, ls='none', zorder=3)
     ax.add_artist(txt)
     plt.xlabel('Phase')
     ax.set_ylabel('Normalised Flux')
     res_ax.set_ylabel('Residual')
     plt.subplots_adjust(hspace=.0)
-    fig[0].savefig(f'firefly/{exoplanet}/{exoplanet}_density_noerr.png', bbox_inches='tight')
+    fig[0].savefig(f'firefly/{exoplanet}/{exoplanet}_density_noerr.png',
+                   bbox_inches='tight')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # No resid or err
     txt = AnchoredText(f'$\sigma_{{unbinned}}={mad:.6f}$\n$' +\
@@ -636,14 +640,15 @@ def density_scatter(exoplanet, transits, sort=True):
     gs = gridspec.GridSpec(1, 1)
     ax = plt.subplot(gs[0])
     
-    plt.set_cmap('hot')
+    plt.set_cmap('Greys')
     ax.scatter(x, y, c=z, zorder=2, s=5)
-    ax.scatter(stat[1][:len(stat[0])], stat[0], zorder=3, s=10, color='yellow')
+    ax.scatter(stat[1][:len(stat[0])], stat[0], zorder=3, s=10, color='k')
     ax.plot(fitx, fity, marker='', color='k', zorder=3)
     ax.add_artist(txt)
     plt.xlabel('Phase')
     ax.set_ylabel('Normalised Flux')
-    fig[0].savefig(f'firefly/{exoplanet}/{exoplanet}_density_noresiderr.png', bbox_inches='tight')
+    fig[0].savefig(f'firefly/{exoplanet}/{exoplanet}_density_noresiderr.png',
+                   bbox_inches='tight')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # No resid
     txt = AnchoredText(f'$\sigma_{{unbinned}}={mad:.6f}$\n$' +\
@@ -654,15 +659,19 @@ def density_scatter(exoplanet, transits, sort=True):
     gs = gridspec.GridSpec(1, 1)
     ax = plt.subplot(gs[0])
     
-    plt.set_cmap('hot')
+    plt.set_cmap('rocket')
     ax.errorbar(x, y, yerr, color='dimgrey',
                   alpha=0.3, zorder=1, capsize=2, ls='none')
-    ax.scatter(x, y, c=z, zorder=2, s=5)
-    ax.scatter(stat[1][:len(stat[0])], stat[0], zorder=3, s=10, color='yellow')
+    ax.scatter(x, y, c=z, zorder=2, s=5, edgecolor='none')
+    ax.scatter(stat[1][:len(stat[0])], stat[0], zorder=3, s=10, color='white')
     ax.plot(fitx, fity, marker='', color='k', zorder=4)
+    ax.errorbar(stat[1][:len(stat[0])], stat[0], stat_err[0]/6, color='white',
+                  alpha=0.8, capsize=2, ls='none', zorder=3)
     ax.add_artist(txt)
     plt.xlabel('Phase')
     ax.set_ylabel('Normalised Flux')
-    fig[0].savefig(f'firefly/{exoplanet}/{exoplanet}_density_noresid.png', bbox_inches='tight')
+    fig[0].savefig(f'firefly/{exoplanet}/{exoplanet}_density_noresid.png',
+                   bbox_inches='tight')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     return mad, madbin
+
