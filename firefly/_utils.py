@@ -174,7 +174,7 @@ def _fits(exoplanet,
                    'provenance_name', 'project', 'sequence_number']]
     data['dataURL'] = ['https://mast.stsci.edu/api/v0.1/Download/file/?uri=' +\
                          data['dataURL'][i] for i in range(len(search))]
-    sector_list = natsorted(data['sequence_number'].values).tolist()
+    sector_list = natsorted(data['sequence_number'].values.tolist())
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Dataframe Checks
     data = data[data['t_exptime']==120]
