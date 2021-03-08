@@ -516,9 +516,9 @@ def priors(exoplanet, archive='eu', save=False, user=True, auto=True, fit_ttv=Fa
              ['' if ecc==0
               else eccerr if archive=='spearnet'
               else ecc * 0.5][0], ''],
-            ['rp', ['gaussian' if archive=='spearnet' else 'uniform'][0],
-             [rp if archive=='spearnet' else (0.9 * radius_const * rp / rs)][0],
-             [rperr if archive=='spearnet' else (1.1 * radius_const * rp / rs)][0], 0],
+            ['rp', ['uniform' if archive=='spearnet' else 'uniform'][0],
+             [0.9*rp if archive=='spearnet' else (0.9 * radius_const * rp / rs)][0],
+             [1.1*rp if archive=='spearnet' else (1.1 * radius_const * rp / rs)][0], 0],
             ['t14', '', t14, '', ''],
             ['host_T', '', host_T[0], host_T[1], ''],
             ['host_z', '', host_z[0], host_z[1], ''],
