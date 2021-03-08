@@ -400,7 +400,6 @@ def oc_fold(t0, t0err, transits_per_sector, sector_list,
     best_f = frequency[np.argmax(power)]
     best_P = 1/frequency[np.argmax(power)]
     epoch_phase = (epoch_no - (epoch_no //best_P) * best_P)/best_P
-
     ominusc_phase = (ominusc - (ominusc //best_P) * best_P)/best_P
     fap = ls.false_alarm_probability(power.max())
     
@@ -409,33 +408,36 @@ def oc_fold(t0, t0err, transits_per_sector, sector_list,
     #print(frequency, power)
     pack = {'FAP':false_alarm_levels, 'Percentage':levels}
     period = 1/frequency[np.argmax(power)]
-    # Fits
-    fit_x = np.linspace(epoch_no.min(), epoch_no.max(), 1000)
-    fit_y = ls.model(fit_x, frequency[np.argmax(power)])
     
-    fit_x_phase = (fit_x - (fit_x //best_P) * best_P)/best_P
     #fit_x_phase = scale(fit_x_phase)
     # Make figure and axes
+    ominusc_elapsed = np.array(ominusc_elapsed)
+    ominuscerr_elapsed = np.array(ominuscerr_elapsed)
+    epoch_no_elapsed = np.array(range(1,(len(ominusc_elapsed)+1)))
+     # Fits
+    fit_x_elapsed = np.linspace(epoch_no_elapsed.min(), epoch_no_elapsed.max(), 1000)
+    fit_y_elapsed = ls.model(fit_x_elapsed, frequency[np.argmax(power)])
+    
+    fit_x = np.linspace(epoch_no.min(), epoch_no.max(), 1000)
+    fit_y = ls.model(fit_x, frequency[np.argmax(power)])
+    fit_x_phase = (fit_x - (fit_x //best_P) * best_P)/best_P
+    
     fig = plt.figure(figsize=(12,8))
     gs = gridspec.GridSpec(3, 1)
     plt.set_cmap('plasma')
-    
-    # update epoch_no to elapsed transits
-    ominusc = np.array(ominusc_elapsed)
-    ominuscerr = np.array(ominuscerr_elapsed)
-    epoch_no = np.array(range(1,(len(ominusc)+1)))
     
     oc_ax = fig.add_subplot(gs[0])
     phase_ax = fig.add_subplot(gs[1])
     ls_ax = fig.add_subplot(gs[2])
     #t = np.arange(len(epoch_no))
     #Plot data
-    oc_ax.errorbar(epoch_no, ominusc, ominuscerr, marker='.',
+    oc_ax.errorbar(epoch_no_elapsed, ominusc_elapsed, ominuscerr_elapsed, marker='.',
                    elinewidth=0.8, color='dimgrey', linestyle='',
                    capsize=2, alpha=0.8, zorder=1)
-    oc_ax.scatter(epoch_no, ominusc, marker='.', zorder=2, c=epoch_no)
+    oc_ax.scatter(epoch_no_elapsed, ominusc_elapsed, marker='.', zorder=2,
+                  c=epoch_no_elapsed)
     oc_ax.axhline(0, color='black', linestyle='--', linewidth=1)
-    oc_ax.plot(fit_x, fit_y, color='red', alpha=0.8)
+    oc_ax.plot(fit_x_elapsed, fit_y_elapsed, color='red', alpha=0.8)
     red = 'dof'
     from matplotlib.offsetbox import AnchoredText
     txt = AnchoredText(f'$\chi^2_{{{red}}} = {chi2_red:.2f}\, ({nsig:.2f}\sigma)$' +\
