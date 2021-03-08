@@ -373,23 +373,23 @@ def oc_fold(t0, t0err, transits_per_sector, sector_list,
     
     from sklearn.metrics import mean_absolute_error
     loss = mean_absolute_error(ominusc,ominuscerr)
-    # chi 2 stuff
-    from scipy.stats import chi2_contingency
-    table = [np.abs(ominusc), np.abs(ominuscerr)]
-    stat, p, dof, expected = chi2_contingency(table, correction=False)
-    chi2_red = stat/dof
-    #dof = len(ominusc)
-    #chi2_red = np.sum((ominusc)**2 / (t0_cerr)**2)/dof
+    # # chi 2 stuff
+    # from scipy.stats import chi2_contingency
+    # table = [np.abs(ominusc), np.abs(ominuscerr)]
+    # stat, p, dof, expected = chi2_contingency(table, correction=False)
+    # chi2_red = stat/dof
+    dof = len(ominusc)
+    chi2_red = np.sum((ominusc)**2 / (t0_cerr)**2)/dof
     sigma = np.sqrt(2./len(ominusc))
     nsig = (chi2_red-1)/sigma
-    prob = 0.95
-    alpha = 1.0 - prob
-    if p <= alpha:
-        hyp = 'Dependent (reject $H_{0}$)'
-        #print('Dependent (reject H0)')
-    else:
-        hyp = 'Independent (fail to reject $H_{0}$)'
-        #print('Independent (fail to reject H0)')
+    # prob = 0.95
+    # alpha = 1.0 - prob
+    # if p <= alpha:
+    #     hyp = 'Dependent (reject $H_{0}$)'
+    #     #print('Dependent (reject H0)')
+    # else:
+    #     hyp = 'Independent (fail to reject $H_{0}$)'
+    #     #print('Independent (fail to reject H0)')
     ls = LombScargle(epoch_no, ominusc, ominuscerr)
                 
     # Do the Lomb-Scargel stuff.
@@ -441,7 +441,7 @@ def oc_fold(t0, t0err, transits_per_sector, sector_list,
     red = 'dof'
     from matplotlib.offsetbox import AnchoredText
     txt = AnchoredText(f'$\chi^2_{{{red}}} = {chi2_red:.2f}\, ({nsig:.2f}\sigma)$' +\
-                        f'\n{hyp}\n$\mu_{{error}}= {loss:.2f}$',
+                        f'\n$\mu_{{error}}= {loss:.2f}$',
                         loc='upper right', frameon=False,
                         prop=dict(fontweight="bold"))
     oc_ax.add_artist(txt)
