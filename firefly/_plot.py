@@ -557,7 +557,7 @@ def density_scatter(exoplanet, transits, sort=True):
     bins=[bin_tot,bin_tot]
     x, y, yerr = np.array(time_all), np.array(flux_all), np.array(flux_err_all)
     fit_all = np.array(fit_all)
-    diff = fit_all - y
+    diff = y - fit_all
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Sigma clipping
     mad = mad_std(diff)
@@ -599,6 +599,7 @@ def density_scatter(exoplanet, transits, sort=True):
     fig = plt.subplots(figsize=(12,8))
     gs = gridspec.GridSpec(2, 1, height_ratios=[3,1])
     ax = plt.subplot(gs[0])
+    ax.set_visible(False)
     res_ax = plt.subplot(gs[1], sharex=ax)
     
     plt.set_cmap('hot')
