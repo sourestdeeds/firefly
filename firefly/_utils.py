@@ -322,6 +322,8 @@ def _retrieval(
     _TESS_filter()
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Download Archive
+    if fit_ttv==True:
+        archive = 'spearnet'
     if archive=='nasa':
         host_T, host_z, host_r, host_logg, t0, P, t14, repack, ra, dec, dist = \
             priors(exoplanet, archive=archive, save=True, user=False, auto=auto,
