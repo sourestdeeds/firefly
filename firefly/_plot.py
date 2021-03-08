@@ -374,29 +374,29 @@ def oc_fold(t0, t0err, transits_per_sector, sector_list,
     from sklearn.metrics import mean_absolute_error
     loss = mean_absolute_error(ominusc,ominuscerr)
     # chi 2 stuff
-    # from scipy.stats import chi2_contingency
-    # table = [np.abs(ominusc), np.abs(ominuscerr)]
-    # stat, p, dof, expected = chi2_contingency(table, correction=False)
-    # chi2_red = stat/dof
-    dof = len(ominusc)
-    chi2_red = np.sum((ominusc)**2 / (t0_cerr)**2)/dof
+    from scipy.stats import chi2_contingency
+    table = [np.abs(ominusc), np.abs(ominuscerr)]
+    stat, p, dof, expected = chi2_contingency(table, correction=False)
+    chi2_red = stat/dof
+    #dof = len(ominusc)
+    #chi2_red = np.sum((ominusc)**2 / (t0_cerr)**2)/dof
     sigma = np.sqrt(2./len(ominusc))
     nsig = (chi2_red-1)/sigma
     prob = 0.95
     alpha = 1.0 - prob
-    # if p <= alpha:
-    #     hyp = 'Dependent (reject $H_{0}$)'
-    #     #print('Dependent (reject H0)')
-    # else:
-    #     hyp = 'Independent (fail to reject $H_{0}$)'
-    #     #print('Independent (fail to reject H0)')
+    if p <= alpha:
+        hyp = 'Dependent (reject $H_{0}$)'
+        #print('Dependent (reject H0)')
+    else:
+        hyp = 'Independent (fail to reject $H_{0}$)'
+        #print('Independent (fail to reject H0)')
     ls = LombScargle(epoch_no, ominusc, ominuscerr)
                 
     # Do the Lomb-Scargel stuff.
     # ls = LombScargle(epoch_no, ominusc, ominuscerr)
     max_p = len(ominusc)//2
-    frequency, power = ls.autopower(nyquist_factor=1, samples_per_peak=10,
-                                    minimum_frequency=1/max_p)
+    frequency, power = ls.autopower(nyquist_factor=1, samples_per_peak=10,)
+                                    #minimum_frequency=1/max_p)
     best_f = frequency[np.argmax(power)]
     best_P = 1/frequency[np.argmax(power)]
     epoch_phase = (epoch_no - (epoch_no //best_P) * best_P)/best_P
@@ -415,7 +415,7 @@ def oc_fold(t0, t0err, transits_per_sector, sector_list,
     ominuscerr_elapsed = np.array(ominuscerr_elapsed)
     epoch_no_elapsed = np.array(range(1,(len(ominusc_elapsed)+1)))
      # Fits
-    fit_x_elapsed = np.linspace(epoch_no_elapsed.min(), epoch_no_elapsed.max(), 1000)
+    fit_x_elapsed = np.linspace(epoch_no_elapsed.min(), epoch_no_elapsed.max(), 10000)
     fit_y_elapsed = ls.model(fit_x_elapsed, frequency[np.argmax(power)])
     
     fit_x = np.linspace(epoch_no.min(), epoch_no.max(), 1000)
@@ -441,7 +441,7 @@ def oc_fold(t0, t0err, transits_per_sector, sector_list,
     red = 'dof'
     from matplotlib.offsetbox import AnchoredText
     txt = AnchoredText(f'$\chi^2_{{{red}}} = {chi2_red:.2f}\, ({nsig:.2f}\sigma)$' +\
-                        f'\n$\mu_{{error}}= {loss:.2f}$',
+                        f'\n{hyp}\n$\mu_{{error}}= {loss:.2f}$',
                         loc='upper right', frameon=False,
                         prop=dict(fontweight="bold"))
     oc_ax.add_artist(txt)
