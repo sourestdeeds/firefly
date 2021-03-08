@@ -342,6 +342,8 @@ def priors(exoplanet, archive='eu', save=False, user=True, auto=True):
         highest, ratios = _search_all(exoplanet)
         exoplanet = highest[0]
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    if fit_ttv==True:
+        archive = 'spearnet'
     archive_list = [exo_nasa, exo_eu, exo_org, exo_oec, exo_spearnet]
     if archive=='nasa':
         exo_archive = archive_list[0].set_index('pl_name')
