@@ -315,7 +315,7 @@ def _IQR(df, sigma=1):
     return df[trueList]
   
     
-def priors(exoplanet, archive='eu', save=False, user=True, auto=True):
+def priors(exoplanet, archive='eu', save=False, user=True, auto=True, fit_ttv=False):
     '''
     Generates priors from 4 exoplanet archives, nasa, eu, oec and exoplanets.org
 

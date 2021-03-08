@@ -324,10 +324,12 @@ def _retrieval(
     # Download Archive
     if archive=='nasa':
         host_T, host_z, host_r, host_logg, t0, P, t14, repack, ra, dec, dist = \
-            priors(exoplanet, archive=archive, save=True, user=False, auto=auto)
+            priors(exoplanet, archive=archive, save=True, user=False, auto=auto,
+                    fit_ttv=fit_ttv)
     else:
         host_T, host_z, host_r, host_logg, t0, P, t14, repack = \
-            priors(exoplanet, archive=archive, save=True, user=False, auto=auto)
+            priors(exoplanet, archive=archive, save=True, user=False, auto=auto,
+                    fit_ttv=fit_ttv)
     if auto==False:
         answer = ''
         while answer!='y':
