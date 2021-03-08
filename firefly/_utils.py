@@ -152,9 +152,9 @@ def clip(df):
 def _fits(exoplanet,
           exo_folder,
           cache,
-          hlsp=['SPOC', 'TESS-SPOC', 'TASOC'],
-          cadence=120,
-          bitmask='default'
+          hlsp,
+          cadence,
+          bitmask
 ):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # MAST Search
@@ -177,7 +177,7 @@ def _fits(exoplanet,
     sector_list = natsorted(data['sequence_number'].values.tolist())
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Dataframe Checks
-    data = data[data['t_exptime']==120]
+    data = data[data['t_exptime']==cadence]
     data = data[~data.dataURL.str.endswith('_dvt.fits')].reset_index(drop=True)
     provenance_name = data['provenance_name'].tolist()
     lc_links = data['dataURL'].tolist()
@@ -342,7 +342,7 @@ def _retrieval(
     # Split the Light curves
     split_curve_in_dir = []
     transits_per_sector = []
-    csv_in_dir, sector_list = _fits(exoplanet, exo_folder, cache, hlsp, cadence, bitmask)
+    csv_in_dir, sector_list = _fits(exoplanet, exo_folder=exo_folder, cache=cache, hlsp=hlsp, cadence=cadence, bitmask=bitmask)
     for i, csvfile in enumerate(csv_in_dir):
         split_curves = split_lightcurve_file(csvfile, t0=t0, P=P, t14=t14,
                                              cutoff=cutoff, window=window)
@@ -391,6 +391,7 @@ def _retrieval(
             host_logg=host_logg,
             host_z=host_z,
             host_r=host_r,
+            cadence=cadence/60,
             walks=walks,
             slices=slices,
             nlive=nlive,

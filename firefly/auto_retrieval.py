@@ -38,7 +38,7 @@ def firefly(
         auto=True,
         # MAST Search
         hlsp=['SPOC'],
-        cadence=[120],
+        cadence=120,
         bitmask='default',
         # TransitFit Variables
         walks=100,
