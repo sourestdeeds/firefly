@@ -392,9 +392,6 @@ def oc_fold(t0, t0err, transits_per_sector, sector_list,
     #     #print('Independent (fail to reject H0)')
     ls = LombScargle(epoch_no, ominusc, ominuscerr)
                 
-    ominusc = np.array(ominusc_elapsed)
-    ominuscerr = np.array(ominuscerr_elapsed)
-    epoch_no = np.array(range(1,(len(ominusc)+1)))
     # Do the Lomb-Scargel stuff.
     # ls = LombScargle(epoch_no, ominusc, ominuscerr)
     max_p = len(ominusc)//2
@@ -403,6 +400,7 @@ def oc_fold(t0, t0err, transits_per_sector, sector_list,
     best_f = frequency[np.argmax(power)]
     best_P = 1/frequency[np.argmax(power)]
     epoch_phase = (epoch_no - (epoch_no //best_P) * best_P)/best_P
+
     ominusc_phase = (ominusc - (ominusc //best_P) * best_P)/best_P
     fap = ls.false_alarm_probability(power.max())
     
@@ -421,6 +419,11 @@ def oc_fold(t0, t0err, transits_per_sector, sector_list,
     fig = plt.figure(figsize=(12,8))
     gs = gridspec.GridSpec(3, 1)
     plt.set_cmap('plasma')
+    
+    # update epoch_no to elapsed transits
+    ominusc = np.array(ominusc_elapsed)
+    ominuscerr = np.array(ominuscerr_elapsed)
+    epoch_no = np.array(range(1,(len(ominusc)+1)))
     
     oc_ax = fig.add_subplot(gs[0])
     phase_ax = fig.add_subplot(gs[1])
