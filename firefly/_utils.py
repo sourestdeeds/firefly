@@ -425,7 +425,7 @@ def _retrieval(
     master = read_csv(f'{exo_folder}/output_parameters/Complete_results.csv',
                       index_col='Parameter')
     master = master[['Best', 'Error']]
-    P = master['Best'].filter(like = 'P', axis=0)
+    P = master['Best']['P']
     try:
         Perr = float(master['Error'].filter(like = 'P', axis=0))
     except ValueError:
