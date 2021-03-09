@@ -600,7 +600,6 @@ def density_scatter(exoplanet, transits, sort=True):
     fig = plt.subplots(figsize=(12,8))
     gs = gridspec.GridSpec(2, 1, height_ratios=[3,1])
     ax = plt.subplot(gs[0])
-    ax.set_visible(False)
     res_ax = plt.subplot(gs[1], sharex=ax)
     
     plt.set_cmap('gist_gray')
