@@ -696,7 +696,7 @@ def density_scatter(exoplanet, transits, sort=True):
     ax.scatter(x, y, c=z, zorder=2, s=5, edgecolor='none')
     ax.scatter(stat[1][:len(stat[0])], stat[0], zorder=4, s=10, color='white',
                edgecolor='k')
-    ax.plot(fitx, fity, marker='', color='k', zorder=5, lw=2)
+    ax.plot(fitx, fity, marker='', color='r', zorder=5, lw=2)
     # ax.errorbar(stat[1][:len(stat[0])], stat[0], stat_err[0]/6, color='yellow',
     #               alpha=0.7, capsize=2, ls='none', zorder=3)
     ax.add_artist(txt)
