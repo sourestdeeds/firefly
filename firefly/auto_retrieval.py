@@ -67,6 +67,7 @@ def firefly(
         line_color='black',
         bin_data=True,
         binned_color='red',
+        print_progress=True
 ):
     '''
     Automated version of retrieval. For a single target the procedure is:
@@ -372,6 +373,7 @@ def firefly(
             line_color=line_color,
             bin_data=bin_data,
             binned_color=binned_color,
+            print_progress=print_progress
         )
         success = f'{os.getcwd()}/firefly/{archive_name}.zip'
         print(f'\nData location: {success}\n'

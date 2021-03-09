@@ -248,6 +248,7 @@ def _fits(exoplanet,
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Extract all light curves to a single csv file
         TESS_fits['TIME'] = TESS_fits['TIME'] + 2457000
+        TESS_fits['FLUX'] = TESS_fits['FLUX'] + 1000
         csv_name = f'{source}/{mast_name}/{mast_name}.csv'
         _df = TESS_fits[['TIME', 'PDCSAP_FLUX', 'PDCSAP_FLUX_ERR', 'QUALITY']]
         if bitmask=='default':
@@ -313,6 +314,7 @@ def _retrieval(
         line_color='black',
         bin_data=True,
         binned_color='red',
+        print_progress=True
 ):
     
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -395,7 +397,8 @@ def _retrieval(
             walks=walks,
             slices=slices,
             nlive=nlive,
-            fit_ttv=fit_ttv,
+            # fit_ttv=fit_ttv,
+            allow_TTV=fit_ttv,
             detrending_list=detrending_list,
             dynesty_sample=dynesty_sample,
             fitting_mode=fitting_mode,
@@ -419,6 +422,7 @@ def _retrieval(
             line_color=line_color,
             bin_data=bin_data,
             binned_color=binned_color,
+            print_progress=print_progress
         )
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Save Best Values
@@ -430,8 +434,11 @@ def _retrieval(
         Perr = float(master['Error'].filter(like = 'P', axis=0))
     except ValueError:
         Perr = float()
-    t0 = master['Best']['t0'][0]
-    t0err = float(master['Error']['t0'][0])
+    if fit_ttv==True:
+        t0 = master['Best']['t0'][0]
+        t0err = float(master['Error']['t0'][0])
+    t0 = master['Best']['t0']
+    t0err = float(master['Error']['t0'])
     a = master['Best']['a/AU']
     aerr = float(master['Error']['a/AU'])
     ar = master['Best']['a/r*']
