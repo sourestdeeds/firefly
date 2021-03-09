@@ -648,7 +648,7 @@ def density_scatter(exoplanet, transits, sort=True):
     
     plt.set_cmap('gist_gray_r')
     ax.scatter(x, y, c=z, zorder=2, s=5, edgecolor='none')
-    ax.plot(fitx, fity, marker='', color='r', zorder=4, lw=1)
+    ax.plot(fitx, fity, marker='', color='r', zorder=4, lw=2)
     ax.scatter(stat[1][:len(stat[0])], stat[0], zorder=3, s=10, color='white',
                edgecolor='k')
     # ax.errorbar(stat[1][:len(stat[0])], stat[0], stat_err[0]/6, color='k',
