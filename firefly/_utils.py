@@ -422,7 +422,7 @@ def _retrieval(
             line_color=line_color,
             bin_data=bin_data,
             binned_color=binned_color,
-            print_progress=print_progress
+            #print_progress=print_progress
         )
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Save Best Values
