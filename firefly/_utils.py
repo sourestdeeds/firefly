@@ -398,7 +398,7 @@ def _retrieval(
             slices=slices,
             nlive=nlive,
             # fit_ttv=fit_ttv,
-            allow_TTV=fit_ttv,
+            allow_ttv=fit_ttv,
             detrending_list=detrending_list,
             dynesty_sample=dynesty_sample,
             fitting_mode=fitting_mode,
