@@ -551,7 +551,7 @@ def density_scatter(exoplanet, transits, sort=True):
     from transitfit.lightcurve import LightCurve
     # from sklearn.preprocessing import scale
     time_all, flux_all, flux_err_all, fitx, fity, fit_all = read_fitted_lc(exoplanet, transits)
-    bin_tot=250
+    bin_tot=240
     if len(fit_all) < bin_tot:
         bint_tot = len(fit_all)
     bins=[bin_tot,bin_tot]
@@ -568,7 +568,7 @@ def density_scatter(exoplanet, transits, sort=True):
     fit_all = fit_all[~mask]
     
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    cad_bin = 120
+    cad_bin = 240
     stat = stats.binned_statistic(x, y, statistic = 'mean',
                                   bins = np.linspace(x.min(), x.max(), cad_bin))
     stat_err = stats.binned_statistic(x, yerr, statistic = 'mean',
@@ -576,7 +576,6 @@ def density_scatter(exoplanet, transits, sort=True):
     res_stat = stats.binned_statistic(x, diff, statistic = 'mean',
                                   bins = np.linspace(x.min(), x.max(), cad_bin))
     madbin = mad_std(res_stat[0])
-    
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     data, x_e, y_e = np.histogram2d(x, y, bins=bins, density=True)
     z = interpn( ( 0.5*(x_e[1:] + x_e[:-1]), 0.5*(y_e[1:]+y_e[:-1]) ),
