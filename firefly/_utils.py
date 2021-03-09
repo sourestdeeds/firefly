@@ -248,7 +248,7 @@ def _fits(exoplanet,
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Extract all light curves to a single csv file
         TESS_fits['TIME'] = TESS_fits['TIME'] + 2457000
-        TESS_fits['FLUX'] = TESS_fits['FLUX'] + 1000
+        TESS_fits['PDCSAP_FLUX'] = TESS_fits['PDCSAP_FLUX'] + 1000
         csv_name = f'{source}/{mast_name}/{mast_name}.csv'
         _df = TESS_fits[['TIME', 'PDCSAP_FLUX', 'PDCSAP_FLUX_ERR', 'QUALITY']]
         if bitmask=='default':
