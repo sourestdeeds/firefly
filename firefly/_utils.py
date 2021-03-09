@@ -430,24 +430,24 @@ def _retrieval(
         Perr = float(master['Error'].filter(like = 'P', axis=0))
     except ValueError:
         Perr = float()
-    t0 = master['Best'].filter(like = 't0', axis=0)[0]
-    t0err = float(master['Error'].filter(like = 't0', axis=0)[0])
-    a = master['Best'].filter(like = 'a/AU', axis=0)
-    aerr = float(master['Error'].filter(like = 'a/AU', axis=0))
-    ar = master['Best'].filter(like = 'a/r*', axis=0)
-    arerr = float(master['Error'].filter(like = 'a/r*', axis=0))
-    rp = master['Best'].filter(like = 'rp', axis=0)
-    rperr = float(master['Error'].filter(like = 'rp', axis=0))
-    inc = master['Best'].filter(like = 'inc', axis=0)
-    incerr = float(master['Error'].filter(like = 'inc', axis=0))
-    ecc = master['Best'].filter(like = 'ecc', axis=0)
+    t0 = master['Best']['t0'][0]
+    t0err = float(master['Error']['t0'][0])
+    a = master['Best']['a/AU']
+    aerr = float(master['Error']['a/AU'])
+    ar = master['Best']['a/r*']
+    arerr = float(master['Error']['a/r*'])
+    rp = master['Best']['rp/r*']
+    rperr = float(master['Error']['rp/r*'])
+    inc = master['Best']['inc']
+    incerr = float(master['Error']['inc'])
+    ecc = master['Best']['ecc']
     try:
-        eccerr = float(master['Error'].filter(like = 'ecc', axis=0))
+        eccerr = float(master['Error']['ecc'])
     except ValueError:
         eccerr = float()
-    w = master['Best'].filter(like = 'w', axis=0)
+    w = master['Best']['w']
     try:
-        werr = float(master['Error'].filter(like = 'w', axis=0))
+        werr = float(master['Error']['w'])
     except ValueError:
         werr = float()
     try:
