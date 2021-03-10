@@ -431,7 +431,7 @@ def oc_fold(t0, t0err, P, transits_per_sector, sector_list,
     ls_ax = fig.add_subplot(gs[2])
     #t = np.arange(len(epoch_no))
     #Plot data
-    oc_ax.errorbar(epoch_no_elapsed, ominusc_elapsed, ominuscerr_elapsed, marker='.',
+    oc_ax.errorbar(epoch_no_elapsed * P, ominusc_elapsed, ominuscerr_elapsed, marker='.',
                    elinewidth=0.8, color='dimgrey', linestyle='',
                    capsize=2, alpha=0.8, zorder=1)
     oc_ax.scatter(epoch_no_elapsed * P, ominusc_elapsed, marker='.', zorder=2,
@@ -464,7 +464,7 @@ def oc_fold(t0, t0err, P, transits_per_sector, sector_list,
             ls_ax.axhline(level, color='r', linestyle='--', alpha=0.8)
             ls_ax.annotate(f'{str(int(i*100))}'+'$\%$',
                            (pos, level*1.018), color='k', ha='center')
-    ls_ax.annotate(f'Period: {int(P*period)}\n{fap*100:.2f}$\%$',
+    ls_ax.annotate(f'Peak: {int(P*period)}\n{fap*100:.2f}$\%$',
                         (P*period, power.max()*1.03), color='k', weight='bold', ha='center')
     # Sort out labels etc
     oc_ax.set_xlabel('Period (Days)')
