@@ -597,7 +597,7 @@ def density_scatter(exoplanet, transits, P, cadence):
     # All errorbars
     txt = AnchoredText(f'$\sigma_{{unbinned}}={mad:.6f}$\n$' +\
                        f'\sigma_{{binned}}={madbin:.6f}$',
-                       frameon=False,loc='upper right',
+                       frameon=False,loc='lower right',
                        prop=dict(fontweight="bold"))
     fig = plt.subplots(figsize=(12,8))
     gs = gridspec.GridSpec(2, 1, height_ratios=[3,1])
@@ -635,7 +635,7 @@ def density_scatter(exoplanet, transits, P, cadence):
     # No errorbar
     txt = AnchoredText(f'$\sigma_{{unbinned}}={mad:.6f}$\n$' +\
                        f'\sigma_{{binned}}={madbin:.6f}$',
-                       frameon=False,loc='upper right',
+                       frameon=False,loc='lower right',
                        prop=dict(fontweight="bold"))
     fig = plt.subplots(figsize=(12,8))
     gs = gridspec.GridSpec(2, 1, height_ratios=[3,1])
@@ -666,7 +666,7 @@ def density_scatter(exoplanet, transits, P, cadence):
     # No resid or err
     txt = AnchoredText(f'$\sigma_{{unbinned}}={mad:.6f}$\n$' +\
                        f'\sigma_{{binned}}={madbin:.6f}$',
-                       frameon=False,loc='upper right',
+                       frameon=False,loc='lower right',
                        prop=dict(fontweight="bold"))
     fig = plt.subplots(figsize=(12,6))
     gs = gridspec.GridSpec(1, 1)
@@ -686,7 +686,7 @@ def density_scatter(exoplanet, transits, P, cadence):
     # No resid
     txt = AnchoredText(f'$\sigma_{{unbinned}}={mad:.6f}$\n$' +\
                        f'\sigma_{{binned}}={madbin:.6f}$',
-                       frameon=False,loc='upper right',
+                       frameon=False,loc='lower right',
                        prop=dict(fontweight="bold"))
     fig = plt.subplots(figsize=(12,6))
     gs = gridspec.GridSpec(1, 1)
