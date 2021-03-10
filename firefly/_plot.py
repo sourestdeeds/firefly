@@ -625,6 +625,7 @@ def density_scatter(exoplanet, transits, P, cadence):
     #               alpha=0.7, capsize=2, ls='none', zorder=3)
     ax.scatter(binned_phase, binned_flux, zorder=4, s=10, color='white', edgecolor='k')
     ax.plot(fitx, fity, marker='', color='k', zorder=5, lw=2)
+    ax.xaxis.set_ticklabels([])
     plt.xlabel('Phase')
     ax.set_ylabel('Normalised Flux')
     res_ax.set_ylabel('Residual')
@@ -649,6 +650,7 @@ def density_scatter(exoplanet, transits, P, cadence):
     res_ax.axhline(y=0, color='k', linestyle='--', zorder=3)
     
     plt.set_cmap('hot')
+    ax.xaxis.set_ticklabels([])
     ax.scatter(x, y, c=z, zorder=2, s=5, edgecolor='none')
     ax.plot(fitx, fity, marker='', color='k', zorder=4, lw=2)
     ax.scatter(binned_phase, binned_flux, zorder=3, s=10, color='white',
