@@ -548,16 +548,15 @@ def density_scatter(exoplanet, transits, sort=True):
     from astropy.stats.sigma_clipping import sigma_clip
     from scipy.interpolate import interpn
     from scipy import stats
-    from transitfit.lightcurve import LightCurve
     # from sklearn.preprocessing import scale
     time_all, flux_all, flux_err_all, fitx, fity, fit_all = read_fitted_lc(exoplanet, transits)
-    bin_tot=240
+    bin_tot = 240
     if len(fit_all) < bin_tot:
         bint_tot = len(fit_all)
     bins=[bin_tot,bin_tot]
     x, y, yerr = np.array(time_all), np.array(flux_all), np.array(flux_err_all)
     fit_all = np.array(fit_all)
-    diff = y -fit_all
+    diff = y - fit_all
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Sigma clipping
     mad = mad_std(diff)
@@ -566,7 +565,6 @@ def density_scatter(exoplanet, transits, sort=True):
     diff = diff[~mask]
     x, y, yerr = x[~mask], y[~mask], yerr[~mask]
     fit_all = fit_all[~mask]
-    
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     cad_bin = 240
     stat = stats.binned_statistic(x, y, statistic = 'mean',
@@ -601,7 +599,7 @@ def density_scatter(exoplanet, transits, sort=True):
     ax = plt.subplot(gs[0])
     res_ax = plt.subplot(gs[1], sharex=ax)
     
-    plt.set_cmap('gist_gray')
+    plt.set_cmap('hot')
     res_ax.errorbar(x, diff, yerr, color='dimgrey',
                   alpha=0.1, zorder=1, capsize=2, ls='none')
     res_ax.scatter(x, diff, s=5, c=z, edgecolor='none', zorder=2)
@@ -613,7 +611,7 @@ def density_scatter(exoplanet, transits, sort=True):
     #               alpha=0.7, zorder=3, capsize=2, ls='none')
     res_ax.axhline(y=0, color='k', linestyle='--', zorder=5)
     
-    plt.set_cmap('gist_gray')
+    plt.set_cmap('hot')
     ax.errorbar(x, y, yerr, color='dimgrey',
                   alpha=0.1, zorder=1, capsize=2, ls='none')
     ax.scatter(x, y, c=z, zorder=2, s=5, edgecolor='none')
@@ -621,7 +619,7 @@ def density_scatter(exoplanet, transits, sort=True):
     # ax.errorbar(stat[1][:len(stat[0])], stat[0], stat_err[0]/6, color='k',
     #               alpha=0.7, capsize=2, ls='none', zorder=3)
     ax.scatter(stat[1][:len(stat[0])], stat[0], zorder=4, s=10, color='white', edgecolor='k')
-    ax.plot(fitx, fity, marker='', color='r', zorder=5, lw=2)
+    ax.plot(fitx, fity, marker='', color='k', zorder=5, lw=2)
     plt.xlabel('Phase')
     ax.set_ylabel('Normalised Flux')
     res_ax.set_ylabel('Residual')
@@ -639,15 +637,15 @@ def density_scatter(exoplanet, transits, sort=True):
     ax = plt.subplot(gs[0])
     res_ax = plt.subplot(gs[1], sharex=ax)
     
-    plt.set_cmap('gist_gray_r')
+    plt.set_cmap('hot')
     res_ax.scatter(x, diff, s=5, alpha=0.8, c=z, edgecolor='none', zorder=1)
     res_ax.scatter(res_stat[1][:len(stat[0])], res_stat[0],
                    s=10, alpha=0.8, edgecolor='k', color='white', zorder=2)
     res_ax.axhline(y=0, color='k', linestyle='--', zorder=3)
     
-    plt.set_cmap('gist_gray_r')
+    plt.set_cmap('hot')
     ax.scatter(x, y, c=z, zorder=2, s=5, edgecolor='none')
-    ax.plot(fitx, fity, marker='', color='r', zorder=4, lw=2)
+    ax.plot(fitx, fity, marker='', color='k', zorder=4, lw=2)
     ax.scatter(stat[1][:len(stat[0])], stat[0], zorder=3, s=10, color='white',
                edgecolor='k')
     # ax.errorbar(stat[1][:len(stat[0])], stat[0], stat_err[0]/6, color='k',
@@ -669,11 +667,11 @@ def density_scatter(exoplanet, transits, sort=True):
     gs = gridspec.GridSpec(1, 1)
     ax = plt.subplot(gs[0])
     
-    plt.set_cmap('Greys')
+    plt.set_cmap('hot')
     ax.scatter(x, y, c=z, zorder=2, s=5)
     ax.scatter(stat[1][:len(stat[0])], stat[0], zorder=3, s=10, color='white',
                edgecolor='k')
-    ax.plot(fitx, fity, marker='', color='r', zorder=3, lw=2)
+    ax.plot(fitx, fity, marker='', color='k', zorder=3, lw=2)
     ax.add_artist(txt)
     plt.xlabel('Phase')
     ax.set_ylabel('Normalised Flux')
@@ -689,13 +687,13 @@ def density_scatter(exoplanet, transits, sort=True):
     gs = gridspec.GridSpec(1, 1)
     ax = plt.subplot(gs[0])
     
-    plt.set_cmap('gist_gray')
+    plt.set_cmap('hot')
     ax.errorbar(x, y, yerr, color='dimgrey',
                   alpha=0.1, zorder=1, capsize=2, ls='none')
     ax.scatter(x, y, c=z, zorder=2, s=5, edgecolor='none')
     ax.scatter(stat[1][:len(stat[0])], stat[0], zorder=4, s=10, color='white',
                edgecolor='k')
-    ax.plot(fitx, fity, marker='', color='r', zorder=5, lw=2)
+    ax.plot(fitx, fity, marker='', color='k', zorder=5, lw=2)
     # ax.errorbar(stat[1][:len(stat[0])], stat[0], stat_err[0]/6, color='yellow',
     #               alpha=0.7, capsize=2, ls='none', zorder=3)
     ax.add_artist(txt)
