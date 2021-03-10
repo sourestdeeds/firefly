@@ -437,8 +437,9 @@ def _retrieval(
     if fit_ttv==True:
         t0 = master['Best']['t0'][0]
         t0err = float(master['Error']['t0'][0])
-    t0 = master['Best']['t0']
-    t0err = float(master['Error']['t0'])
+    else:
+        t0 = master['Best']['t0']
+        t0err = float(master['Error']['t0'])
     a = master['Best']['a/AU']
     aerr = float(master['Error']['a/AU'])
     ar = master['Best']['a/r*']
@@ -458,8 +459,8 @@ def _retrieval(
     except ValueError:
         werr = float()
     try:
-        mad, madbin = density_scatter(exoplanet=exoplanet, transits=int(len(df)),
-                                            P=P, cadence=cadence)
+        mad, madbin = density_scatter(exoplanet=exoplanet,
+                                transits=int(len(df)), P=P, cadence=cadence)
     except Exception as e:
         print(e)
     t_depth = rp**2
@@ -516,7 +517,9 @@ def _retrieval(
                                                         file=file, exoplanet=exoplanet,
                                                         transits_per_sector=transits_per_sector,
                                                         sector_list=sector_list)
-            data = {'pl_name':exoplanet,
+            data = {'pl_name':exoplanet, 'red_chi2':chi2_red, 'sigma':nsig,
+                    'mean_avg_err':loss,
+                    'fap':fap, 'o-c_period':period,
                     'pl_orbper':P, 'pl_orbpererr1':Perr,
                     'pl_tranmid':t0, 'pl_tranmiderr1':t0err,
                     'pl_orbsmax':a, 'pl_orbsmaxerr1':aerr, 'pl_radj':rp,
@@ -525,11 +528,8 @@ def _retrieval(
                     'pl_orblper':w, 'pl_orblpererr1':werr, 'Transits':int(len(df)),
                     'Date':now, 'Archive':archive.upper(), 'Unbinned Sigma':mad,
                     'Binned Sigma':madbin,
-                    'Transit Depth':t_depth, 'Sensitivity':sens,
-                    'Binned Sensitivity':sens_bin,
-                    'red_chi2':chi2_red, 'sigma':nsig,
-                    'mean_avg_err':loss,
-                    'fap':fap, 'o-c_period':period,
+                'Transit Depth':t_depth, 'Sensitivity':sens,
+                'Binned Sensitivity':sens_bin
             }
             df = DataFrame(data, index=[0])
             summary_master = 'firefly/data/spear_ttv.csv'
