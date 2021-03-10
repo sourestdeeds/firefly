@@ -538,7 +538,7 @@ def read_fitted_lc(exoplanet, transits):
     #fit_all = np.array(fit_all)[~mask]
     return time_all, flux_all, flux_err_all, fitx, fity, fit_all
 
-def density_scatter(exoplanet, transits, P,  sort=True):
+def density_scatter(exoplanet, transits, P, cadence):
     """
     Scatter plot colored by 2d histogram
     """
@@ -549,6 +549,7 @@ def density_scatter(exoplanet, transits, P,  sort=True):
     from scipy.interpolate import interpn
     from scipy import stats
     # from sklearn.preprocessing import scale
+    cadence = cadence / 60
     time_all, flux_all, flux_err_all, fitx, fity, fit_all = read_fitted_lc(exoplanet, transits)
     x, y, yerr = np.array(time_all), np.array(flux_all), np.array(flux_err_all)
     fit_all = np.array(fit_all)
@@ -563,7 +564,7 @@ def density_scatter(exoplanet, transits, P,  sort=True):
     fit_all = fit_all[~mask]
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     from transitfit.lightcurve import LightCurve
-    cad_bin = 2 / (P * 60 * 24)
+    cad_bin = cadence / (P * 60 * 24)
     lc = LightCurve(x, y, yerr)
     obs_length = x.max() - x.min()
     n_bins = int((obs_length)/cad_bin)

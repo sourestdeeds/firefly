@@ -458,7 +458,8 @@ def _retrieval(
     except ValueError:
         werr = float()
     try:
-        mad, madbin = density_scatter(exoplanet=exoplanet, transits=int(len(df)))
+        mad, madbin = density_scatter(exoplanet=exoplanet, transits=int(len(df)),
+                                            P=P, cadence=cadence)
     except Exception as e:
         print(e)
     t_depth = rp**2
