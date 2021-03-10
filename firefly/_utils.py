@@ -15,7 +15,7 @@ from datetime import datetime
 from tabulate import tabulate
 from astropy.table import Table
 from pandas import DataFrame, read_csv, Categorical
-from shutil import rmtree, make_archive
+from shutil import rmtree, make_archive, copy
 from natsort import natsorted
 from math import ceil
 import numpy as np
@@ -424,6 +424,15 @@ def _retrieval(
             binned_color=binned_color,
             #print_progress=print_progress
         )
+    os.makedirs('firefly/plots', exist_ok=True)
+    os.makedirs('firefly/plots/folded', exist_ok=True)
+    os.makedirs('firefly/plots/density', exist_ok=True)
+    os.makedirs('firefly/plots/oc', exist_ok=True)
+    try:
+        copy(f'{exo_folder}/plots/folded_curves/with_errorbars/filter_0.png',
+             f'firefly/plots/folded/{exoplanet}.jpg')
+    except:
+        print(f'Unable to overwrite {exoplanet}.jpg')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Save Best Values
     master = read_csv(f'{exo_folder}/output_parameters/Complete_results.csv',
@@ -461,6 +470,8 @@ def _retrieval(
     try:
         mad, madbin = density_scatter(exoplanet=exoplanet,
                                 transits=int(len(df)), P=P, cadence=cadence)
+        copy(f'{exo_folder}/{exoplanet} density.png',
+             f'firefly/plots/density/{exoplanet}.jpg')
     except Exception as e:
         print(e)
     t_depth = rp**2
@@ -514,9 +525,12 @@ def _retrieval(
             t0errttv = s['pl_tranmiderr1'][0]
             file = f'firefly/{exoplanet}/output_parameters/Complete_results.csv'
             chi2_red, nsig, loss, fap, period = oc_fold(t0ttv, t0errttv,
-                                                        file=file, exoplanet=exoplanet,
+                                                        file=file, P=P,
+                                                        exoplanet=exoplanet,
                                                         transits_per_sector=transits_per_sector,
                                                         sector_list=sector_list)
+            copy(f'{exo_folder}/{exoplanet} o-c.jpg',
+                 f'firefly/plots/oc/{exoplanet}.jpg')
             data = {'pl_name':exoplanet, 'red_chi2':chi2_red, 'sigma':nsig,
                     'mean_avg_err':loss,
                     'fap':fap, 'o-c_period':period,

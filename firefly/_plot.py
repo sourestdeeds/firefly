@@ -330,7 +330,7 @@ def oc(t0, t0_err, file='Complete_Results.csv', exoplanet=None):
                     bbox_inches='tight')
    
   
-def oc_fold(t0, t0err, transits_per_sector, sector_list,
+def oc_fold(t0, t0err, P, transits_per_sector, sector_list,
             file='Complete_results.csv', exoplanet=None):
     '''
     Loads in the t0 and errors
@@ -352,8 +352,8 @@ def oc_fold(t0, t0err, transits_per_sector, sector_list,
     
     ominusc = t0_o  - t0_c
     ominuscerr = t0_cerr
-    ominusc *= 24 * 60 * 60
-    ominuscerr *= 24 * 60 * 60
+    ominusc *= 24 * 60
+    ominuscerr *= 24 * 60
     
     ominusc_elapsed = []
     ominuscerr_elapsed = []
@@ -434,10 +434,10 @@ def oc_fold(t0, t0err, transits_per_sector, sector_list,
     oc_ax.errorbar(epoch_no_elapsed, ominusc_elapsed, ominuscerr_elapsed, marker='.',
                    elinewidth=0.8, color='dimgrey', linestyle='',
                    capsize=2, alpha=0.8, zorder=1)
-    oc_ax.scatter(epoch_no_elapsed, ominusc_elapsed, marker='.', zorder=2,
+    oc_ax.scatter(epoch_no_elapsed * P, ominusc_elapsed, marker='.', zorder=2,
                   c=epoch_no_elapsed)
     oc_ax.axhline(0, color='black', linestyle='--', linewidth=1)
-    oc_ax.plot(fit_x_elapsed, fit_y_elapsed, color='red', alpha=0.8)
+    oc_ax.plot(fit_x_elapsed * P, fit_y_elapsed, color='red', alpha=0.8)
     red = 'dof'
     from matplotlib.offsetbox import AnchoredText
     txt = AnchoredText(f'$\chi^2_{{{red}}} = {chi2_red:.2f}\, ({nsig:.2f}\sigma)$' +\
@@ -456,23 +456,23 @@ def oc_fold(t0, t0err, transits_per_sector, sector_list,
                fit_y[np.argsort(fit_x_phase)], color='red', alpha=0.8)
     
     #ls_ax.scatter(1/frequency, power, color='dimgrey', alpha=0.1, zorder=1, s=10)
-    ls_ax.plot(1/frequency, power, linestyle='-', linewidth=0.75, zorder=2,
+    ls_ax.plot(P/frequency, power, linestyle='-', linewidth=0.75, zorder=2,
                marker='', color='k')
     
-    pos = period * 1.97 #len(epoch_no)*0.985
+    pos = P * period * 1.97 #len(epoch_no)*0.985
     for (level, i) in zip(false_alarm_levels, levels):
             ls_ax.axhline(level, color='r', linestyle='--', alpha=0.8)
             ls_ax.annotate(f'{str(int(i*100))}'+'$\%$',
                            (pos, level*1.018), color='k', ha='center')
-    ls_ax.annotate(f'Period: {int(period)}\n{fap*100:.2f}$\%$',
-                        (period, power.max()*1.03), color='k', weight='bold', ha='center')
+    ls_ax.annotate(f'Period: {int(P*period)}\n{fap*100:.2f}$\%$',
+                        (P*period, power.max()*1.03), color='k', weight='bold', ha='center')
     # Sort out labels etc
-    oc_ax.set_xlabel('Epoch')
-    oc_ax.set_ylabel('O-C (seconds)')
-    phase_ax.set_xlabel('Epoch Phase')
-    phase_ax.set_ylabel('O-C (seconds)')
+    oc_ax.set_xlabel('Period (Days)')
+    oc_ax.set_ylabel('O-C (Minutes)')
+    phase_ax.set_xlabel('Phase')
+    phase_ax.set_ylabel('O-C (Minutes)')
 
-    ls_ax.set_xlabel('Period (Epochs)')
+    ls_ax.set_xlabel('Period (Days)')
     ls_ax.set_ylabel('Power')
 
     oc_ax.tick_params('both', which='both', direction='in', bottom=True, left=True)
@@ -480,7 +480,7 @@ def oc_fold(t0, t0err, transits_per_sector, sector_list,
     ls_ax.tick_params('both', which='both', direction='in', bottom=True, left=True)
     
     #upper_x =
-    ls_ax.set_xlim([0, period * 2])
+    ls_ax.set_xlim([0, P * period * 2])
     
     upper_y_fap = false_alarm_levels[2] * 1.5
     upper_y_pow = max(power) * 1.2
@@ -492,7 +492,7 @@ def oc_fold(t0, t0err, transits_per_sector, sector_list,
     if exoplanet==None:
         fig.savefig('O-C_fold.jpg', bbox_inches='tight')
     else:
-        fig.savefig(f"firefly/{exoplanet}/{exoplanet.lower().replace(' ', '').replace('-', '')}_o-c.jpg",
+        fig.savefig(f"firefly/{exoplanet}/{exoplanet} o-c.jpg",
                     bbox_inches='tight')
     return chi2_red, nsig, loss, fap, period
   
@@ -548,8 +548,8 @@ def density_scatter(exoplanet, transits, P, cadence):
     from astropy.stats.sigma_clipping import sigma_clip
     from scipy.interpolate import interpn
     from scipy import stats
-    # from sklearn.preprocessing import scale
     cadence = cadence / 60
+    # from sklearn.preprocessing import scale
     time_all, flux_all, flux_err_all, fitx, fity, fit_all = read_fitted_lc(exoplanet, transits)
     x, y, yerr = np.array(time_all), np.array(flux_all), np.array(flux_err_all)
     fit_all = np.array(fit_all)
@@ -629,7 +629,7 @@ def density_scatter(exoplanet, transits, P, cadence):
     ax.set_ylabel('Normalised Flux')
     res_ax.set_ylabel('Residual')
     plt.subplots_adjust(hspace=.0)
-    fig[0].savefig(f'firefly/{exoplanet}/{exoplanet}_density.png',
+    fig[0].savefig(f'firefly/{exoplanet}/{exoplanet} density.png',
                    bbox_inches='tight')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # No errorbar
@@ -660,7 +660,7 @@ def density_scatter(exoplanet, transits, P, cadence):
     ax.set_ylabel('Normalised Flux')
     res_ax.set_ylabel('Residual')
     plt.subplots_adjust(hspace=.0)
-    fig[0].savefig(f'firefly/{exoplanet}/{exoplanet}_density_noerr.png',
+    fig[0].savefig(f'firefly/{exoplanet}/{exoplanet} density noerr.png',
                    bbox_inches='tight')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # No resid or err
@@ -680,7 +680,7 @@ def density_scatter(exoplanet, transits, P, cadence):
     ax.add_artist(txt)
     plt.xlabel('Phase')
     ax.set_ylabel('Normalised Flux')
-    fig[0].savefig(f'firefly/{exoplanet}/{exoplanet}_density_noresiderr.png',
+    fig[0].savefig(f'firefly/{exoplanet}/{exoplanet} density noresiderr.png',
                    bbox_inches='tight')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # No resid
@@ -704,7 +704,7 @@ def density_scatter(exoplanet, transits, P, cadence):
     ax.add_artist(txt)
     plt.xlabel('Phase')
     ax.set_ylabel('Normalised Flux')
-    fig[0].savefig(f'firefly/{exoplanet}/{exoplanet}_density_noresid.png',
+    fig[0].savefig(f'firefly/{exoplanet}/{exoplanet} density noresid.png',
                    bbox_inches='tight')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     return mad, madbin
