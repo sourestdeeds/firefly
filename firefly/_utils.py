@@ -516,9 +516,7 @@ def _retrieval(
                                                         file=file, exoplanet=exoplanet,
                                                         transits_per_sector=transits_per_sector,
                                                         sector_list=sector_list)
-            data = {'pl_name':exoplanet, 'red_chi2':chi2_red, 'sigma':nsig,
-                    'mean_avg_err':loss,
-                    'fap':fap, 'o-c_period':period,
+            data = {'pl_name':exoplanet,
                     'pl_orbper':P, 'pl_orbpererr1':Perr,
                     'pl_tranmid':t0, 'pl_tranmiderr1':t0err,
                     'pl_orbsmax':a, 'pl_orbsmaxerr1':aerr, 'pl_radj':rp,
@@ -527,8 +525,11 @@ def _retrieval(
                     'pl_orblper':w, 'pl_orblpererr1':werr, 'Transits':int(len(df)),
                     'Date':now, 'Archive':archive.upper(), 'Unbinned Sigma':mad,
                     'Binned Sigma':madbin,
-                'Transit Depth':t_depth, 'Sensitivity':sens,
-                'Binned Sensitivity':sens_bin
+                    'Transit Depth':t_depth, 'Sensitivity':sens,
+                    'Binned Sensitivity':sens_bin,
+                    'red_chi2':chi2_red, 'sigma':nsig,
+                    'mean_avg_err':loss,
+                    'fap':fap, 'o-c_period':period,
             }
             df = DataFrame(data, index=[0])
             summary_master = 'firefly/data/spear_ttv.csv'
