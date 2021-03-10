@@ -538,7 +538,7 @@ def read_fitted_lc(exoplanet, transits):
     #fit_all = np.array(fit_all)[~mask]
     return time_all, flux_all, flux_err_all, fitx, fity, fit_all
 
-def density_scatter(exoplanet, transits, sort=True):
+def density_scatter(exoplanet, transits, P,  sort=True):
     """
     Scatter plot colored by 2d histogram
     """
@@ -550,30 +550,34 @@ def density_scatter(exoplanet, transits, sort=True):
     from scipy import stats
     # from sklearn.preprocessing import scale
     time_all, flux_all, flux_err_all, fitx, fity, fit_all = read_fitted_lc(exoplanet, transits)
-    bin_tot = 240
-    if len(fit_all) < bin_tot:
-        bint_tot = len(fit_all)
-    bins=[bin_tot,bin_tot]
     x, y, yerr = np.array(time_all), np.array(flux_all), np.array(flux_err_all)
     fit_all = np.array(fit_all)
     diff = y - fit_all
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Sigma clipping
-    mad = mad_std(diff)
+    mad = np.std(diff)
     clip = sigma_clip(diff, sigma=5, stdfunc=mad_std)
     mask = clip.mask
     diff = diff[~mask]
     x, y, yerr = x[~mask], y[~mask], yerr[~mask]
     fit_all = fit_all[~mask]
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    cad_bin = 240
-    stat = stats.binned_statistic(x, y, statistic = 'mean',
-                                  bins = np.linspace(x.min(), x.max(), cad_bin))
-    stat_err = stats.binned_statistic(x, yerr, statistic = 'mean',
-                                  bins = np.linspace(x.min(), x.max(), cad_bin))
-    res_stat = stats.binned_statistic(x, diff, statistic = 'mean',
-                                  bins = np.linspace(x.min(), x.max(), cad_bin))
-    madbin = mad_std(res_stat[0])
+    from transitfit.lightcurve import LightCurve
+    cad_bin = 2 / (P * 60 * 24)
+    lc = LightCurve(x, y, yerr)
+    obs_length = x.max() - x.min()
+    n_bins = int((obs_length)/cad_bin)
+    bins=[n_bins,n_bins]
+    binned_phase, binned_flux, binned_err, binned_residuals = lc.bin(cad_bin, diff)
+    madbin = np.std(binned_residuals)
+    #cad_bin = 240
+    #stat = stats.binned_statistic(x, y, statistic = 'mean',
+    #                              bins = np.linspace(x.min(), x.max(), cad_bin))
+    #stat_err = stats.binned_statistic(x, yerr, statistic = 'mean',
+    #                              bins = np.linspace(x.min(), x.max(), cad_bin))
+    #res_stat = stats.binned_statistic(x, diff, statistic = 'mean',
+    #                              bins = np.linspace(x.min(), x.max(), cad_bin))
+    #madbin = mad_std(res_stat[0])
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     data, x_e, y_e = np.histogram2d(x, y, bins=bins, density=True)
     z = interpn( ( 0.5*(x_e[1:] + x_e[:-1]), 0.5*(y_e[1:]+y_e[:-1]) ),
@@ -604,7 +608,7 @@ def density_scatter(exoplanet, transits, sort=True):
                   alpha=0.1, zorder=1, capsize=2, ls='none')
     res_ax.scatter(x, diff, s=5, c=z, edgecolor='none', zorder=2)
     # Binned Points
-    res_ax.scatter(res_stat[1][:len(res_stat[0])], res_stat[0],
+    res_ax.scatter(binned_phase, binned_residuals,
                    s=10, alpha=1, color='white', zorder=4, edgecolor='k')
     # Binned errors
     # res_ax.errorbar(res_stat[1][:len(res_stat[0])], res_stat[0], stat_err[0]/3, color='k',
@@ -618,7 +622,7 @@ def density_scatter(exoplanet, transits, sort=True):
     ax.add_artist(txt)
     # ax.errorbar(stat[1][:len(stat[0])], stat[0], stat_err[0]/6, color='k',
     #               alpha=0.7, capsize=2, ls='none', zorder=3)
-    ax.scatter(stat[1][:len(stat[0])], stat[0], zorder=4, s=10, color='white', edgecolor='k')
+    ax.scatter(binned_phase, binned_flux, zorder=4, s=10, color='white', edgecolor='k')
     ax.plot(fitx, fity, marker='', color='k', zorder=5, lw=2)
     plt.xlabel('Phase')
     ax.set_ylabel('Normalised Flux')
@@ -639,14 +643,14 @@ def density_scatter(exoplanet, transits, sort=True):
     
     plt.set_cmap('hot')
     res_ax.scatter(x, diff, s=5, alpha=0.8, c=z, edgecolor='none', zorder=1)
-    res_ax.scatter(res_stat[1][:len(stat[0])], res_stat[0],
+    res_ax.scatter(binned_phase, binned_residuals,
                    s=10, alpha=0.8, edgecolor='k', color='white', zorder=2)
     res_ax.axhline(y=0, color='k', linestyle='--', zorder=3)
     
     plt.set_cmap('hot')
     ax.scatter(x, y, c=z, zorder=2, s=5, edgecolor='none')
     ax.plot(fitx, fity, marker='', color='k', zorder=4, lw=2)
-    ax.scatter(stat[1][:len(stat[0])], stat[0], zorder=3, s=10, color='white',
+    ax.scatter(binned_phase, binned_flux, zorder=3, s=10, color='white',
                edgecolor='k')
     # ax.errorbar(stat[1][:len(stat[0])], stat[0], stat_err[0]/6, color='k',
     #               alpha=0.8, capsize=2, ls='none', zorder=3)
@@ -669,7 +673,7 @@ def density_scatter(exoplanet, transits, sort=True):
     
     plt.set_cmap('hot')
     ax.scatter(x, y, c=z, zorder=2, s=5)
-    ax.scatter(stat[1][:len(stat[0])], stat[0], zorder=3, s=10, color='white',
+    ax.scatter(binned_phase, binned_flux, zorder=3, s=10, color='white',
                edgecolor='k')
     ax.plot(fitx, fity, marker='', color='k', zorder=3, lw=2)
     ax.add_artist(txt)
@@ -691,7 +695,7 @@ def density_scatter(exoplanet, transits, sort=True):
     ax.errorbar(x, y, yerr, color='dimgrey',
                   alpha=0.1, zorder=1, capsize=2, ls='none')
     ax.scatter(x, y, c=z, zorder=2, s=5, edgecolor='none')
-    ax.scatter(stat[1][:len(stat[0])], stat[0], zorder=4, s=10, color='white',
+    ax.scatter(binned_phase, binned_flux, zorder=4, s=10, color='white',
                edgecolor='k')
     ax.plot(fitx, fity, marker='', color='k', zorder=5, lw=2)
     # ax.errorbar(stat[1][:len(stat[0])], stat[0], stat_err[0]/6, color='yellow',
