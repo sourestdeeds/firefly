@@ -464,7 +464,7 @@ def oc_fold(t0, t0err, P, transits_per_sector, sector_list,
             ls_ax.axhline(level, color='r', linestyle='--', alpha=0.8)
             ls_ax.annotate(f'{str(int(i*100))}'+'$\%$',
                            (pos, level*1.018), color='k', ha='center')
-    ls_ax.annotate(f'Peak: {P*period}\n{fap*100:.2f}$\%$',
+    ls_ax.annotate(f'Peak: {P*period:.2f}\n{fap*100:.2f}$\%$',
                         (P*period, power.max()*1.03), color='k', weight='bold', ha='center')
     # Sort out labels etc
     oc_ax.set_xlabel('Period (Days)')
