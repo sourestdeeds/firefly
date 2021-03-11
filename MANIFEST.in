@@ -1,5 +1,6 @@
 include *.md
 include LICENCE.txt
+include firefly/data/spear.csv
 recursive-include firefly/data/Search *
 recursive-include firefly/data/Candidates *
 recursive-include firefly/data/Targets *
