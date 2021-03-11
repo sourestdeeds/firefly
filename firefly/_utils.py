@@ -430,7 +430,7 @@ def _retrieval(
     os.makedirs('firefly/plots/oc', exist_ok=True)
     try:
         copy(f'{exo_folder}/plots/folded_curves/with_errorbars/filter_0.png',
-             f'firefly/plots/folded/{exoplanet}.jpg')
+             f'firefly/plots/folded/{exoplanet}.png')
     except:
         print(f'Unable to overwrite {exoplanet}.jpg')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -471,7 +471,7 @@ def _retrieval(
         mad, madbin = density_scatter(exoplanet=exoplanet,
                                 transits=int(len(df)), P=P, cadence=cadence)
         copy(f'{exo_folder}/{exoplanet} density.png',
-             f'firefly/plots/density/{exoplanet}.jpg')
+             f'firefly/plots/density/{exoplanet}.png')
     except Exception as e:
         print(e)
     t_depth = rp**2

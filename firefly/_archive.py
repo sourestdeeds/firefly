@@ -476,15 +476,16 @@ def priors(exoplanet, archive='eu', save=False, user=True, auto=True, fit_ttv=Fa
             ['t0', 'gaussian', t0, [t0err if archive=='spearnet' else 7e-3][0], ''],
             ['a', 'gaussian', a, [aerr if archive=='spearnet' else a * 1e-2][0], ''],
             ['inc', 'gaussian', i, [ierr if archive=='spearnet' else i * 1e-2][0], ''],
-            ['w', ['fixed' if w==90 else 'gaussian'][0], w,
-             ['' if w==90
+            ['w', ['fixed' if (w==90 or ecc==0) else 'gaussian'][0],
+             [90 if ecc==0 else w][0],
+             ['' if (w==90 or ecc==0)
               else (360-np.abs(w))/2 if 180 < w < 270
               else (360-np.abs(w)) if 270 <= w < 360
               else werr if archive=='spearnet'
               else w * 0.5][0], ''],
-            ['ecc', ['fixed' if ecc==0
-                     else 'gaussian'][0], ecc,
-             ['' if ecc==0
+            ['ecc', ['fixed' if (ecc==0 or w==90)
+                     else 'gaussian'][0], [0 if w==90 else ecc][0],
+             ['' if (ecc==0 or w==90)
               else eccerr if archive=='spearnet'
               else ecc * 0.5][0], ''],
             ['rp', ['uniform' if archive=='spearnet' else 'uniform'][0],
@@ -507,15 +508,16 @@ def priors(exoplanet, archive='eu', save=False, user=True, auto=True, fit_ttv=Fa
             ['t0', 'gaussian', t0, [t0err if archive=='spearnet' else 7e-3][0], ''],
             ['a', 'gaussian', a, [aerr if archive=='spearnet' else a * 1e-2][0], ''],
             ['inc', 'gaussian', i, [ierr if archive=='spearnet' else i * 1e-2][0], ''],
-            ['w', ['fixed' if w==90 else 'gaussian'][0], w,
-             ['' if w==90
+            ['w', ['fixed' if (w==90 or ecc==0) else 'gaussian'][0],
+             [90 if ecc==0 else w][0],
+             ['' if (w==90 or ecc==0)
               else (360-np.abs(w))/2 if 180 < w < 270
               else (360-np.abs(w)) if 270 <= w < 360
               else werr if archive=='spearnet'
               else w * 0.5][0], ''],
-            ['ecc', ['fixed' if ecc==0
-                     else 'gaussian'][0], ecc,
-             ['' if ecc==0
+            ['ecc', ['fixed' if (ecc==0 or w==90)
+                     else 'gaussian'][0], [0 if w==90 else ecc][0],
+             ['' if (ecc==0 or w==90)
               else eccerr if archive=='spearnet'
               else ecc * 0.5][0], ''],
             ['rp', ['uniform' if archive=='spearnet' else 'uniform'][0],
