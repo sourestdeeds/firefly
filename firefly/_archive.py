@@ -168,7 +168,7 @@ def _pl(tic_id):
     return exoplanet
 
 
-def _lc(exoplanet, mast):
+def _lc(exoplanet, mast, fast=False):
     '''
     # https://archive.stsci.edu/tess/bulk_downloads/bulk_downloads_ffi-tp-lc-dv.html
     out = DataFrame()
@@ -182,7 +182,10 @@ def _lc(exoplanet, mast):
     tic_id = _tic(exoplanet).replace('TIC ', '')
     lc_links = mast[mast['links'].str.contains(tic_id)] .values .tolist()
     lc_list = [i for j in lc_links for i in j]
-    lc_test = [int(i[-30:-15]) for j in lc_links for i in j]
+    if fast==True:
+        lc_test = [int(i[-35:-20]) for j in lc_links for i in j]
+    else:
+        lc_test = [int(i[-30:-15]) for j in lc_links for i in j]
     lc_links = []
     for i in range(len(lc_test)):
         if int(tic_id) == lc_test[i]:
@@ -578,7 +581,7 @@ def tess(archive='eu', survey=None):
     return targets, all_targets, ttv_targets
 
 
-def gen_tess(archive='eu'):
+def gen_tess(archive='nasa'):
     #_download_archive()
     _load_csv()
     here = os.path.dirname(os.path.abspath(__file__))
@@ -634,6 +637,61 @@ def gen_tess(archive='eu'):
     here = os.path.dirname(os.path.abspath(__file__))
     df.to_csv(f'{here}/data/Targets/{archive}_tess_viable.csv', index=False)
 
+def gen_tess_fast(archive='nasa'):
+    #_download_archive()
+    _load_csv()
+    here = os.path.dirname(os.path.abspath(__file__))
+    mast_csv = f'{here}/data/Search/TESS_lc_fast.csv.xz'
+    mast = read_csv(mast_csv)
+    exo_list = exo_nasa[['pl_name', 'tic_id']] \
+              .dropna() .drop_duplicates('pl_name') \
+              .drop(['tic_id'], axis=1) .values .tolist()
+    exo_list = [j for i in exo_list for j in i]
+    exo_list = natsorted(exo_list)
+    viable = []
+    products = []
+    period = []
+    epochs = []
+    tic = []
+    ra_list, dec_list, dist_list = [], [], []
+    for i, exoplanet in enumerate(exo_list):
+        try:
+            if archive=='nasa':
+                host_T, host_z, host_r, host_logg, t0, P, t14, repack, ra, dec, dist = \
+                            priors(exoplanet, archive, user=False)
+            else:
+                host_T, host_z, host_r, host_logg, t0, P, t14, repack = \
+                            priors(exoplanet, archive, user=False)
+            lc_links, tic_id = _lc(exoplanet, mast, fast=True)
+            if not len(lc_links)==0:
+                epoch = ceil((0.8 * 27.4 / P) * len(lc_links))
+                viable.append(exoplanet)
+                tic.append(tic_id)
+                products.append(len(lc_links))
+                period.append(P)
+                epochs.append(epoch)
+                if archive=='nasa':
+                    ra_list.append(ra)
+                    dec_list.append(dec)
+                    dist_list.append(dist)
+            else:
+                pass
+        except Exception:
+            pass
+    if archive=='nasa':
+        data = {'Exoplanet':viable, 'TIC ID':tic, 'Products':products, 'Period':period,
+                'Epochs':epochs, 'RA':ra_list, 'DEC':dec_list, 'Distance':dist_list}
+    else:
+        data = {'Exoplanet':viable, 'TIC ID':tic, 'Products':products, 'Period':period,
+                'Epochs':epochs}
+    df = DataFrame(data)
+    df['Exoplanet'] = \
+            Categorical(df['Exoplanet'],
+            ordered=True,
+            categories=natsorted(df['Exoplanet'].unique()))
+    df = df.sort_values('Exoplanet')
+    here = os.path.dirname(os.path.abspath(__file__))
+    df.to_csv(f'{here}/data/Targets/{archive}_tess_viable_fast.csv', index=False)
 
 
 def gen_tess_ttv():
