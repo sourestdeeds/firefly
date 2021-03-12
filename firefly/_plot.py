@@ -634,6 +634,7 @@ def density_scatter(exoplanet, transits, P, cadence):
                 color='white', edgecolor='k', alpha = 0.9)
     ax.plot(fitx, fity, marker='', color='k', zorder=5, lw=2)
     ax.xaxis.set_ticklabels([])
+    ax.yaxis.set_ticklabels([])
     plt.xlabel('Phase')
     ax.set_ylabel('Normalised Flux')
     res_ax.set_ylabel('Residual')
