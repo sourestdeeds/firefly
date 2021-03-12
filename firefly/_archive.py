@@ -476,7 +476,7 @@ def priors(exoplanet, archive='eu', save=False, user=True, auto=True, fit_ttv=Fa
     radius_const = 0.1027626851
     cols = [['P', ['fixed' if archive=='spearnet' else 'gaussian'][0], P,
                 ['' if archive=='spearnet' else P * 1e-4][0], ''],
-            ['t0', 'gaussian', t0, [t0err if archive=='spearnet' else 7e-3][0], ''],
+            ['t0', 'gaussian', t0, [7e-3 if archive=='spearnet' else 7e-3][0], ''],
             ['a', 'gaussian', a, [aerr if archive=='spearnet' else a * 1e-2][0], ''],
             ['inc', 'gaussian', i, [ierr if archive=='spearnet' else i * 1e-2][0], ''],
             ['w', ['fixed' if (w==90 or ecc==0) else 'gaussian'][0],
