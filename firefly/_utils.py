@@ -535,6 +535,8 @@ def _retrieval(
                                                         transits_per_sector=transits_per_sector,
                                                         sector_list=sector_list,
                                                         longterm=False)
+            copy(f'{exo_folder}/{exoplanet} o-c longterm.jpg',
+                 f'firefly/plots/oc/{exoplanet} long.jpg')
             copy(f'{exo_folder}/{exoplanet} o-c.jpg',
                  f'firefly/plots/oc/{exoplanet}.jpg')
             data = {'pl_name':exoplanet, 'red_chi2':chi2_red, 'sigma':nsig,
