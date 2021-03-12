@@ -174,7 +174,6 @@ def _fits(exoplanet,
                    'provenance_name', 'project', 'sequence_number']]
     data['dataURL'] = ['https://mast.stsci.edu/api/v0.1/Download/file/?uri=' +\
                          data['dataURL'][i] for i in range(len(search))]
-    sector_list = natsorted(data['sequence_number'].values.tolist())
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Dataframe Checks
     data = data[data['t_exptime']==cadence]
@@ -183,6 +182,7 @@ def _fits(exoplanet,
     lc_links = data['dataURL'].tolist()
     print(f'\nQuery from MAST returned {len(lc_links)} '
           f'data products for {exoplanet} (TIC {tic_id}).\n')
+    sector_list = natsorted(data['sequence_number'].values.tolist())
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Print search result
     show = data[['obs_id', 'target_name', 't_exptime',
