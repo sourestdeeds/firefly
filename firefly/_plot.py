@@ -331,12 +331,12 @@ def oc(t0, t0_err, file='Complete_Results.csv', exoplanet=None):
    
   
 def oc_fold(t0, t0err, P, transits_per_sector, sector_list,
-            file='Complete_results.csv', exoplanet=None):
+            file='Complete_results.csv', exoplanet=None, longterm=True):
     '''
     Loads in the t0 and errors
     '''
     sector_list = np.array(sector_list)
-    
+    transits_per_sector = np.array(transits_per_sector)
     total_sectors = np.array(range(np.min(sector_list), np.max(sector_list)+1))
     avg_transits = int(np.mean(transits_per_sector))
     elapsed_epochs = avg_transits * len(total_sectors)
@@ -395,8 +395,11 @@ def oc_fold(t0, t0err, P, transits_per_sector, sector_list,
     # Do the Lomb-Scargel stuff.
     # ls = LombScargle(epoch_no, ominusc, ominuscerr)
     max_p = len(ominusc)//2
-    frequency, power = ls.autopower(nyquist_factor=1, samples_per_peak=10,)
-                                    #minimum_frequency=1/max_p)
+    if longterm==True:
+        frequency, power = ls.autopower(nyquist_factor=1, samples_per_peak=75)
+    else:
+        frequency, power = ls.autopower(nyquist_factor=1, samples_per_peak=25,
+                                    minimum_frequency=1/max_p)
     best_f = frequency[np.argmax(power)]
     best_P = 1/frequency[np.argmax(power)]
     epoch_phase = (epoch_no - (epoch_no //best_P) * best_P)/best_P
@@ -492,7 +495,11 @@ def oc_fold(t0, t0err, P, transits_per_sector, sector_list,
     if exoplanet==None:
         fig.savefig('O-C_fold.jpg', bbox_inches='tight')
     else:
-        fig.savefig(f"firefly/{exoplanet}/{exoplanet} o-c.jpg",
+        if longterm==True:
+            fig.savefig(f"firefly/{exoplanet}/{exoplanet} o-c longterm.jpg",
+                    bbox_inches='tight')
+        else:
+            fig.savefig(f"firefly/{exoplanet}/{exoplanet} o-c.jpg",
                     bbox_inches='tight')
     return chi2_red, nsig, loss, fap, period
   
@@ -608,12 +615,12 @@ def density_scatter(exoplanet, transits, P, cadence):
     res_ax.errorbar(x, diff, yerr, color='dimgrey',
                   alpha=0.1, zorder=1, capsize=2, ls='none')
     res_ax.scatter(x, diff, s=5, c=z, edgecolor='none', zorder=2)
+    # Binned errors
+    # res_ax.errorbar(binned_phase, binned_residuals, binned_err, color='k',
+    #               alpha=0.7, zorder=3, capsize=2, ls='none')
     # Binned Points
     res_ax.scatter(binned_phase, binned_residuals,
                    s=10, alpha=1, color='white', zorder=4, edgecolor='k')
-    # Binned errors
-    # res_ax.errorbar(res_stat[1][:len(res_stat[0])], res_stat[0], stat_err[0]/3, color='k',
-    #               alpha=0.7, zorder=3, capsize=2, ls='none')
     res_ax.axhline(y=0, color='k', linestyle='--', zorder=5)
     
     plt.set_cmap('hot')
@@ -621,9 +628,10 @@ def density_scatter(exoplanet, transits, P, cadence):
                   alpha=0.1, zorder=1, capsize=2, ls='none')
     ax.scatter(x, y, c=z, zorder=2, s=5, edgecolor='none')
     ax.add_artist(txt)
-    # ax.errorbar(stat[1][:len(stat[0])], stat[0], stat_err[0]/6, color='k',
+    # ax.errorbar(binned_phase, binned_flux, binned_err, color='dimgrey',
     #               alpha=0.7, capsize=2, ls='none', zorder=3)
-    ax.scatter(binned_phase, binned_flux, zorder=4, s=10, color='white', edgecolor='k')
+    ax.scatter(binned_phase, binned_flux, zorder=4, s=10,
+                color='white', edgecolor='k', alpha = 0.9)
     ax.plot(fitx, fity, marker='', color='k', zorder=5, lw=2)
     ax.xaxis.set_ticklabels([])
     plt.xlabel('Phase')

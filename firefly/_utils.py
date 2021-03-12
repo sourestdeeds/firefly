@@ -524,16 +524,23 @@ def _retrieval(
             t0ttv = s['pl_tranmid'][0]
             t0errttv = s['pl_tranmiderr1'][0]
             file = f'firefly/{exoplanet}/output_parameters/Complete_results.csv'
-            chi2_red, nsig, loss, fap, period = oc_fold(t0ttv, t0errttv,
+            chi2_redlong, nsiglong, losslong, faplong, periodlong = oc_fold(t0ttv, t0errttv,
                                                         file=file, P=P,
                                                         exoplanet=exoplanet,
                                                         transits_per_sector=transits_per_sector,
                                                         sector_list=sector_list)
+            chi2_red, nsig, loss, fap, period = oc_fold(t0ttv, t0errttv,
+                                                        file=file, P=P,
+                                                        exoplanet=exoplanet,
+                                                        transits_per_sector=transits_per_sector,
+                                                        sector_list=sector_list,
+                                                        longterm=False)
             copy(f'{exo_folder}/{exoplanet} o-c.jpg',
                  f'firefly/plots/oc/{exoplanet}.jpg')
             data = {'pl_name':exoplanet, 'red_chi2':chi2_red, 'sigma':nsig,
                     'mean_avg_err':loss,
                     'fap':fap, 'o-c_period':period,
+                    'faplong':faplong, 'o-c_periodlong':periodlong,
                     'pl_orbper':P, 'pl_orbpererr1':Perr,
                     'pl_tranmid':t0, 'pl_tranmiderr1':t0err,
                     'pl_orbsmax':a, 'pl_orbsmaxerr1':aerr, 'pl_radj':rp,
