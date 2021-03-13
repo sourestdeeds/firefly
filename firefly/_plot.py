@@ -517,7 +517,7 @@ def read_fitted_lc(exoplanet, transits):
     # flux_err = lc['Flux uncertainty'] .values
     # lc_all = LightCurve(time, flux, flux_err)
     # fit_all = lc['Best fit curve'] .values.tolist()
-    
+    fitx, fity = 0, 0
     time_all, flux_all, flux_err_all, fit_all = [], [], [], []
     for i in range(0,epoch_no):
         file = f'firefly/{exoplanet}/fitted_lightcurves/t0_f0_e{i}_detrended.csv'
@@ -526,14 +526,13 @@ def read_fitted_lc(exoplanet, transits):
         time = lc['Phase'] .values .tolist()
         flux = lc['Normalised flux'] .values .tolist()
         flux_err = lc['Flux uncertainty'] .values .tolist()
-        fitx = lc['Phase'] .values .tolist()
-        fity = lc['Best fit curve'] .values .tolist()
-        
+        #fitx = lc['Phase'] .values .tolist()
+        #fity = lc['Best fit curve'] .values .tolist()
         fitx_temp = lc['Phase'] .values.tolist()
         fity_temp = lc['Best fit curve'] .values.tolist()
-        if len(fitx) < len(fitx_temp):
+        if (len(fitx) < len(fitx_temp) or fitx==0):
             fitx = lc['Phase'] .values.tolist()
-        if len(fity) < len(fity_temp):
+        if (len(fity) < len(fity_temp) or fity==0):
             fity = lc['Best fit curve'] .values.tolist()
         time_all.extend(time)
         flux_all.extend(flux)
