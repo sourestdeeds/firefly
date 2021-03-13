@@ -28,7 +28,7 @@ def main(exoplanet):
         print(f'Finished {exoplanet}')
 
 # Set how many targets to run in parallel
-processes = 11
+processes = 16
 # Define various lists to pass
 # targets, all_targets, ttv_targets = tess(archive='nasa', survey=None)
 #all_targets = \
@@ -41,9 +41,9 @@ processes = 11
 #     'wasp18b', 'hip65ab', 'l9859b', 'gj1252b', 'wasp62b',
 #     'toi157b',
 # ]
-spear = read_csv('firefly/data/spear.csv')['pl_name'] .values
-nasa = read_csv('nasa_tess_viable.csv')['Exoplanet'] .values
-diff = np.setdiff1d(nasa, spear)
+#spear = read_csv('firefly/data/spear.csv')['pl_name'] .values
+#nasa = read_csv('nasa_tess_viable.csv')['Exoplanet'] .values
+#diff = np.setdiff1d(nasa, spear)
 # Redefine list to use here
 exoplanet = diff
 if __name__ == '__main__':

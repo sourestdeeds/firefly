@@ -60,7 +60,7 @@ def firefly(
         dynesty_bounding='multi',
         normalise=True,
         detrend=True,
-        detrending_limits=[[-10,10]],
+        detrending_limits=[[-1000,1000]],
         # Plotting
         plot=True,
         marker_color='dimgray',
