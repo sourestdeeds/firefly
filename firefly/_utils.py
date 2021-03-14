@@ -427,6 +427,7 @@ def _retrieval(
     os.makedirs('firefly/plots', exist_ok=True)
     os.makedirs('firefly/plots/folded', exist_ok=True)
     os.makedirs('firefly/plots/density', exist_ok=True)
+    os.makedirs('firefly/plots/densitynoerr', exist_ok=True)
     os.makedirs('firefly/plots/oc', exist_ok=True)
     try:
         copy(f'{exo_folder}/plots/folded_curves/with_errorbars/filter_0.png',
@@ -472,6 +473,8 @@ def _retrieval(
                                 transits=int(len(df)), P=P, cadence=cadence)
         copy(f'{exo_folder}/{exoplanet} density.png',
              f'firefly/plots/density/{exoplanet}.png')
+        copy(f'{exo_folder}/{exoplanet} density noerr.png',
+             f'firefly/plots/densitynoerr/{exoplanet}.png')
     except Exception as e:
         print(e)
     t_depth = rp**2
