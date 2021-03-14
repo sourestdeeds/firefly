@@ -609,6 +609,8 @@ def density_scatter(exoplanet, transits, P, cadence):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # All errorbars
     sns.set_theme(style="whitegrid")
+    sns.set_context('paper')
+    sns.set_palette('deep')
     txt = AnchoredText(f'$\sigma_{{unbinned}}={mad:.6f}$\n$' +\
                        f'\sigma_{{binned}}={madbin:.6f}$',
                        frameon=False,loc='lower right',
@@ -652,6 +654,8 @@ def density_scatter(exoplanet, transits, P, cadence):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # No errorbar
     sns.set_theme(style="darkgrid")
+    sns.set_context('paper')
+    sns.set_palette('deep')
     txt = AnchoredText(f'$\sigma_{{unbinned}}={mad:.6f}$\n$' +\
                        f'\sigma_{{binned}}={madbin:.6f}$',
                        frameon=False,loc='lower right',
@@ -685,6 +689,9 @@ def density_scatter(exoplanet, transits, P, cadence):
                    bbox_inches='tight')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # No resid or err
+    sns.set_theme(style="darkgrid")
+    sns.set_context('paper')
+    sns.set_palette('deep')
     txt = AnchoredText(f'$\sigma_{{unbinned}}={mad:.6f}$\n$' +\
                        f'\sigma_{{binned}}={madbin:.6f}$',
                        frameon=False,loc='lower right',
@@ -706,6 +713,8 @@ def density_scatter(exoplanet, transits, P, cadence):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # No resid
     sns.set_theme(style="whitegrid")
+    sns.set_context('paper')
+    sns.set_palette('deep')
     txt = AnchoredText(f'$\sigma_{{unbinned}}={mad:.6f}$\n$' +\
                        f'\sigma_{{binned}}={madbin:.6f}$',
                        frameon=False,loc='lower right',

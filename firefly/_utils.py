@@ -611,4 +611,3 @@ def _retrieval(
     rmtree(f'{exo_folder}')
     return archive_name
 
-
