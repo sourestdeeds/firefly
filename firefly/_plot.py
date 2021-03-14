@@ -517,7 +517,7 @@ def read_fitted_lc(exoplanet, transits):
     # flux_err = lc['Flux uncertainty'] .values
     # lc_all = LightCurve(time, flux, flux_err)
     # fit_all = lc['Best fit curve'] .values.tolist()
-    fitx, fity = 0, 0
+    fitx, fity = [], []
     time_all, flux_all, flux_err_all, fit_all = [], [], [], []
     for i in range(0,epoch_no):
         file = f'firefly/{exoplanet}/fitted_lightcurves/t0_f0_e{i}_detrended.csv'
@@ -530,14 +530,14 @@ def read_fitted_lc(exoplanet, transits):
         #fity = lc['Best fit curve'] .values .tolist()
         fitx_temp = lc['Phase'] .values.tolist()
         fity_temp = lc['Best fit curve'] .values.tolist()
-        if (len(fitx) < len(fitx_temp) or fitx==0):
+        if len(fitx) < len(fitx_temp):
             fitx = lc['Phase'] .values.tolist()
-        if (len(fity) < len(fity_temp) or fity==0):
+        if len(fity) < len(fity_temp):
             fity = lc['Best fit curve'] .values.tolist()
         time_all.extend(time)
         flux_all.extend(flux)
         flux_err_all.extend(flux_err)
-        fit_all.extend(fity)
+        fit_all.extend(fity_temp)
     #from astropy.stats.funcs import mad_std
     #lc_all, mask = lc_all.remove_outliers(sigma_upper=3,
     #                    sigma_lower=5, return_mask=True, stdfunc=mad_std)
@@ -562,8 +562,15 @@ def density_scatter(exoplanet, transits, P, cadence):
     diff = y - fit_all
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Sigma clipping
+    fluxdiff = np.max(y) - np.min(y)
+    if fluxdiff < 0.01:
+        sigma = 4
+    elif 0.01 < fluxdiff < 0.06:
+        sigma = 5
+    else:
+        sigma = 6
     mad = np.std(diff)
-    clip = sigma_clip(diff, sigma=5, stdfunc=mad_std)
+    clip = sigma_clip(diff, sigma=sigma, stdfunc=mad_std)
     mask = clip.mask
     diff = diff[~mask]
     x, y, yerr = x[~mask], y[~mask], yerr[~mask]
@@ -601,6 +608,7 @@ def density_scatter(exoplanet, transits, P, cadence):
     from matplotlib.offsetbox import AnchoredText
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # All errorbars
+    sns.set_theme(style="whitegrid")
     txt = AnchoredText(f'$\sigma_{{unbinned}}={mad:.6f}$\n$' +\
                        f'\sigma_{{binned}}={madbin:.6f}$',
                        frameon=False,loc='lower right',
@@ -608,7 +616,7 @@ def density_scatter(exoplanet, transits, P, cadence):
     fig = plt.subplots(figsize=(12,8))
     gs = gridspec.GridSpec(2, 1, height_ratios=[3,1])
     ax = plt.subplot(gs[0])
-    res_ax = plt.subplot(gs[1], sharex=ax)
+    res_ax = plt.subplot(gs[1])
     
     plt.set_cmap('hot')
     res_ax.errorbar(x, diff, yerr, color='dimgrey',
@@ -619,7 +627,7 @@ def density_scatter(exoplanet, transits, P, cadence):
     #               alpha=0.7, zorder=3, capsize=2, ls='none')
     # Binned Points
     res_ax.scatter(binned_phase, binned_residuals,
-                   s=10, alpha=1, color='white', zorder=4, edgecolor='k')
+                   s=5, alpha=1, color='white', zorder=4, edgecolor='none')
     res_ax.axhline(y=0, color='k', linestyle='--', zorder=5)
     
     plt.set_cmap('hot')
@@ -629,11 +637,12 @@ def density_scatter(exoplanet, transits, P, cadence):
     ax.add_artist(txt)
     # ax.errorbar(binned_phase, binned_flux, binned_err, color='dimgrey',
     #               alpha=0.7, capsize=2, ls='none', zorder=3)
-    ax.scatter(binned_phase, binned_flux, zorder=4, s=10,
-                color='white', edgecolor='k', alpha = 0.9)
-    ax.plot(fitx, fity, marker='', color='k', zorder=5, lw=2)
+    ax.scatter(binned_phase, binned_flux, zorder=4, s=5,
+                color='white', edgecolor='none', alpha = 0.9)
+    ax.plot(fitx, fity, marker='', color='k', zorder=5, lw=1)
     ax.xaxis.set_ticklabels([])
-    ax.yaxis.set_ticklabels([])
+    # ax.yaxis.set_ticklabels([])
+    # res_ax.yaxis.set_ticklabels([])
     plt.xlabel('Phase')
     ax.set_ylabel('Normalised Flux')
     res_ax.set_ylabel('Residual')
@@ -642,6 +651,7 @@ def density_scatter(exoplanet, transits, P, cadence):
                    bbox_inches='tight')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # No errorbar
+    sns.set_theme(style="darkgrid")
     txt = AnchoredText(f'$\sigma_{{unbinned}}={mad:.6f}$\n$' +\
                        f'\sigma_{{binned}}={madbin:.6f}$',
                        frameon=False,loc='lower right',
@@ -649,23 +659,24 @@ def density_scatter(exoplanet, transits, P, cadence):
     fig = plt.subplots(figsize=(12,8))
     gs = gridspec.GridSpec(2, 1, height_ratios=[3,1])
     ax = plt.subplot(gs[0])
-    res_ax = plt.subplot(gs[1], sharex=ax)
+    res_ax = plt.subplot(gs[1])
     
     plt.set_cmap('hot')
     res_ax.scatter(x, diff, s=5, alpha=0.8, c=z, edgecolor='none', zorder=1)
     res_ax.scatter(binned_phase, binned_residuals,
-                   s=10, alpha=0.8, edgecolor='k', color='white', zorder=2)
+                   s=5, alpha=0.8, edgecolor='none', color='white', zorder=2)
     res_ax.axhline(y=0, color='k', linestyle='--', zorder=3)
     
     plt.set_cmap('hot')
     ax.xaxis.set_ticklabels([])
     ax.scatter(x, y, c=z, zorder=2, s=5, edgecolor='none')
-    ax.plot(fitx, fity, marker='', color='k', zorder=4, lw=2)
-    ax.scatter(binned_phase, binned_flux, zorder=3, s=10, color='white',
-               edgecolor='k')
+    ax.plot(fitx, fity, marker='', color='k', zorder=4, lw=1)
+    ax.scatter(binned_phase, binned_flux, zorder=3, s=5, color='white',
+               edgecolor='none')
     # ax.errorbar(stat[1][:len(stat[0])], stat[0], stat_err[0]/6, color='k',
     #               alpha=0.8, capsize=2, ls='none', zorder=3)
     ax.add_artist(txt)
+    ax.xaxis.set_ticklabels([])
     plt.xlabel('Phase')
     ax.set_ylabel('Normalised Flux')
     res_ax.set_ylabel('Residual')
@@ -684,9 +695,9 @@ def density_scatter(exoplanet, transits, P, cadence):
     
     plt.set_cmap('hot')
     ax.scatter(x, y, c=z, zorder=2, s=5)
-    ax.scatter(binned_phase, binned_flux, zorder=3, s=10, color='white',
-               edgecolor='k')
-    ax.plot(fitx, fity, marker='', color='k', zorder=3, lw=2)
+    ax.scatter(binned_phase, binned_flux, zorder=3, s=5, color='white',
+               edgecolor='none')
+    ax.plot(fitx, fity, marker='', color='k', zorder=3, lw=1)
     ax.add_artist(txt)
     plt.xlabel('Phase')
     ax.set_ylabel('Normalised Flux')
@@ -694,6 +705,7 @@ def density_scatter(exoplanet, transits, P, cadence):
                    bbox_inches='tight')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # No resid
+    sns.set_theme(style="whitegrid")
     txt = AnchoredText(f'$\sigma_{{unbinned}}={mad:.6f}$\n$' +\
                        f'\sigma_{{binned}}={madbin:.6f}$',
                        frameon=False,loc='lower right',
@@ -706,9 +718,9 @@ def density_scatter(exoplanet, transits, P, cadence):
     ax.errorbar(x, y, yerr, color='dimgrey',
                   alpha=0.1, zorder=1, capsize=2, ls='none')
     ax.scatter(x, y, c=z, zorder=2, s=5, edgecolor='none')
-    ax.scatter(binned_phase, binned_flux, zorder=4, s=10, color='white',
-               edgecolor='k')
-    ax.plot(fitx, fity, marker='', color='k', zorder=5, lw=2)
+    ax.scatter(binned_phase, binned_flux, zorder=4, s=5, color='white',
+               edgecolor='none')
+    ax.plot(fitx, fity, marker='', color='k', zorder=5, lw=1)
     # ax.errorbar(stat[1][:len(stat[0])], stat[0], stat_err[0]/6, color='yellow',
     #               alpha=0.7, capsize=2, ls='none', zorder=3)
     ax.add_artist(txt)
