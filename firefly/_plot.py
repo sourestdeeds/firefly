@@ -694,7 +694,7 @@ def density_scatter(exoplanet, transits, P, cadence):
     ax = plt.subplot(gs[0])
     
     plt.set_cmap('hot')
-    ax.scatter(x, y, c=z, zorder=2, s=5)
+    ax.scatter(x, y, c=z, zorder=2, s=5, edgecolor='none')
     ax.scatter(binned_phase, binned_flux, zorder=3, s=5, color='white',
                edgecolor='none')
     ax.plot(fitx, fity, marker='', color='k', zorder=3, lw=1)
