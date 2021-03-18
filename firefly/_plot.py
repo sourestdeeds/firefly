@@ -597,6 +597,7 @@ def density_scatter(exoplanet, transits, P, cadence):
     bins=[n_bins,n_bins]
     binned_phase, binned_flux, binned_err, binned_residuals = lc.bin(cad_bin, diff)
     madbin = np.std(binned_residuals)
+    obs_depth = 1 - np.min(y)
     #cad_bin = 240
     #stat = stats.binned_statistic(x, y, statistic = 'mean',
     #                              bins = np.linspace(x.min(), x.max(), cad_bin))
@@ -751,5 +752,5 @@ def density_scatter(exoplanet, transits, P, cadence):
     fig[0].savefig(f'firefly/{exoplanet}/{exoplanet} density noresid.png',
                    bbox_inches='tight')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    return mad, madbin
+    return mad, madbin, obs_depth
 

@@ -469,7 +469,7 @@ def _retrieval(
     except ValueError:
         werr = float()
     try:
-        mad, madbin = density_scatter(exoplanet=exoplanet,
+        mad, madbin, obs_depth = density_scatter(exoplanet=exoplanet,
                                 transits=int(len(df)), P=P, cadence=cadence)
         copy(f'{exo_folder}/{exoplanet} density.png',
              f'firefly/plots/density/{exoplanet}.png')
@@ -480,6 +480,8 @@ def _retrieval(
     t_depth = rp**2
     sens = t_depth/mad
     sens_bin = t_depth/madbin
+    obs_sens = obs_depth/mad
+    obs_sens_bin = obs_depth/madbin
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Archive and sort
     print(
@@ -551,7 +553,9 @@ def _retrieval(
                     'Date':now, 'Archive':archive.upper(), 'Unbinned Sigma':mad,
                     'Binned Sigma':madbin,
                 'Transit Depth':t_depth, 'Sensitivity':sens,
-                'Binned Sensitivity':sens_bin
+                'Binned Sensitivity':sens_bin,
+                'Observation Depth':obs_depth, 'Observation Sensitivity':obs_sens,
+                'Binned Observation Sensitivity':obs_sens_bin
             }
             df = DataFrame(data, index=[0])
             summary_master = 'firefly/data/spear_ttv.csv'
@@ -584,7 +588,9 @@ def _retrieval(
                 'Date':now, 'Archive':archive.upper(), 'Unbinned Sigma':mad,
                 'Binned Sigma':madbin,
                 'Transit Depth':t_depth, 'Sensitivity':sens,
-                'Binned Sensitivity':sens_bin
+                'Binned Sensitivity':sens_bin,
+                'Observation Depth':obs_depth, 'Observation Sensitivity':obs_sens,
+                'Binned Observation Sensitivity':obs_sens_bin
         }
         df = DataFrame(data, index=[0])
         summary_master = 'firefly/data/spear.csv'
