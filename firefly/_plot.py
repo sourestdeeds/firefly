@@ -763,5 +763,6 @@ def density_scatter(exoplanet, transits, P, cadence):
     fig[0].savefig(f'firefly/{exoplanet}/{exoplanet} density noresid.png',
                    bbox_inches='tight')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    return mad, madbin, obs_depth
+    cadences = len(y)
+    return mad, madbin, obs_depth, cadences
 

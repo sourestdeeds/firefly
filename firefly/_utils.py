@@ -469,7 +469,7 @@ def _retrieval(
     except ValueError:
         werr = float()
     try:
-        mad, madbin, obs_depth = density_scatter(exoplanet=exoplanet,
+        mad, madbin, obs_depth, cadences = density_scatter(exoplanet=exoplanet,
                                 transits=int(len(df)), P=P, cadence=cadence)
         copy(f'{exo_folder}/{exoplanet} density.png',
              f'firefly/plots/density/{exoplanet}.png')
@@ -555,7 +555,7 @@ def _retrieval(
                 'Transit Depth':t_depth, 'Sensitivity':sens,
                 'Binned Sensitivity':sens_bin,
                 'Observation Depth':obs_depth, 'Observation Sensitivity':obs_sens,
-                'Binned Observation Sensitivity':obs_sens_bin
+                'Binned Observation Sensitivity':obs_sens_bin, 'Total Cadences':cadences
             }
             df = DataFrame(data, index=[0])
             summary_master = 'firefly/data/spear_ttv.csv'
@@ -590,7 +590,7 @@ def _retrieval(
                 'Transit Depth':t_depth, 'Sensitivity':sens,
                 'Binned Sensitivity':sens_bin,
                 'Observation Depth':obs_depth, 'Observation Sensitivity':obs_sens,
-                'Binned Observation Sensitivity':obs_sens_bin
+                'Binned Observation Sensitivity':obs_sens_bin, 'Total Cadences':cadences
         }
         df = DataFrame(data, index=[0])
         summary_master = 'firefly/data/spear.csv'
