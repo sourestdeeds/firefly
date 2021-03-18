@@ -594,7 +594,7 @@ def density_scatter(exoplanet, transits, P, cadence):
         cad_bin = cadence / (P * 60 * 24)
         lc = LightCurve(x, y, yerr)
         obs_length = x.max() - x.min()
-        n_bins = int((obs_length)/cad_bin)
+        n_bins = int((obs_length)/cad_bin)//6
         bins=[n_bins,n_bins]
         binned_phase, binned_flux, binned_err, binned_residuals = lc.bin(cad_bin*6, diff)
         madbin = np.std(binned_residuals)
