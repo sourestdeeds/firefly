@@ -567,7 +567,6 @@ def density_scatter(exoplanet, transits, P, cadence):
     from astropy.stats.sigma_clipping import sigma_clip
     from scipy.interpolate import interpn
     from scipy import stats
-    cadence = cadence / 60
     # from sklearn.preprocessing import scale
     time_all, flux_all, flux_err_all, fitx, fity, fit_all = read_fitted_lc(exoplanet, transits)
     x, y, yerr = np.array(time_all), np.array(flux_all), np.array(flux_err_all)
@@ -590,14 +589,26 @@ def density_scatter(exoplanet, transits, P, cadence):
     fit_all = fit_all[~mask]
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     from transitfit.lightcurve import LightCurve
-    cad_bin = cadence / (P * 60 * 24)
-    lc = LightCurve(x, y, yerr)
-    obs_length = x.max() - x.min()
-    n_bins = int((obs_length)/cad_bin)
-    bins=[n_bins,n_bins]
-    binned_phase, binned_flux, binned_err, binned_residuals = lc.bin(cadence, diff)
-    madbin = np.std(binned_residuals)
-    obs_depth = 1 - np.min(fit_all)
+    if cadence == 20:
+        cadence = cadence / 60
+        cad_bin = cadence / (P * 60 * 24)
+        lc = LightCurve(x, y, yerr)
+        obs_length = x.max() - x.min()
+        n_bins = int((obs_length)/cad_bin)
+        bins=[n_bins,n_bins]
+        binned_phase, binned_flux, binned_err, binned_residuals = lc.bin(cad_bin*6, diff)
+        madbin = np.std(binned_residuals)
+        obs_depth = 1 - np.min(fit_all)
+    else:
+        cadence = cadence / 60
+        cad_bin = cadence / (P * 60 * 24)
+        lc = LightCurve(x, y, yerr)
+        obs_length = x.max() - x.min()
+        n_bins = int((obs_length)/cad_bin)
+        bins=[n_bins,n_bins]
+        binned_phase, binned_flux, binned_err, binned_residuals = lc.bin(cad_bin, diff)
+        madbin = np.std(binned_residuals)
+        obs_depth = 1 - np.min(fit_all)
     #cad_bin = 240
     #stat = stats.binned_statistic(x, y, statistic = 'mean',
     #                              bins = np.linspace(x.min(), x.max(), cad_bin))
