@@ -360,7 +360,7 @@ def make_epoch_converter(exoplanet):
 
     for i, row in data.iterrows():
         #print(row[' Epoch'])
-        converter[row['Epochs']] = row['Path'][15:]
+        converter[row['Epochs']] = row['Path']#[15:]
 
     return converter
 
