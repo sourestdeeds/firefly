@@ -412,7 +412,7 @@ def oc_fold(t0, t0err, P, file='Complete_results.csv', exoplanet=None, longterm=
     # Do the Lomb-Scargel stuff.
     ls = LombScargle(epoch_no, ominusc, ominuscerr)
                 
-    max_p = len(ominusc)//2
+    max_p = P * len(ominusc)//2
     if longterm==True:
         frequency, power = ls.autopower(nyquist_factor=1, samples_per_peak=75)
     else:
@@ -595,9 +595,9 @@ def density_scatter(exoplanet, transits, P, cadence):
     obs_length = x.max() - x.min()
     n_bins = int((obs_length)/cad_bin)
     bins=[n_bins,n_bins]
-    binned_phase, binned_flux, binned_err, binned_residuals = lc.bin(cad_bin, diff)
+    binned_phase, binned_flux, binned_err, binned_residuals = lc.bin(cadence, diff)
     madbin = np.std(binned_residuals)
-    obs_depth = 1 - np.min(y)
+    obs_depth = 1 - np.min(fit_all)
     #cad_bin = 240
     #stat = stats.binned_statistic(x, y, statistic = 'mean',
     #                              bins = np.linspace(x.min(), x.max(), cad_bin))
