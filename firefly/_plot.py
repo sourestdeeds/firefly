@@ -188,26 +188,37 @@ def mw():
     import astropy.coordinates as apycoords
     from mw_plot import MWSkyMap, MWPlot
     here = os.path.dirname(os.path.abspath(__file__))
-    df = pd.read_csv(f'{here}/data/Targets/nasa_tess_viable.csv')
+    # Viable Targets
+    df = pd.read_csv(f'{here}data/Targets/nasa_tess_viable.csv')
     ra = df['RA'].values * u.deg
     dec = df['DEC'].values * u.deg
     z = df['Epochs'].values
     distance = df['Distance'] .values * u.pc
     c = apycoords.SkyCoord(ra=ra, dec=dec, distance=distance, frame='icrs')
     
+    # All Targets
+    df2 = pd.read_csv('firefly/data/nasa.csv.gz')
+    ra2 = df2['ra'].values * u.deg
+    dec2 = df2['dec'].values * u.deg
+    distance2 = df2['sy_dist'] .values * u.pc
+    c2 = apycoords.SkyCoord(ra=ra2, dec=dec2, distance=distance2, frame='icrs')
+    
     plot_instance = MWPlot(mode='face-on', center=(0, 0)*u.kpc, radius= 12*u.kpc,
                        unit=u.kpc, coord='galactic', annotation=True,  grayscale=False)
     plot_instance.fontsize = 35  # fontsize for matplotlib plotting
     plot_instance.figsize = (20, 20)  # figsize for matplotlib plotting
-    plot_instance.dpi = 200  # dpi for matplotlib plotting
+    plot_instance.dpi = 300  # dpi for matplotlib plotting
     plot_instance.cmap = 'hot'  # matplotlib cmap: https://matplotlib.org/examples/color/colormaps_reference.html
     #plot_instance.clim = (vmin, vmax) # colorbar range
-    plot_instance.imalpha = 0.85  # alpha value for the milkyway image
+    plot_instance.imalpha = 1  # alpha value for the milkyway image
     plot_instance.s = 100.0  # make the scatter points bigger
     plot_instance.tight_layout = True # whether plt.tight_layout() will be run
     
+
     plot_instance.mw_scatter(-c.galactic.cartesian.x,
                              c.galactic.cartesian.y, [z, 'Transits Observed'])
+    # plot_instance.mw_scatter(-c2.galactic.cartesian.x,
+    #                          c2.galactic.cartesian.y, [distance2, ''] )
     plot_instance.savefig('mw_zoom_out.png')
     
     
@@ -215,15 +226,18 @@ def mw():
                        unit=u.kpc, coord='galactic', annotation=True,  grayscale=False)
     plot_instance.fontsize = 35  # fontsize for matplotlib plotting
     plot_instance.figsize = (20, 20)  # figsize for matplotlib plotting
-    plot_instance.dpi = 200  # dpi for matplotlib plotting
+    plot_instance.dpi = 300  # dpi for matplotlib plotting
     plot_instance.cmap = 'hot'  # matplotlib cmap: https://matplotlib.org/examples/color/colormaps_reference.html
     #plot_instance.clim = (vmin, vmax) # colorbar range
     plot_instance.imalpha = 1  # alpha value for the milkyway image
     plot_instance.s = 100.0  # make the scatter points bigger
     plot_instance.tight_layout = True # whether plt.tight_layout() will be run
     
+    plot_instance.scatter(-c2.galactic.cartesian.x,
+                             c2.galactic.cartesian.y, color='dimgrey', zorder=1)
     plot_instance.mw_scatter(-c.galactic.cartesian.x,
-                             c.galactic.cartesian.y, [z, 'Transits Observed'])
+                             c.galactic.cartesian.y, [z, 'Transits Observed'],
+                             zorder=2)
     plot_instance.savefig('mw.png')
     
     
@@ -231,15 +245,18 @@ def mw():
                        unit=u.kpc, coord='galactic', annotation=True,  grayscale=False)
     plot_instance.fontsize = 35  # fontsize for matplotlib plotting
     plot_instance.figsize = (20, 20)  # figsize for matplotlib plotting
-    plot_instance.dpi = 200  # dpi for matplotlib plotting
+    plot_instance.dpi = 300  # dpi for matplotlib plotting
     plot_instance.cmap = 'hot'  # matplotlib cmap: https://matplotlib.org/examples/color/colormaps_reference.html
     #plot_instance.clim = (vmin, vmax) # colorbar range
     plot_instance.imalpha = 1  # alpha value for the milkyway image
     plot_instance.s = 100.0  # make the scatter points bigger
     plot_instance.tight_layout = True # whether plt.tight_layout() will be run
     
+    plot_instance.scatter(-c2.galactic.cartesian.x,
+                             c2.galactic.cartesian.y, color='dimgrey', zorder=1)
     plot_instance.mw_scatter(-c.galactic.cartesian.x,
-                             c.galactic.cartesian.y, [z, 'Transits Observed'])
+                             c.galactic.cartesian.y, [z, 'Transits Observed'],
+                             zorder=2)
     plot_instance.savefig('mw_zoom_in.png')
     
 
@@ -328,72 +345,73 @@ def oc(t0, t0_err, file='Complete_Results.csv', exoplanet=None):
     else:
         fig.savefig(f"firefly/{exoplanet}/{exoplanet.lower().replace(' ', '')}_o-c.jpg",
                     bbox_inches='tight')
-   
+
+    
+def make_epoch_converter(exoplanet):
+    '''
+    Converts between the epoch idx used in TF and the epoch idx used in
+    file naming (they don't match because we removed some things)
+
+    Returns dict with {epoch_idx : filename}
+    '''
+    data = pd.read_csv(f'firefly/{exoplanet}/data_paths.csv')
+    #print(data.columns)
+    converter = {}
+
+    for i, row in data.iterrows():
+        #print(row[' Epoch'])
+        converter[row['Epochs']] = row['Path'][15:]
+
+    return converter
+
+def find_epoch_no(epoch_idx, t0, P, epoch_converter):
+    '''
+    Given an epoch idx from TransitFit, finds the number of orbits that have
+    passed to get to this epoch - Useful for things like O-C plots!
+    '''
+    # Load up the relevant data file
+    path = epoch_converter[epoch_idx]
+
+    data = pd.read_csv(path)
+
+    # Get the last time value and calculate how many periods have elapsed between t0 and then.
+    return (data['Time'].values[-1] - t0)// P
   
-def oc_fold(t0, t0err, P, transits_per_sector, sector_list,
-            file='Complete_results.csv', exoplanet=None, longterm=True):
+def oc_fold(t0, t0err, P, file='Complete_results.csv', exoplanet=None, longterm=True):
     '''
     Loads in the t0 and errors
     '''
-    sector_list = np.array(sector_list)
-    transits_per_sector = np.array(transits_per_sector)
-    total_sectors = np.array(range(np.min(sector_list), np.max(sector_list)+1))
-    avg_transits = int(np.mean(transits_per_sector))
-    elapsed_epochs = avg_transits * len(total_sectors)
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Read in TTV Data
+    converter = make_epoch_converter(exoplanet)
     path_ttv = file
     data_ttv = pd.read_csv(path_ttv).set_index('Parameter') \
                 .filter(like = 't0', axis=0).drop(['Telescope', 'Filter'], axis=1)
-    
-    t0_o = t0 #data['Best'] .values
-    t0_oerr = t0err # data['Error'].astype(float) .values
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Compute o-c
+    t0_o = t0
+    t0_oerr = t0err
     t0_c = data_ttv['Best'] .values
     t0_cerr = data_ttv['Error'].astype(float) .values
-    epoch_no = (data_ttv['Epoch'].astype(int) + 1) . values
+    epoch_no = np.array([find_epoch_no(i, t0_o, P, converter)
+                         for i in range(len(t0_c))]) * P
     
     ominusc = t0_o  - t0_c
     ominuscerr = t0_cerr
     ominusc *= 24 * 60
     ominuscerr *= 24 * 60
-    
-    ominusc_elapsed = []
-    ominuscerr_elapsed = []
-    sector_mask = np.in1d(total_sectors,sector_list)
-    j = -1
-    for i, mask in enumerate(sector_mask):
-        if mask==True:
-            j += 1
-            ominusc_elapsed.extend(ominusc[:transits_per_sector[j]].tolist())
-            ominuscerr_elapsed.extend(ominuscerr[:transits_per_sector[j]].tolist())
-        elif mask==False:
-            a = np.empty((1,avg_transits))
-            a[:] = float('nan')
-            a = a.tolist()[0]
-            ominusc_elapsed.extend(a)
-            ominuscerr_elapsed.extend(a)
-    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Chi 2
     from sklearn.metrics import mean_absolute_error
     loss = mean_absolute_error(ominusc,ominuscerr)
-    # # chi 2 stuff
-    # from scipy.stats import chi2_contingency
-    # table = [np.abs(ominusc), np.abs(ominuscerr)]
-    # stat, p, dof, expected = chi2_contingency(table, correction=False)
-    # chi2_red = stat/dof
     dof = len(ominusc)
-    chi2_red = np.sum((ominusc)**2 / (t0_cerr)**2)/dof
+    chi2_red = np.sum( (ominusc)**2 / (t0_cerr)**2)/dof
     sigma = np.sqrt(2./len(ominusc))
     nsig = (chi2_red-1)/sigma
-    # prob = 0.95
-    # alpha = 1.0 - prob
-    # if p <= alpha:
-    #     hyp = 'Dependent (reject $H_{0}$)'
-    #     #print('Dependent (reject H0)')
-    # else:
-    #     hyp = 'Independent (fail to reject $H_{0}$)'
-    #     #print('Independent (fail to reject H0)')
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Do the Lomb-Scargel stuff.
     ls = LombScargle(epoch_no, ominusc, ominuscerr)
                 
-    # Do the Lomb-Scargel stuff.
-    # ls = LombScargle(epoch_no, ominusc, ominuscerr)
     max_p = len(ominusc)//2
     if longterm==True:
         frequency, power = ls.autopower(nyquist_factor=1, samples_per_peak=75)
@@ -403,28 +421,20 @@ def oc_fold(t0, t0err, P, transits_per_sector, sector_list,
     best_f = frequency[np.argmax(power)]
     best_P = 1/frequency[np.argmax(power)]
     epoch_phase = (epoch_no - (epoch_no //best_P) * best_P)/best_P
-    ominusc_phase = (ominusc - (ominusc //best_P) * best_P)/best_P
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # FAP
     fap = ls.false_alarm_probability(power.max())
-    
     levels = [0.5, 0.05, 0.01]
     false_alarm_levels = ls.false_alarm_level(levels)
-    #print(frequency, power)
     pack = {'FAP':false_alarm_levels, 'Percentage':levels}
-    period = 1/frequency[np.argmax(power)]
-    
-    #fit_x_phase = scale(fit_x_phase)
-    # Make figure and axes
-    ominusc_elapsed = np.array(ominusc_elapsed)
-    ominuscerr_elapsed = np.array(ominuscerr_elapsed)
-    epoch_no_elapsed = np.array(range(1,(len(ominusc_elapsed)+1)))
-     # Fits
-    fit_x_elapsed = np.linspace(epoch_no_elapsed.min(), epoch_no_elapsed.max(), 10000)
-    fit_y_elapsed = ls.model(fit_x_elapsed, frequency[np.argmax(power)])
-    
-    fit_x = np.linspace(epoch_no.min(), epoch_no.max(), 1000)
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Fold and Fits
+    epoch_phase = (epoch_no  - (epoch_no //best_P) * best_P)/best_P
+    fit_x = np.linspace(epoch_no.min(), epoch_no.max(), 10000)
     fit_y = ls.model(fit_x, frequency[np.argmax(power)])
     fit_x_phase = (fit_x - (fit_x //best_P) * best_P)/best_P
-    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Begin Plots
     fig = plt.figure(figsize=(12,8))
     gs = gridspec.GridSpec(3, 1)
     plt.set_cmap('plasma')
@@ -432,15 +442,15 @@ def oc_fold(t0, t0err, P, transits_per_sector, sector_list,
     oc_ax = fig.add_subplot(gs[0])
     phase_ax = fig.add_subplot(gs[1])
     ls_ax = fig.add_subplot(gs[2])
-    #t = np.arange(len(epoch_no))
-    #Plot data
-    oc_ax.errorbar(epoch_no_elapsed * P, ominusc_elapsed, ominuscerr_elapsed, marker='.',
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # o-c Plot
+    oc_ax.errorbar(epoch_no, ominusc, ominuscerr, marker='.',
                    elinewidth=0.8, color='dimgrey', linestyle='',
                    capsize=2, alpha=0.8, zorder=1)
-    oc_ax.scatter(epoch_no_elapsed * P, ominusc_elapsed, marker='.', zorder=2,
-                  c=epoch_no_elapsed)
+    oc_ax.scatter(epoch_no, ominusc, marker='.', zorder=2,
+                  c=epoch_no)
     oc_ax.axhline(0, color='black', linestyle='--', linewidth=1)
-    oc_ax.plot(fit_x_elapsed * P, fit_y_elapsed, color='red', alpha=0.8)
+    oc_ax.plot(fit_x, fit_y, color='red', alpha=0.8)
     red = 'dof'
     from matplotlib.offsetbox import AnchoredText
     txt = AnchoredText(f'$\chi^2_{{{red}}} = {chi2_red:.2f}\, ({nsig:.2f}\sigma)$' +\
@@ -449,6 +459,8 @@ def oc_fold(t0, t0err, P, transits_per_sector, sector_list,
                         prop=dict(fontweight="bold"))
     oc_ax.add_artist(txt)
     oc_ax.set_ylim([np.nanmin(ominusc)*1.5, np.nanmax(ominusc)*2])
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Phase Plot
     phase_ax.errorbar(epoch_phase, ominusc, ominuscerr, marker='.',
                       elinewidth=0.8, color='dimgrey', linestyle='', capsize=2,
                       alpha=0.8, zorder=1)
@@ -458,18 +470,20 @@ def oc_fold(t0, t0err, P, transits_per_sector, sector_list,
     phase_ax.plot(fit_x_phase[np.argsort(fit_x_phase)],
                fit_y[np.argsort(fit_x_phase)], color='red', alpha=0.8)
     
-    #ls_ax.scatter(1/frequency, power, color='dimgrey', alpha=0.1, zorder=1, s=10)
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # LS Plot
     ls_ax.plot(P/frequency, power, linestyle='-', linewidth=0.75, zorder=2,
                marker='', color='k')
     
-    pos = P * period * 1.97 #len(epoch_no)*0.985
+    pos = P * best_P * 1.97 #len(epoch_no)*0.985
     for (level, i) in zip(false_alarm_levels, levels):
             ls_ax.axhline(level, color='r', linestyle='--', alpha=0.8)
             ls_ax.annotate(f'{str(int(i*100))}'+'$\%$',
                            (pos, level*1.018), color='k', ha='center')
-    ls_ax.annotate(f'Peak: {P*period:.2f}\n{fap*100:.2f}$\%$',
-                        (P*period, power.max()*1.03), color='k', weight='bold', ha='center')
-    # Sort out labels etc
+    ls_ax.annotate(f'Peak: {P*best_P:.2f}\n{fap*100:.2f}$\%$',
+                        (P*best_P, power.max()*1.03), color='k', weight='bold', ha='center')
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Labels
     oc_ax.set_xlabel('Period (Days)')
     oc_ax.set_ylabel('O-C (Minutes)')
     phase_ax.set_xlabel('Phase')
@@ -482,8 +496,7 @@ def oc_fold(t0, t0err, P, transits_per_sector, sector_list,
     phase_ax.tick_params('both', which='both', direction='in', bottom=True, left=True)
     ls_ax.tick_params('both', which='both', direction='in', bottom=True, left=True)
     
-    #upper_x =
-    ls_ax.set_xlim([0, P * period * 2])
+    ls_ax.set_xlim([0, P * best_P * 2])
     
     upper_y_fap = false_alarm_levels[2] * 1.5
     upper_y_pow = max(power) * 1.2
@@ -501,8 +514,8 @@ def oc_fold(t0, t0err, P, transits_per_sector, sector_list,
         else:
             fig.savefig(f"firefly/{exoplanet}/{exoplanet} o-c.jpg",
                     bbox_inches='tight')
-    return chi2_red, nsig, loss, fap, period
-  
+    return chi2_red, nsig, loss, fap, best_P
+    
   
 def read_fitted_lc(exoplanet, transits):
     from transitfit.lightcurve import LightCurve

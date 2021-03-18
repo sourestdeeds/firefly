@@ -529,14 +529,10 @@ def _retrieval(
             file = f'firefly/{exoplanet}/output_parameters/Complete_results.csv'
             chi2_redlong, nsiglong, losslong, faplong, periodlong = oc_fold(t0ttv, t0errttv,
                                                         file=file, P=P,
-                                                        exoplanet=exoplanet,
-                                                        transits_per_sector=transits_per_sector,
-                                                        sector_list=sector_list)
+                                                        exoplanet=exoplanet)
             chi2_red, nsig, loss, fap, period = oc_fold(t0ttv, t0errttv,
                                                         file=file, P=P,
                                                         exoplanet=exoplanet,
-                                                        transits_per_sector=transits_per_sector,
-                                                        sector_list=sector_list,
                                                         longterm=False)
             copy(f'{exo_folder}/{exoplanet} o-c longterm.jpg',
                  f'firefly/plots/oc/{exoplanet} long.jpg')
