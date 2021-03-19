@@ -590,8 +590,8 @@ def density_scatter(exoplanet, transits, P, cadence):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     from transitfit.lightcurve import LightCurve
     if cadence == 20:
-        cadence = cadence / 60
-        cad_bin = cadence / (P * 60 * 24)
+        cadence_min = cadence / 60
+        cad_bin = cadence_min / (P * 60 * 24)
         lc = LightCurve(x, y, yerr)
         obs_length = x.max() - x.min()
         n_bins = int((obs_length)/cad_bin)
@@ -600,8 +600,8 @@ def density_scatter(exoplanet, transits, P, cadence):
         madbin = np.std(binned_residuals)
         obs_depth = 1 - np.min(fit_all)
     else:
-        cadence = cadence / 60
-        cad_bin = cadence / (P * 60 * 24)
+        cadence_min = cadence / 60
+        cad_bin = cadence_min / (P * 60 * 24)
         lc = LightCurve(x, y, yerr)
         obs_length = x.max() - x.min()
         n_bins = int((obs_length)/cad_bin)
@@ -609,14 +609,6 @@ def density_scatter(exoplanet, transits, P, cadence):
         binned_phase, binned_flux, binned_err, binned_residuals = lc.bin(cad_bin, diff)
         madbin = np.std(binned_residuals)
         obs_depth = 1 - np.min(fit_all)
-    #cad_bin = 240
-    #stat = stats.binned_statistic(x, y, statistic = 'mean',
-    #                              bins = np.linspace(x.min(), x.max(), cad_bin))
-    #stat_err = stats.binned_statistic(x, yerr, statistic = 'mean',
-    #                              bins = np.linspace(x.min(), x.max(), cad_bin))
-    #res_stat = stats.binned_statistic(x, diff, statistic = 'mean',
-    #                              bins = np.linspace(x.min(), x.max(), cad_bin))
-    #madbin = mad_std(res_stat[0])
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     data, x_e, y_e = np.histogram2d(x, y, bins=bins, density=True)
     z = interpn( ( 0.5*(x_e[1:] + x_e[:-1]), 0.5*(y_e[1:]+y_e[:-1]) ),
@@ -629,7 +621,13 @@ def density_scatter(exoplanet, transits, P, cadence):
     # Sort the points by density, so that the densest points are plotted last
     idx = z.argsort()
     x, y, z, diff = x[idx], y[idx], z[idx], diff[idx]
-    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Histogram residuals
+    unbinned_counts, bins = np.histogram(diff, bins=30)
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Binned Histogram residuals
+    binned_counts, _ = np.histogram(binned_residuals, bins)
+    weighted_binned_counts = binned_counts * unbinned_counts.max()/binned_counts.max()
     from matplotlib.offsetbox import AnchoredText
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # All errorbars
@@ -641,39 +639,54 @@ def density_scatter(exoplanet, transits, P, cadence):
                        frameon=False,loc='lower right',
                        prop=dict(fontweight="bold"))
     fig = plt.subplots(figsize=(12,8))
-    gs = gridspec.GridSpec(2, 1, height_ratios=[3,1])
+    gs = gridspec.GridSpec(2, 2, height_ratios=[3,1], width_ratios=[10,1])
     ax = plt.subplot(gs[0])
-    res_ax = plt.subplot(gs[1])
+    res_ax = plt.subplot(gs[2])
+    hist_ax = plt.subplot(gs[3], sharey=res_ax)
     
     plt.set_cmap('hot')
+    # Residuals
     res_ax.errorbar(x, diff, yerr, color='dimgrey',
                   alpha=0.1, zorder=1, capsize=2, ls='none')
     res_ax.scatter(x, diff, s=5, c=z, edgecolor='none', zorder=2)
-    # Binned errors
-    # res_ax.errorbar(binned_phase, binned_residuals, binned_err, color='k',
-    #               alpha=0.7, zorder=3, capsize=2, ls='none')
-    # Binned Points
+    
     res_ax.scatter(binned_phase, binned_residuals,
                    s=5, alpha=1, color='white', zorder=4, edgecolor='none')
-    res_ax.axhline(y=0, color='k', linestyle='--', zorder=5)
+    res_ax.axhline(y=0, linestyle='--', color='k', zorder=5, lw=0.75)
     
     plt.set_cmap('hot')
+    # Light Curve
     ax.errorbar(x, y, yerr, color='dimgrey',
                   alpha=0.1, zorder=1, capsize=2, ls='none')
     ax.scatter(x, y, c=z, zorder=2, s=5, edgecolor='none')
     ax.add_artist(txt)
-    # ax.errorbar(binned_phase, binned_flux, binned_err, color='dimgrey',
-    #               alpha=0.7, capsize=2, ls='none', zorder=3)
+    
     ax.scatter(binned_phase, binned_flux, zorder=4, s=5,
                 color='white', edgecolor='none', alpha = 0.9)
     ax.plot(fitx, fity, marker='', color='k', zorder=5, lw=1)
+    # Histogram
+    rgba_color = colors.to_rgba('dimgrey')
+    facecolor = (rgba_color[0], rgba_color[1], rgba_color[2], 0.6)
+    hist_ax.hist(bins[:-1], bins, weights=unbinned_counts,
+                 orientation='horizontal', color=facecolor,
+                 edgecolor=rgba_color, histtype='stepfilled')
+    hist_ax.axhline(y=0, linestyle='--', color='k', zorder=3, lw=0.75)
+    
+    rgba_color = colors.to_rgba('red')
+    facecolor = (rgba_color[0], rgba_color[1], rgba_color[2], 0.6)
+    hist_ax.hist(bins[:-1], bins, weights=weighted_binned_counts,
+                 orientation='horizontal', color=facecolor,
+                 edgecolor=rgba_color, histtype='stepfilled',alpha=0.5)
+    # Labels
     ax.xaxis.set_ticklabels([])
-    # ax.yaxis.set_ticklabels([])
-    # res_ax.yaxis.set_ticklabels([])
-    plt.xlabel('Phase')
+    hist_ax.tick_params('both', which='both', direction='in',
+                                 labelleft=False, labelbottom=False,
+                                 right=False, top=False)
+    res_ax.set_xlabel('Phase')
     ax.set_ylabel('Normalised Flux')
     res_ax.set_ylabel('Residual')
     plt.subplots_adjust(hspace=.0)
+    plt.subplots_adjust(wspace=.0)
     fig[0].savefig(f'firefly/{exoplanet}/{exoplanet} density.png',
                    bbox_inches='tight')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -686,15 +699,16 @@ def density_scatter(exoplanet, transits, P, cadence):
                        frameon=False,loc='lower right',
                        prop=dict(fontweight="bold"))
     fig = plt.subplots(figsize=(12,8))
-    gs = gridspec.GridSpec(2, 1, height_ratios=[3,1])
+    gs = gridspec.GridSpec(2, 2, height_ratios=[3,1], width_ratios=[10,1])
     ax = plt.subplot(gs[0])
-    res_ax = plt.subplot(gs[1])
+    res_ax = plt.subplot(gs[2])
+    hist_ax = plt.subplot(gs[3], sharey=res_ax)
     
     plt.set_cmap('hot')
     res_ax.scatter(x, diff, s=5, alpha=0.8, c=z, edgecolor='none', zorder=1)
     res_ax.scatter(binned_phase, binned_residuals,
                    s=5, alpha=0.8, edgecolor='none', color='white', zorder=2)
-    res_ax.axhline(y=0, color='k', linestyle='--', zorder=3)
+    res_ax.axhline(y=0, color='k', linestyle='--', zorder=3, lw=0.75)
     
     plt.set_cmap('hot')
     ax.xaxis.set_ticklabels([])
@@ -702,14 +716,29 @@ def density_scatter(exoplanet, transits, P, cadence):
     ax.plot(fitx, fity, marker='', color='k', zorder=4, lw=1)
     ax.scatter(binned_phase, binned_flux, zorder=3, s=5, color='white',
                edgecolor='none')
-    # ax.errorbar(stat[1][:len(stat[0])], stat[0], stat_err[0]/6, color='k',
-    #               alpha=0.8, capsize=2, ls='none', zorder=3)
-    ax.add_artist(txt)
+    # Histogram
+    rgba_color = colors.to_rgba('dimgrey')
+    facecolor = (rgba_color[0], rgba_color[1], rgba_color[2], 0.6)
+    hist_ax.hist(bins[:-1], bins, weights=unbinned_counts,
+                 orientation='horizontal', color=facecolor,
+                 edgecolor=rgba_color, histtype='stepfilled')
+    hist_ax.axhline(y=0, linestyle='--', color='k', zorder=3, lw=0.75)
+    
+    rgba_color = colors.to_rgba('red')
+    facecolor = (rgba_color[0], rgba_color[1], rgba_color[2], 0.6)
+    hist_ax.hist(bins[:-1], bins, weights=weighted_binned_counts,
+                 orientation='horizontal', color=facecolor,
+                 edgecolor=rgba_color, histtype='stepfilled',alpha=0.5)
+   # Labels
     ax.xaxis.set_ticklabels([])
-    plt.xlabel('Phase')
+    hist_ax.tick_params('both', which='both', direction='in',
+                                 labelleft=False, labelbottom=False,
+                                 right=False, top=False)
+    res_ax.set_xlabel('Phase')
     ax.set_ylabel('Normalised Flux')
     res_ax.set_ylabel('Residual')
     plt.subplots_adjust(hspace=.0)
+    plt.subplots_adjust(wspace=.0)
     fig[0].savefig(f'firefly/{exoplanet}/{exoplanet} density noerr.png',
                    bbox_inches='tight')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
