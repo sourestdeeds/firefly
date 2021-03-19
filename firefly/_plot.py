@@ -395,7 +395,7 @@ def oc_fold(t0, t0err, P, file='Complete_results.csv', exoplanet=None, longterm=
     t0_cerr = data_ttv['Error'].astype(float) .values
     epoch_no = np.array([find_epoch_no(i, t0_o, P, converter)
                          for i in range(len(t0_c))]) * P
-    
+    epoch_no = epoch_no - epoch_no[0]
     ominusc = t0_o  - t0_c
     ominuscerr = t0_cerr
     ominusc *= 24 * 60
