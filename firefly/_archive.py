@@ -233,7 +233,7 @@ def _download_archive():
         'pl_name,tic_id,pl_orbper,pl_orbsmax,pl_radj,pl_bmasse,pl_bmassj,pl_orbeccen,ttv_flag,' +\
         'st_teff,st_rad,st_mass,st_met,st_logg,pl_tranmid,pl_trandur,' +\
         'st_tefferr1,st_raderr1,st_meterr1,st_loggerr1,' +\
-        'pl_orbincl,pl_orblper,ra,dec,glat,glon,sy_dist,sy_plx' +\
+        'pl_orbincl,pl_orblper,ra,dec,glat,glon,sy_dist,sy_plx,sy_tmag' +\
         '+from+pscomppars&format=csv',
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # NASA Kepler Names
@@ -414,6 +414,7 @@ def priors(exoplanet, archive='eu', save=False, user=True, auto=True, fit_ttv=Fa
         ra = s.loc['ra']
         dec = s.loc['dec']
         dist = s.loc['sy_dist']
+        t_mag = s.loc['sy_tmag']
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Assign Host data to Transitfit
     host_T = (T, T * 2e-2)
@@ -546,7 +547,7 @@ def priors(exoplanet, archive='eu', save=False, user=True, auto=True, fit_ttv=Fa
               f' {exoplanet} ({tic}).\n')
     print(tabulate(repack, tablefmt='psql', showindex=False, headers='keys'))
     if (archive=='nasa' and user==False):
-        return host_T, host_z, host_r, host_logg, t0, P, t14, repack, ra, dec, dist
+        return host_T, host_z, host_r, host_logg, t0, P, t14, repack, ra, dec, dist, t_mag
     if user==False:
         return host_T, host_z, host_r, host_logg, t0, P, t14, repack
 
@@ -597,11 +598,12 @@ def gen_tess(archive='nasa'):
     period = []
     epochs = []
     tic = []
+    tess_mag = []
     ra_list, dec_list, dist_list = [], [], []
     for i, exoplanet in enumerate(exo_list):
         try:
             if archive=='nasa':
-                host_T, host_z, host_r, host_logg, t0, P, t14, repack, ra, dec, dist = \
+                host_T, host_z, host_r, host_logg, t0, P, t14, repack, ra, dec, dist, t_mag = \
                             priors(exoplanet, archive, user=False)
             else:
                 host_T, host_z, host_r, host_logg, t0, P, t14, repack = \
@@ -618,13 +620,15 @@ def gen_tess(archive='nasa'):
                     ra_list.append(ra)
                     dec_list.append(dec)
                     dist_list.append(dist)
+                    tess_mag.append(t_mag)
             else:
                 pass
         except Exception:
             pass
     if archive=='nasa':
         data = {'Exoplanet':viable, 'TIC ID':tic, 'Products':products, 'Period':period,
-                'Epochs':epochs, 'RA':ra_list, 'DEC':dec_list, 'Distance':dist_list}
+                'Epochs':epochs, 'RA':ra_list, 'DEC':dec_list, 'Distance':dist_list,
+                'TESS Magnitude':tess_mag}
     else:
         data = {'Exoplanet':viable, 'TIC ID':tic, 'Products':products, 'Period':period,
                 'Epochs':epochs}
@@ -653,11 +657,12 @@ def gen_tess_fast(archive='nasa'):
     period = []
     epochs = []
     tic = []
+    tess_mag = []
     ra_list, dec_list, dist_list = [], [], []
     for i, exoplanet in enumerate(exo_list):
         try:
             if archive=='nasa':
-                host_T, host_z, host_r, host_logg, t0, P, t14, repack, ra, dec, dist = \
+                host_T, host_z, host_r, host_logg, t0, P, t14, repack, ra, dec, dist, t_mag = \
                             priors(exoplanet, archive, user=False)
             else:
                 host_T, host_z, host_r, host_logg, t0, P, t14, repack = \
@@ -674,13 +679,15 @@ def gen_tess_fast(archive='nasa'):
                     ra_list.append(ra)
                     dec_list.append(dec)
                     dist_list.append(dist)
+                    tess_mag.append(t_mag)
             else:
                 pass
         except Exception:
             pass
     if archive=='nasa':
         data = {'Exoplanet':viable, 'TIC ID':tic, 'Products':products, 'Period':period,
-                'Epochs':epochs, 'RA':ra_list, 'DEC':dec_list, 'Distance':dist_list}
+                'Epochs':epochs, 'RA':ra_list, 'DEC':dec_list, 'Distance':dist_list,
+                'TESS Magnitude':tess_mag}
     else:
         data = {'Exoplanet':viable, 'TIC ID':tic, 'Products':products, 'Period':period,
                 'Epochs':epochs}
