@@ -46,7 +46,7 @@ from firefly import firefly
 
 firefly('wasp43b')
 ```
-```
+```python
 Target search chose WASP-43 b.
 
 Priors generated from the EU Archive for WASP-43 b (TIC 36734222).
@@ -94,7 +94,7 @@ from firefly import mast
 
 mast('wasp43b')
 ```
-```
+```python
 Searching MAST for WASP-43 b (TIC 36734222).
 
 Query from MAST returned 3 data products for WASP-43 b (TIC 36734222).
@@ -111,24 +111,25 @@ Query from MAST returned 3 data products for WASP-43 b (TIC 36734222).
 ```python
 from firefly import priors
 
-priors('wasp43b')
+priors('wasp190b', 'spearnet')
 ```
-```
-Priors generated from the EU Archive for WASP-43 b (TIC 36734222).
+```python
+Priors generated from the SPEARNET Archive for WASP-190 b (TIC 116156517).
 
-+-------------+----------------+----------------+---------------+----------+
-| Parameter   | Distribution   |        Input A |       Input B | Filter   |
-|-------------+----------------+----------------+---------------+----------|
-| P           | gaussian       |    0.813478    |   8.13478e-05 |          |
-| t0          | gaussian       |    2.45573e+06 |   0.007       |          |
-| a           | gaussian       |    0.01526     |   0.0001526   |          |
-| inc         | gaussian       |   82.33        |   0.8233      |          |
-| w           | gaussian       |  328           |  20           |          |
-| ecc         | gaussian       |    0.0035      |   0.00175     |          |
-| rp          | uniform        |    0.143652    |   0.175575    | 0        |
-| host_T      | fixed          | 4520           |  90.4         |          |
-| host_z      | fixed          |   -0.01        |   0.012       |          |
-| host_r      | fixed          |    0.667       |   0.03335     |          |
-| host_logg   | fixed          |    4.64544     |   0.00971112  |          |
-+-------------+----------------+----------------+---------------+----------+
++-------------+----------------+---------------+---------------------+----------+
+| Parameter   | Distribution   |       Input A | Input B             | Filter   |
+|-------------+----------------+---------------+---------------------+----------|
+| P           | fixed          |    5.36773    |                     |          |
+| t0          | gaussian       |    2.4578e+06 | 0.007               |          |
+| a           | gaussian       |    0.0643173  | 0.0032913001497495  |          |
+| inc         | gaussian       |   86.5471     | 0.1529545135471545  |          |
+| w           | fixed          |   90          |                     |          |
+| ecc         | fixed          |    0          |                     |          |
+| rp          | uniform        |    0.0730344  | 0.08926423524371321 | 0        |
+| t14         |                |  286.121      |                     |          |
+| host_T      |                | 6400          | 128.0               |          |
+| host_z      |                |   -0.02       | 0.05                |          |
+| host_r      |                |    1.6        | 0.08000000000000002 |          |
+| host_logg   |                |    4.17       | 0.0834              |          |
++-------------+----------------+---------------+---------------------+----------+
 ```
