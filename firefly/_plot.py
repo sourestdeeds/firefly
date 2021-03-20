@@ -520,41 +520,42 @@ def oc_fold(t0, t0err, P, file='Complete_results.csv', exoplanet=None, longterm=
 def read_fitted_lc(exoplanet, transits):
     from transitfit.lightcurve import LightCurve
     epoch_no = transits
-    # file = f'firefly/{exoplanet}/fitted_lightcurves/t0_f0_e0_detrended.csv'
-    # lc = pd.read_csv(file)[['Phase', 'Normalised flux',
-    #                         'Flux uncertainty', 'Best fit curve']]
-    # fitx = lc['Phase'] .values.tolist()
-    # fity = lc['Best fit curve'] .values.tolist()
-    # time = lc['Phase'] .values
-    # flux = lc['Normalised flux'] .values
-    # flux_err = lc['Flux uncertainty'] .values
-    # lc_all = LightCurve(time, flux, flux_err)
-    # fit_all = lc['Best fit curve'] .values.tolist()
     fitx, fity = [], []
     time_all, flux_all, flux_err_all, fit_all = [], [], [], []
     for i in range(0,epoch_no):
         file = f'firefly/{exoplanet}/fitted_lightcurves/t0_f0_e{i}_detrended.csv'
         lc = pd.read_csv(file)[['Phase', 'Normalised flux',
                                 'Flux uncertainty','Best fit curve']]
-        time = lc['Phase'] .values .tolist()
-        flux = lc['Normalised flux'] .values .tolist()
-        flux_err = lc['Flux uncertainty'] .values .tolist()
-        #fitx = lc['Phase'] .values .tolist()
-        #fity = lc['Best fit curve'] .values .tolist()
-        fitx_temp = lc['Phase'] .values.tolist()
-        fity_temp = lc['Best fit curve'] .values.tolist()
+        time = lc['Phase'] .values
+        flux = lc['Normalised flux'] .values
+        flux_err = lc['Flux uncertainty'] .values
+       
+        fitx_temp = lc['Phase'] .values
+        fity_temp = lc['Best fit curve'] .values
+        
         if len(fitx) < len(fitx_temp):
-            fitx = lc['Phase'] .values.tolist()
+            fitx = lc['Phase'] .values
         if len(fity) < len(fity_temp):
-            fity = lc['Best fit curve'] .values.tolist()
+            fity = lc['Best fit curve'] .values
+
+        # Zoom in on transits
+        transit_mask = np.ma.masked_values(fity_temp, 1.).mask
+        transit_loc = np.where(transit_mask==False)
+        window = int(len(transit_loc[0]) * 0.25)
+        start, stop = transit_loc[0][0] - window, transit_loc[0][-1] + window
+        transit_mask[start:stop] = False
+        
+        time = time[~transit_mask]
+        flux = flux[~transit_mask]
+        flux_err = flux_err[~transit_mask]
+        fitx = fitx[~transit_mask]
+        fity = fity[~transit_mask]
+        # Append
         time_all.extend(time)
         flux_all.extend(flux)
         flux_err_all.extend(flux_err)
-        fit_all.extend(fity_temp)
-    #from astropy.stats.funcs import mad_std
-    #lc_all, mask = lc_all.remove_outliers(sigma_upper=3,
-    #                    sigma_lower=5, return_mask=True, stdfunc=mad_std)
-    #fit_all = np.array(fit_all)[~mask]
+        fit_all.extend(fity)
+    
     return time_all, flux_all, flux_err_all, fitx, fity, fit_all
 
 def density_scatter(exoplanet, transits, P, cadence):
@@ -594,7 +595,7 @@ def density_scatter(exoplanet, transits, P, cadence):
         cad_bin = cadence_min / (P * 60 * 24)
         lc = LightCurve(x, y, yerr)
         obs_length = x.max() - x.min()
-        n_bins = int((obs_length)/cad_bin)
+        n_bins = int((obs_length + 0.1)/cad_bin)
         bins=[n_bins,n_bins]
         binned_phase, binned_flux, binned_err, binned_residuals = lc.bin(cad_bin*6, diff)
         madbin = np.std(binned_residuals)
@@ -604,7 +605,7 @@ def density_scatter(exoplanet, transits, P, cadence):
         cad_bin = cadence_min / (P * 60 * 24)
         lc = LightCurve(x, y, yerr)
         obs_length = x.max() - x.min()
-        n_bins = int((obs_length)/cad_bin)
+        n_bins = int((obs_length + 0.1)/cad_bin)
         bins=[n_bins,n_bins]
         binned_phase, binned_flux, binned_err, binned_residuals = lc.bin(cad_bin, diff)
         madbin = np.std(binned_residuals)
@@ -621,6 +622,7 @@ def density_scatter(exoplanet, transits, P, cadence):
     # Sort the points by density, so that the densest points are plotted last
     idx = z.argsort()
     x, y, z, diff = x[idx], y[idx], z[idx], diff[idx]
+    cadences = len(y)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Histogram residuals
     unbinned_counts, bins = np.histogram(diff, bins=30)
@@ -806,6 +808,5 @@ def density_scatter(exoplanet, transits, P, cadence):
     fig[0].savefig(f'firefly/{exoplanet}/{exoplanet} density noresid.png',
                    bbox_inches='tight')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    cadences = len(y)
     return mad, madbin, obs_depth, cadences
 
