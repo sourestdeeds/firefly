@@ -691,7 +691,7 @@ def density_scatter(exoplanet, transits, P, cadence):
     from matplotlib.cm import ScalarMappable
     m = ScalarMappable(cmap='hot')
     cbar = plt.colorbar(m, ax=cb_ax, shrink=0.3, cax=position)
-    cbar.set_label('Normalised Point Density')
+    cbar.set_label('Normalised Flux Density')
     plt.subplots_adjust(hspace=.0)
     plt.subplots_adjust(wspace=.0)
     fig[0].savefig(f'firefly/{exoplanet}/{exoplanet} density.png',
@@ -750,7 +750,7 @@ def density_scatter(exoplanet, transits, P, cadence):
     from matplotlib.cm import ScalarMappable
     m = ScalarMappable(cmap='hot')
     cbar = plt.colorbar(m, ax=cb_ax, shrink=0.3, cax=position)
-    cbar.set_label('Normalised Point Density')
+    cbar.set_label('Normalised Flux Density')
     plt.subplots_adjust(hspace=.0)
     plt.subplots_adjust(wspace=.0)
     fig[0].savefig(f'firefly/{exoplanet}/{exoplanet} density noerr.png',
