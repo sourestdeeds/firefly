@@ -641,6 +641,7 @@ def density_scatter(exoplanet, transits, P, cadence):
     fig = plt.subplots(figsize=(12,8))
     gs = gridspec.GridSpec(2, 2, height_ratios=[3,1], width_ratios=[10,1])
     ax = plt.subplot(gs[0])
+    cb_ax = plt.subplot(gs[1])
     res_ax = plt.subplot(gs[2])
     hist_ax = plt.subplot(gs[3], sharey=res_ax)
     
@@ -679,12 +680,18 @@ def density_scatter(exoplanet, transits, P, cadence):
                  edgecolor=rgba_color, histtype='stepfilled',alpha=0.5)
     # Labels
     ax.xaxis.set_ticklabels([])
+    cb_ax.axis('off')
+    position = cb_ax.inset_axes([0.1,0.1,0.2,0.8])
     hist_ax.tick_params('both', which='both', direction='in',
                                  labelleft=False, labelbottom=False,
                                  right=False, top=False)
     res_ax.set_xlabel('Phase')
     ax.set_ylabel('Normalised Flux')
     res_ax.set_ylabel('Residual')
+    from matplotlib.cm import ScalarMappable
+    m = ScalarMappable(cmap='hot')
+    cbar = plt.colorbar(m, ax=cb_ax, shrink=0.3, cax=position)
+    cbar.set_label('Normalised Point Density')
     plt.subplots_adjust(hspace=.0)
     plt.subplots_adjust(wspace=.0)
     fig[0].savefig(f'firefly/{exoplanet}/{exoplanet} density.png',
@@ -701,6 +708,7 @@ def density_scatter(exoplanet, transits, P, cadence):
     fig = plt.subplots(figsize=(12,8))
     gs = gridspec.GridSpec(2, 2, height_ratios=[3,1], width_ratios=[10,1])
     ax = plt.subplot(gs[0])
+    cb_ax = plt.subplot(gs[1])
     res_ax = plt.subplot(gs[2])
     hist_ax = plt.subplot(gs[3], sharey=res_ax)
     
@@ -709,7 +717,7 @@ def density_scatter(exoplanet, transits, P, cadence):
     res_ax.scatter(binned_phase, binned_residuals,
                    s=5, alpha=0.8, edgecolor='none', color='white', zorder=2)
     res_ax.axhline(y=0, color='k', linestyle='--', zorder=3, lw=0.75)
-    
+    # Lightcurve
     plt.set_cmap('hot')
     ax.xaxis.set_ticklabels([])
     ax.scatter(x, y, c=z, zorder=2, s=5, edgecolor='none')
@@ -731,12 +739,18 @@ def density_scatter(exoplanet, transits, P, cadence):
                  edgecolor=rgba_color, histtype='stepfilled',alpha=0.5)
    # Labels
     ax.xaxis.set_ticklabels([])
+    cb_ax.axis('off')
+    position = cb_ax.inset_axes([0.1,0.1,0.2,0.8])
     hist_ax.tick_params('both', which='both', direction='in',
                                  labelleft=False, labelbottom=False,
                                  right=False, top=False)
     res_ax.set_xlabel('Phase')
     ax.set_ylabel('Normalised Flux')
     res_ax.set_ylabel('Residual')
+    from matplotlib.cm import ScalarMappable
+    m = ScalarMappable(cmap='hot')
+    cbar = plt.colorbar(m, ax=cb_ax, shrink=0.3, cax=position)
+    cbar.set_label('Normalised Point Density')
     plt.subplots_adjust(hspace=.0)
     plt.subplots_adjust(wspace=.0)
     fig[0].savefig(f'firefly/{exoplanet}/{exoplanet} density noerr.png',
