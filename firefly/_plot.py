@@ -541,7 +541,7 @@ def read_fitted_lc(exoplanet, transits):
         # Zoom in on transits
         transit_mask = np.ma.masked_values(fity_temp, 1.).mask
         transit_loc = np.where(transit_mask==False)
-        window = int(len(transit_loc[0]) * 0.25)
+        window = int(len(transit_loc[0]) * 0.5)
         start, stop = transit_loc[0][0] - window, transit_loc[0][-1] + window
         transit_mask[start:stop] = False
         
