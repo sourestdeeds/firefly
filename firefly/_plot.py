@@ -726,6 +726,7 @@ def density_scatter(exoplanet, transits, P, cadence):
     ax.plot(fitx, fity, marker='', color='k', zorder=4, lw=1)
     ax.scatter(binned_phase, binned_flux, zorder=3, s=5, color='white',
                edgecolor='none')
+    ax.add_artist(txt)
     # Histogram
     rgba_color = colors.to_rgba('dimgrey')
     facecolor = (rgba_color[0], rgba_color[1], rgba_color[2], 0.6)
