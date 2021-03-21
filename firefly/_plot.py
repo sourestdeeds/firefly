@@ -550,11 +550,29 @@ def read_fitted_lc(exoplanet, transits):
         flux_err = flux_err[~transit_mask]
         fitx = fitx[~transit_mask]
         fity = fity[~transit_mask]
-        # Append
-        time_all.extend(time)
-        flux_all.extend(flux)
-        flux_err_all.extend(flux_err)
-        fit_all.extend(fity)
+        # Safety barrier in case no reasonable transit found
+        if len(fity) < 25:
+            time = lc['Phase'] .values
+            flux = lc['Normalised flux'] .values
+            flux_err = lc['Flux uncertainty'] .values
+           
+            fitx_temp = lc['Phase'] .values
+            fity_temp = lc['Best fit curve'] .values
+            
+            if len(fitx) < len(fitx_temp):
+                fitx = lc['Phase'] .values
+            if len(fity) < len(fity_temp):
+                fity = lc['Best fit curve'] .values
+            time_all.extend(time)
+            flux_all.extend(flux)
+            flux_err_all.extend(flux_err)
+            fit_all.extend(fity)
+        # Append Masked Values if fine
+        else:
+            time_all.extend(time)
+            flux_all.extend(flux)
+            flux_err_all.extend(flux_err)
+            fit_all.extend(fity)
     
     return time_all, flux_all, flux_err_all, fitx, fity, fit_all
 
