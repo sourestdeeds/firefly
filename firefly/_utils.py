@@ -571,7 +571,7 @@ def _retrieval(
                 add = add.sort_values('pl_name')
                 add .to_csv(summary_master, index=False)
         except Exception as e:
-            print(e)
+            print(e, file=open(exo_folder+'/ttv_traceback.txt', 'w'))
         os.makedirs('firefly/ttv', exist_ok=True)
         os.makedirs(f'firefly/ttv/{fitting_mode}', exist_ok=True)
         archive_folder = f'firefly/ttv/{fitting_mode}/{archive_name}'
