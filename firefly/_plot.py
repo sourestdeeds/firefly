@@ -604,7 +604,7 @@ def density_scatter(exoplanet, transits, P, cadence):
         obs_length = x.max() - x.min()
         n_bins = int((obs_length + 0.1)/cad_bin)
         bins=[n_bins,n_bins]
-        binned_phase, binned_flux, binned_err, binned_residuals = lc.bin(cad_bin*6, diff)
+        binned_phase, binned_flux, binned_err, binned_residuals = lc.bin(cad_bin, diff)
         madbin = np.std(binned_residuals)
         obs_depth = 1 - np.min(fit_all)
     else:
