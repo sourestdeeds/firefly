@@ -521,7 +521,7 @@ def read_fitted_lc(exoplanet, transits):
     from transitfit.lightcurve import LightCurve
     epoch_no = transits
     fitx, fity = [], []
-    time_all, flux_all, flux_err_all, fit_all = [], [], [], []
+    time_all, flux_all, flux_err_all, fit_xall, fit_yall = [], [], [], [], []
     for i in range(0,epoch_no):
         file = f'firefly/{exoplanet}/fitted_lightcurves/t0_f0_e{i}_detrended.csv'
         lc = pd.read_csv(file)[['Phase', 'Normalised flux',
@@ -529,52 +529,38 @@ def read_fitted_lc(exoplanet, transits):
         time = lc['Phase'] .values
         flux = lc['Normalised flux'] .values
         flux_err = lc['Flux uncertainty'] .values
-       
-        fitx_temp = lc['Phase'] .values
-        fity_temp = lc['Best fit curve'] .values
+      
+        fitx = lc['Phase'] .values
+        fity = lc['Best fit curve'] .values
         
-        if len(fitx) < len(fitx_temp):
-            fitx = lc['Phase'] .values
-        if len(fity) < len(fity_temp):
-            fity = lc['Best fit curve'] .values
-
-        # Zoom in on transits
-        transit_mask = np.ma.masked_values(fity_temp, 1.).mask
-        transit_loc = np.where(transit_mask==False)
-        window = int(len(transit_loc[0]) * 1.5)
-        start, stop = transit_loc[0][0] - window, transit_loc[0][-1] + window
-        transit_mask[start:stop] = False
-        
-        time = time[~transit_mask]
-        flux = flux[~transit_mask]
-        flux_err = flux_err[~transit_mask]
-        fitx = fitx[~transit_mask]
-        fity = fity[~transit_mask]
-        # Safety barrier in case no reasonable transit found
-        if len(fity) < 25:
-            time = lc['Phase'] .values
-            flux = lc['Normalised flux'] .values
-            flux_err = lc['Flux uncertainty'] .values
-           
-            fitx_temp = lc['Phase'] .values
-            fity_temp = lc['Best fit curve'] .values
-            
-            if len(fitx) < len(fitx_temp):
-                fitx = lc['Phase'] .values
-            if len(fity) < len(fity_temp):
-                fity = lc['Best fit curve'] .values
-            time_all.extend(time)
-            flux_all.extend(flux)
-            flux_err_all.extend(flux_err)
-            fit_all.extend(fity)
-        # Append Masked Values if fine
-        else:
-            time_all.extend(time)
-            flux_all.extend(flux)
-            flux_err_all.extend(flux_err)
-            fit_all.extend(fity)
+        time_all.extend(time)
+        flux_all.extend(flux)
+        flux_err_all.extend(flux_err)
+        fit_xall.extend(fitx)
+        fit_yall.extend(fity)
     
-    return time_all, flux_all, flux_err_all, fitx, fity, fit_all
+    # Setup DataFrame to apply filter to
+    data = {'Time':time_all, 'Flux':flux_all,
+            'Flux Error':flux_err_all, 'Fit X':fit_xall, 'Fit Y':fit_yall}
+    df = pd.DataFrame(data).sort_values('Time')
+    
+    # Zoom in on transits
+    fit_combined = df['Fit Y']
+    transit_mask = np.ma.masked_values(fit_combined, 1.).mask
+    transit_loc = np.where(transit_mask==False)
+    window = int(len(transit_loc[0]) * 1.5)
+    start, stop = transit_loc[0][0] - window, transit_loc[0][-1] + window
+    transit_mask[start:stop] = False
+    
+    # Apply Mask
+    df = df[~transit_mask]
+    
+    time_all = df['Time'].values
+    flux_all = df['Flux'].values
+    flux_err_all = df['Flux Error'].values
+    fit_xall = df['Fit X'].values
+    fit_yall = df['Fit Y'].values
+    return time_all, flux_all, flux_err_all, fit_xall, fit_yall
 
 def density_scatter(exoplanet, transits, P, cadence):
     """
@@ -587,10 +573,10 @@ def density_scatter(exoplanet, transits, P, cadence):
     from scipy.interpolate import interpn
     from scipy import stats
     # from sklearn.preprocessing import scale
-    time_all, flux_all, flux_err_all, fitx, fity, fit_all = read_fitted_lc(exoplanet, transits)
+    time_all, flux_all, flux_err_all, fit_xall, fit_yall = read_fitted_lc(exoplanet, transits)
     x, y, yerr = np.array(time_all), np.array(flux_all), np.array(flux_err_all)
-    fit_all = np.array(fit_all)
-    diff = y - fit_all
+    #fit_yall = np.array(fit_yall)
+    diff = y - fit_yall
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Sigma clipping
     fluxdiff = np.max(y) - np.min(y)
@@ -605,7 +591,7 @@ def density_scatter(exoplanet, transits, P, cadence):
     mask = clip.mask
     diff = diff[~mask]
     x, y, yerr = x[~mask], y[~mask], yerr[~mask]
-    fit_all = fit_all[~mask]
+    fit_all = fit_yall[~mask]
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     from transitfit.lightcurve import LightCurve
     if cadence == 20:
@@ -684,7 +670,7 @@ def density_scatter(exoplanet, transits, P, cadence):
     
     ax.scatter(binned_phase, binned_flux, zorder=4, s=5,
                 color='white', edgecolor='none', alpha = 0.9)
-    ax.plot(fitx, fity, marker='', color='k', zorder=5, lw=1)
+    ax.plot(fit_xall, fit_yall, marker='', color='k', zorder=5, lw=1)
     # Histogram
     rgba_color = colors.to_rgba('dimgrey')
     facecolor = (rgba_color[0], rgba_color[1], rgba_color[2], 0.6)
@@ -741,7 +727,7 @@ def density_scatter(exoplanet, transits, P, cadence):
     plt.set_cmap('hot')
     ax.xaxis.set_ticklabels([])
     ax.scatter(x, y, c=z, zorder=2, s=5, edgecolor='none')
-    ax.plot(fitx, fity, marker='', color='k', zorder=4, lw=1)
+    ax.plot(fit_xall, fit_yall, marker='', color='k', zorder=4, lw=1)
     ax.scatter(binned_phase, binned_flux, zorder=3, s=5, color='white',
                edgecolor='none')
     ax.add_artist(txt)
@@ -793,7 +779,7 @@ def density_scatter(exoplanet, transits, P, cadence):
     ax.scatter(x, y, c=z, zorder=2, s=5, edgecolor='none')
     ax.scatter(binned_phase, binned_flux, zorder=3, s=5, color='white',
                edgecolor='none')
-    ax.plot(fitx, fity, marker='', color='k', zorder=3, lw=1)
+    ax.plot(fit_xall, fit_yall, marker='', color='k', zorder=3, lw=1)
     ax.add_artist(txt)
     plt.xlabel('Phase')
     ax.set_ylabel('Normalised Flux')
@@ -818,7 +804,7 @@ def density_scatter(exoplanet, transits, P, cadence):
     ax.scatter(x, y, c=z, zorder=2, s=5, edgecolor='none')
     ax.scatter(binned_phase, binned_flux, zorder=4, s=5, color='white',
                edgecolor='none')
-    ax.plot(fitx, fity, marker='', color='k', zorder=5, lw=1)
+    ax.plot(fit_xall, fit_yall, marker='', color='k', zorder=3, lw=1)
     # ax.errorbar(stat[1][:len(stat[0])], stat[0], stat_err[0]/6, color='yellow',
     #               alpha=0.7, capsize=2, ls='none', zorder=3)
     ax.add_artist(txt)
