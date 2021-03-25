@@ -532,10 +532,13 @@ def _retrieval(
             chi2_redlong, nsiglong, losslong, faplong, periodlong = oc_fold(t0ttv, t0errttv,
                                                         file=file, P=P,
                                                         exoplanet=exoplanet)
-            chi2_red, nsig, loss, fap, period = oc_fold(t0ttv, t0errttv,
+            try:
+                chi2_red, nsig, loss, fap, period = oc_fold(t0ttv, t0errttv,
                                                         file=file, P=P,
                                                         exoplanet=exoplanet,
                                                         longterm=False)
+            except:
+                pass
             copy(f'{exo_folder}/{exoplanet} o-c longterm.jpg',
                  f'firefly/plots/oc/{exoplanet} long.jpg')
             copy(f'{exo_folder}/{exoplanet} o-c.jpg',
