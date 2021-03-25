@@ -520,32 +520,20 @@ def oc_fold(t0, t0err, P, file='Complete_results.csv', exoplanet=None, longterm=
 def read_fitted_lc(exoplanet, transits):
     from transitfit.lightcurve import LightCurve
     epoch_no = transits
-    fitx, fity = [], []
-    time_all, flux_all, flux_err_all, fit_xall, fit_yall = [], [], [], [], []
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Read in lc's
+    df = pd.DataFrame(columns=(['Phase', 'Normalised flux',
+                                'Flux uncertainty','Best fit curve']))
     for i in range(0,epoch_no):
         file = f'firefly/{exoplanet}/fitted_lightcurves/t0_f0_e{i}_detrended.csv'
         lc = pd.read_csv(file)[['Phase', 'Normalised flux',
                                 'Flux uncertainty','Best fit curve']]
-        time = lc['Phase'] .values
-        flux = lc['Normalised flux'] .values
-        flux_err = lc['Flux uncertainty'] .values
-      
-        fitx = lc['Phase'] .values
-        fity = lc['Best fit curve'] .values
-        
-        time_all.extend(time)
-        flux_all.extend(flux)
-        flux_err_all.extend(flux_err)
-        fit_xall.extend(fitx)
-        fit_yall.extend(fity)
+        df = df.append(lc)
     
-    # Setup DataFrame to apply filter to
-    data = {'Time':time_all, 'Flux':flux_all,
-            'Flux Error':flux_err_all, 'Fit X':fit_xall, 'Fit Y':fit_yall}
-    df = pd.DataFrame(data).sort_values('Time')
-    
+    df = df.sort_values('Phase')
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Zoom in on transits
-    fit_combined = df['Fit Y']
+    fit_combined = df['Best fit curve']
     transit_mask = np.ma.masked_values(fit_combined, 1.).mask
     transit_loc = np.where(transit_mask==False)
     window = int(len(transit_loc[0]) * 2.5)
@@ -554,15 +542,16 @@ def read_fitted_lc(exoplanet, transits):
     else:
         start, stop = transit_loc[0][0] - window, transit_loc[0][-1] + window
     transit_mask[start:stop] = False
-    
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Apply Mask
     df = df[~transit_mask]
-    
-    time_all = df['Time'].values
-    flux_all = df['Flux'].values
-    flux_err_all = df['Flux Error'].values
-    fit_xall = df['Fit X'].values
-    fit_yall = df['Fit Y'].values
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Assign numpy arrays
+    time_all = df['Phase'].values
+    flux_all = df['Normalised flux'].values
+    flux_err_all = df['Flux uncertainty'].values
+    fit_xall = df['Phase'].values
+    fit_yall = df['Best fit curve'].values
     return time_all, flux_all, flux_err_all, fit_xall, fit_yall
 
 def density_scatter(exoplanet, transits, P, cadence):
