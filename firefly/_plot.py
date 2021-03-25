@@ -518,6 +518,10 @@ def oc_fold(t0, t0err, P, file='Complete_results.csv', exoplanet=None, longterm=
     
   
 def read_fitted_lc(exoplanet, transits):
+    '''
+    Reads in lc's and cleans the data.
+
+    '''
     from transitfit.lightcurve import LightCurve
     epoch_no = transits
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -537,7 +541,6 @@ def read_fitted_lc(exoplanet, transits):
     transit_mask = np.ma.masked_values(fit_combined, 1.).mask
     transit_loc = np.where(transit_mask==False)
     window = int(len(transit_loc[0]) * 2.5)
-    # Check the window is still in the range of data
     if (transit_loc[0][0] + window > len(fit_combined)):
         start, stop = 0, len(fit_combined)
     else:
@@ -546,6 +549,23 @@ def read_fitted_lc(exoplanet, transits):
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Apply Mask
     df = df[~transit_mask]
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Sigma clipping
+    from astropy.stats.sigma_clipping import sigma_clip
+    from astropy.stats.funcs import mad_std
+    
+    fluxdiff = np.max(df['Best fit curve']) - np.min(df['Best fit curve'])
+    if fluxdiff < 0.001:
+        sigma = 4
+    elif 0.001 < fluxdiff < 0.005:
+        sigma = 5
+    else:
+        sigma = 6
+    df['Residual'] = df['Normalised flux'] - df['Best fit curve']
+    clip = sigma_clip(df['Residual'], sigma=sigma, stdfunc=mad_std).mask
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Apply Mask
+    df = df[~clip]
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Assign numpy arrays
     time_all = df['Phase'].values
@@ -565,48 +585,22 @@ def density_scatter(exoplanet, transits, P, cadence):
     from astropy.stats.sigma_clipping import sigma_clip
     from scipy.interpolate import interpn
     from scipy import stats
-    # from sklearn.preprocessing import scale
     time_all, flux_all, flux_err_all, fit_xall, fit_yall = read_fitted_lc(exoplanet, transits)
-    x, y, yerr = np.array(time_all), np.array(flux_all), np.array(flux_err_all)
-    #fit_yall = np.array(fit_yall)
-    diff = y - fit_yall
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # Sigma clipping
-    fluxdiff = np.max(y) - np.min(y)
-    if fluxdiff < 0.01:
-        sigma = 4
-    elif 0.01 < fluxdiff < 0.06:
-        sigma = 5
-    else:
-        sigma = 6
+    x, y, yerr = time_all, flux_all, flux_err_all
+    diff = flux_all - fit_yall
     mad = np.std(diff)
-    clip = sigma_clip(diff, sigma=sigma, stdfunc=mad_std)
-    mask = clip.mask
-    diff = diff[~mask]
-    x, y, yerr = x[~mask], y[~mask], yerr[~mask]
-    fit_all = fit_yall[~mask]
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     from transitfit.lightcurve import LightCurve
-    if cadence == 20:
-        cadence_min = cadence / 60
-        cad_bin = cadence_min / (P * 60 * 24)
-        lc = LightCurve(x, y, yerr)
-        obs_length = x.max() - x.min()
-        n_bins = int((obs_length + 0.1)/cad_bin)
-        bins=[n_bins,n_bins]
-        binned_phase, binned_flux, binned_err, binned_residuals = lc.bin(cad_bin, diff)
-        madbin = np.std(binned_residuals)
-        obs_depth = 1 - np.min(fit_all)
-    else:
-        cadence_min = cadence / 60
-        cad_bin = cadence_min / (P * 60 * 24)
-        lc = LightCurve(x, y, yerr)
-        obs_length = x.max() - x.min()
-        n_bins = int((obs_length + 0.1)/cad_bin)
-        bins=[n_bins,n_bins]
-        binned_phase, binned_flux, binned_err, binned_residuals = lc.bin(cad_bin, diff)
-        madbin = np.std(binned_residuals)
-        obs_depth = 1 - np.min(fit_all)
+    
+    cadence_min = cadence / 60
+    cad_bin = cadence_min / (P * 60 * 24)
+    lc = LightCurve(x, y, yerr)
+    obs_length = x.max() - x.min()
+    n_bins = int((obs_length + 0.1)/cad_bin)
+    bins=[n_bins,n_bins]
+    binned_phase, binned_flux, binned_err, binned_residuals = lc.bin(cad_bin, diff)
+    madbin = np.std(binned_residuals)
+    obs_depth = 1 - np.min(fit_yall)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     data, x_e, y_e = np.histogram2d(x, y, bins=bins, density=True)
     z = interpn( ( 0.5*(x_e[1:] + x_e[:-1]), 0.5*(y_e[1:]+y_e[:-1]) ),
