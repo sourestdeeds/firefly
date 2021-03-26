@@ -21,21 +21,19 @@ class timeout:
         
 def main(exoplanet):
     # Kill process in 5 days
-    max_runtime = 60 * 60 * 24 * 5
+    max_runtime = 60 * 60 * 24 * 6
     with timeout(seconds=max_runtime):
         print(f'Executing firefly on {exoplanet}')
         run(['python', 'main.py', f'{exoplanet}'])
         print(f'Finished {exoplanet}')
 
 # Set how many targets to run in parallel
-processes = 16
+processes = 10
 # Define various lists to pass
 # targets, all_targets, ttv_targets = tess(archive='nasa', survey=None)
-#all_targets = \
-#    read_csv('https://raw.githubusercontent.com/sourestdeeds/' +\
-#             'firefly/main/firefly/data/Targets/' +\
-#             'nasa_tess_viable.csv?token=ACSJ3DZQMUVPSRCDCVEN4OLAIGBAS') \
-#             .sort_values('Epochs', ascending=False)['Exoplanet'].tolist()
+all_targets = \
+    read_csv('nasa_tess_viable.csv') \
+             .sort_values('Epochs', ascending=False)['Exoplanet'].tolist()
 # all_targets = [
 #     'wasp100b', 'wasp126b', 'lhs1815b', 'kepler42c', 'wasp119b',
 #     'wasp18b', 'hip65ab', 'l9859b', 'gj1252b', 'wasp62b',
@@ -44,8 +42,9 @@ processes = 16
 #spear = read_csv('firefly/data/spear.csv')['pl_name'] .values
 #nasa = read_csv('nasa_tess_viable.csv')['Exoplanet'] .values
 #diff = np.setdiff1d(nasa, spear)
+#print(len(diff))
 # Redefine list to use here
-exoplanet = diff
+exoplanet = all_targets
 if __name__ == '__main__':
     with Pool(processes=processes) as pool:
         pool.map(main, exoplanet, chunksize=1)

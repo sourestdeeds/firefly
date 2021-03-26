@@ -2,7 +2,8 @@ from firefly import firefly
 from sys import argv
 import sys
 import os
-
+os.environ['OPENBLAS_NUM_THREADS'] = '1'
+os.environ['MKL_NUM_THREADS'] = '1'
 
 class suppress_print():
     def __enter__(self):
@@ -41,13 +42,13 @@ def main(exoplanet):
         ld_fit_method='coupled',
         max_batch_parameters=25,
         batch_overlap=2,
-        dlogz=0.01,
+        dlogz=None,
         maxiter=None,
         maxcall=None,
         dynesty_bounding='multi',
         normalise=True,
         detrend=True,
-        detrending_limits=[[-10,10]],
+        detrending_limits=[[-1000,1000]],
         # Plotting
         plot=True,
         marker_color='dimgray',
