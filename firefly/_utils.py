@@ -251,7 +251,7 @@ def _fits(exoplanet,
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Extract all light curves to a single csv file
         TESS_fits['TIME'] = TESS_fits['TIME'] + 2457000
-        TESS_fits['PDCSAP_FLUX'] = TESS_fits['PDCSAP_FLUX'] + 1000
+        TESS_fits['PDCSAP_FLUX'] = TESS_fits['PDCSAP_FLUX'] + 10000
         csv_name = f'{source}/{mast_name}/{mast_name}.csv'
         _df = TESS_fits[['TIME', 'PDCSAP_FLUX', 'PDCSAP_FLUX_ERR', 'QUALITY']]
         if bitmask=='default':
@@ -347,7 +347,8 @@ def _retrieval(
     # Split the Light curves
     split_curve_in_dir = []
     transits_per_sector = []
-    csv_in_dir, sector_list = _fits(exoplanet, exo_folder=exo_folder, cache=cache, hlsp=hlsp, cadence=cadence, bitmask=bitmask)
+    csv_in_dir, sector_list = _fits(exoplanet, exo_folder=exo_folder, cache=cache, 
+                                    hlsp=hlsp, cadence=cadence, bitmask=bitmask)
     for i, csvfile in enumerate(csv_in_dir):
         split_curves = split_lightcurve_file(csvfile, t0=t0, P=P, t14=t14,
                                              cutoff=cutoff, window=window)
