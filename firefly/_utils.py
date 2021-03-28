@@ -203,6 +203,7 @@ def _fits(exoplanet,
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Extract Time series
     csv_in_dir = []
+    os.makedirs('firefly/data/cache', exist_ok=True)
     for j, fitsfile in enumerate(lc_links):
         TESS_fits = None
         while TESS_fits == None:
