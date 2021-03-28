@@ -13,6 +13,7 @@ from transitfit import split_lightcurve_file, run_retrieval
 from astroquery.mast import Observations as obs
 from datetime import datetime
 from tabulate import tabulate
+from astropy.config import set_temp_cache
 from astropy.table import Table
 from pandas import DataFrame, read_csv, Categorical
 from shutil import rmtree, make_archive, copy
@@ -206,7 +207,8 @@ def _fits(exoplanet,
         TESS_fits = None
         while TESS_fits == None:
             try:
-                TESS_fits = Table.read(fitsfile, cache=cache)
+                with set_temp_cache('firefly/data/cache'):
+                    TESS_fits = Table.read(fitsfile, cache=cache)
             except:
                 pass
             if TESS_fits != None:

@@ -34,7 +34,7 @@ def firefly(
         archive='nasa',
         curve_sample=1,
         clean=True,
-        cache=False,
+        cache=True,
         auto=True,
         # MAST Search
         hlsp=['SPOC'],
