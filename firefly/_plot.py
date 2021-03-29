@@ -541,7 +541,7 @@ def read_fitted_lc(exoplanet, transits):
     transit_mask = np.ma.masked_values(fit_combined, 1.).mask
     transit_loc = np.where(transit_mask==False)
     window = int(len(transit_loc[0]) * 2.5)
-    if (transit_loc[0][0] + window > len(fit_combined)):
+    if ((transit_loc[0][0] + window > len(fit_combined)) or (transit_mask).all()):
         start, stop = 0, len(fit_combined)
     else:
         start, stop = transit_loc[0][0] - window, transit_loc[0][-1] + window
