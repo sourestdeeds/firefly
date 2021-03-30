@@ -542,7 +542,9 @@ def read_fitted_lc(exoplanet, transits):
     transit_loc = np.where(transit_mask==False)
     window = int(len(transit_loc[0]) * 2.5)
     # Check if the transit is still in baseline of data, and there is a transit
-    if ((transit_loc[0][0] + window > len(fit_combined)) or (transit_mask).all()):
+    if ( (transit_loc[0][0] + window > len(fit_combined)) 
+        or (transit_loc[0][0] - window < 0) 
+        or (transit_mask).all() ):
         start, stop = 0, len(fit_combined)
     else:
         start, stop = transit_loc[0][0] - window, transit_loc[0][-1] + window
