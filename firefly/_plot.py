@@ -541,6 +541,7 @@ def read_fitted_lc(exoplanet, transits):
     transit_mask = np.ma.masked_values(fit_combined, 1.).mask
     transit_loc = np.where(transit_mask==False)
     window = int(len(transit_loc[0]) * 2.5)
+    # Check if the transit is still in baseline of data, and there is a transit
     if ((transit_loc[0][0] + window > len(fit_combined)) or (transit_mask).all()):
         start, stop = 0, len(fit_combined)
     else:
@@ -548,7 +549,10 @@ def read_fitted_lc(exoplanet, transits):
     transit_mask[start:stop] = False
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Apply Mask
-    df = df[~transit_mask]
+    df_transit_mask = df[~transit_mask]
+    # Check if the data masked leaves a significant transit
+    if len(df_transit_mask) < int(0.05*len(fit_combined)):
+        df_transit_mask = df
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Sigma clipping
     from astropy.stats.sigma_clipping import sigma_clip
@@ -561,18 +565,20 @@ def read_fitted_lc(exoplanet, transits):
         sigma = 5
     else:
         sigma = 6
-    df['Residual'] = df['Normalised flux'] - df['Best fit curve']
-    clip = sigma_clip(df['Residual'], sigma=sigma, stdfunc=mad_std).mask
+    df_transit_mask['Residual'] = df_transit_mask['Normalised flux'] \
+                                  - df_transit_mask['Best fit curve']
+    clip = sigma_clip(df_transit_mask['Residual'], sigma=sigma, 
+                      stdfunc=mad_std).mask
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Apply Mask
-    df = df[~clip]
+    df_clipped_mask = df_transit_mask[~clip]
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Assign numpy arrays
-    time_all = df['Phase'].values
-    flux_all = df['Normalised flux'].values
-    flux_err_all = df['Flux uncertainty'].values
-    fit_xall = df['Phase'].values
-    fit_yall = df['Best fit curve'].values
+    time_all = df_clipped_mask['Phase'].values
+    flux_all = df_clipped_mask['Normalised flux'].values
+    flux_err_all = df_clipped_mask['Flux uncertainty'].values
+    fit_xall = df_clipped_mask['Phase'].values
+    fit_yall = df_clipped_mask['Best fit curve'].values
     return time_all, flux_all, flux_err_all, fit_xall, fit_yall
 
 def density_scatter(exoplanet, transits, P, cadence):
