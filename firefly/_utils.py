@@ -444,6 +444,10 @@ def _retrieval(
                       index_col='Parameter')
     master = master[['Best', 'Error']]
     P = master['Best']['P']
+    q0 = master['Best']['q0']
+    q0err = master['Error']['q0']
+    q1 = master['Best']['q1']
+    q1err = master['Error']['q1']
     try:
         Perr = float(master['Error'].filter(like = 'P', axis=0))
     except ValueError:
@@ -556,7 +560,9 @@ def _retrieval(
                     'pl_orbsmax':a, 'pl_orbsmaxerr1':aerr, 'pl_radj':rp,
                     'pl_radjerr1':rperr, 'pl_orbincl':inc,
                     'pl_orbinclerr1':incerr, 'pl_orbeccen':ecc, 'pl_orbeccenerr1':eccerr,
-                    'pl_orblper':w, 'pl_orblpererr1':werr, 'Transits':int(len(df)),
+                    'pl_orblper':w, 'pl_orblpererr1':werr, 'q0':q0, 'q0err':q0err,
+                    'q1':q1, 'q1err':q1err,
+                    'Transits':int(len(df)),
                     'Date':now, 'Archive':archive.upper(), 'Unbinned Sigma':mad,
                     'Binned Sigma':madbin,
                 'Transit Depth':t_depth, 'Sensitivity':sens,
@@ -591,7 +597,9 @@ def _retrieval(
                 'pl_orbsmax':a, 'pl_orbsmaxerr1':aerr, 'pl_radj':rp,
                 'pl_radjerr1':rperr, 'pl_orbincl':inc,
                 'pl_orbinclerr1':incerr, 'pl_orbeccen':ecc, 'pl_orbeccenerr1':eccerr,
-                'pl_orblper':w, 'pl_orblpererr1':werr, 'Transits':int(len(df)),
+                'pl_orblper':w, 'pl_orblpererr1':werr, 'q0':q0, 'q0err':q0err,
+                'q1':q1, 'q1err':q1err,
+                'Transits':int(len(df)),
                 'Date':now, 'Archive':archive.upper(), 'Unbinned Sigma':mad,
                 'Binned Sigma':madbin,
                 'Transit Depth':t_depth, 'Sensitivity':sens,
