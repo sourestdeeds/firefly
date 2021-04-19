@@ -448,6 +448,10 @@ def _retrieval(
     q0err = master['Error']['q0']
     q1 = master['Best']['q1']
     q1err = master['Error']['q1']
+    u0 = master['Best']['u0']
+    u0err = master['Error']['u0']
+    u1 = master['Best']['u1']
+    u1err = master['Error']['u1']
     try:
         Perr = float(master['Error'].filter(like = 'P', axis=0))
     except ValueError:
@@ -561,7 +565,8 @@ def _retrieval(
                     'pl_radjerr1':rperr, 'pl_orbincl':inc,
                     'pl_orbinclerr1':incerr, 'pl_orbeccen':ecc, 'pl_orbeccenerr1':eccerr,
                     'pl_orblper':w, 'pl_orblpererr1':werr, 'q0':q0, 'q0err':q0err,
-                    'q1':q1, 'q1err':q1err,
+                    'q1':q1, 'q1err':q1err, 'u0':u0, 'u0err':u0err,
+                    'u1':u1, 'u1err':u1err,
                     'Transits':int(len(df)),
                     'Date':now, 'Archive':archive.upper(), 'Unbinned Sigma':mad,
                     'Binned Sigma':madbin,
@@ -598,7 +603,8 @@ def _retrieval(
                 'pl_radjerr1':rperr, 'pl_orbincl':inc,
                 'pl_orbinclerr1':incerr, 'pl_orbeccen':ecc, 'pl_orbeccenerr1':eccerr,
                 'pl_orblper':w, 'pl_orblpererr1':werr, 'q0':q0, 'q0err':q0err,
-                'q1':q1, 'q1err':q1err,
+                'q1':q1, 'q1err':q1err, 'u0':u0, 'u0err':u0err,
+                    'u1':u1, 'u1err':u1err,
                 'Transits':int(len(df)),
                 'Date':now, 'Archive':archive.upper(), 'Unbinned Sigma':mad,
                 'Binned Sigma':madbin,
