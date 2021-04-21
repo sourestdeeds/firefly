@@ -816,3 +816,70 @@ def density_scatter(exoplanet, transits, P, cadence):
     return mad, madbin, obs_depth, cadences
 
 
+def plot_ld_params():
+    here = ''
+    coupled = pd.read_csv(f'{here}spear_coupled_ld_params.csv')
+    uncoupled = pd.read_csv(f'{here}spear_uncoupled_ld_params.csv').set_index('pl_name').drop('WD 1856+534 b', axis=0)
+    uncoupled = uncoupled.reset_index()
+    
+    pl_name_coupled = coupled['pl_name']
+    pl_name_uncoupled = uncoupled['pl_name']
+    
+    missing_uncoup = np.setdiff1d(pl_name_uncoupled, pl_name_coupled).tolist()
+    missing_coup = np.setdiff1d(pl_name_coupled, pl_name_uncoupled).tolist()
+    uncoupled = pd.read_csv(f'{here}spear_uncoupled_ld_params.csv').set_index('pl_name').drop(missing_uncoup, axis=0).drop('WD 1856+534 b', axis=0)
+    uncoupled = uncoupled.reset_index()
+    coupled = pd.read_csv(f'{here}spear_coupled_ld_params.csv').set_index('pl_name').drop(missing_coup, axis=0)
+    coupled = coupled.reset_index()
+    
+    # LD PARAMS
+    q0_coupled = coupled['q0']
+    q0err_coupled = coupled['q0err']
+    q1_coupled = coupled['q1']
+    q1err_coupled = coupled['q1err']
+    q0_uncoupled = uncoupled['q0']
+    q0err_uncoupled = uncoupled['q0err']
+    q1_uncoupled = uncoupled['q1']
+    q1err_uncoupled = uncoupled['q1err']
+    
+    # PLOT
+    fig = plt.subplots(figsize=(16,8))
+    gs = gridspec.GridSpec(4, 2, height_ratios=[2,2,1,1])
+    
+    # q0
+    q0 = plt.subplot(gs[0])
+    q0.plot(q0_coupled, marker='.', lw=0)
+    q0.plot(q0_uncoupled, color='r', marker='.', lw=0)  
+    
+    q0.set_xlabel('Exoplanet')
+    q0.set_ylabel(r'$q_0$')
+    q0.legend(['Coupled', 'Uncoupled'])
+    
+    # q1
+    q1 = plt.subplot(gs[2], sharex=q0)
+    q1.plot(q1_coupled, marker='.', lw=0)
+    q1.plot(q1_uncoupled, color='r', marker='.', lw=0) 
+    
+    q1.set_xlabel('Exoplanet')
+    q1.set_ylabel(r'$q_1$')
+    #q1.legend(['Coupled', 'Uncoupled'])
+    
+    plt.subplots_adjust(hspace=.0)
+    plt.subplots_adjust(wspace=.0)
+    
+    # resid
+    residq0 = q0_coupled - q0_uncoupled
+    residq1 = q1_coupled - q1_uncoupled
+    resq0 = plt.subplot(gs[4], sharex=q0)
+    resq0.plot(residq0, marker='.', lw=0, color='k')
+    resq0.axhline(y=0, linestyle='--', color='k', zorder=3, lw=0.75)
+    resq0.set_ylabel(r'$q_0$ c - u')
+    
+    resq1 = plt.subplot(gs[6], sharex=q0)
+    resq1.plot(residq1, marker='.', lw=0, color='k')
+    resq1.axhline(y=0, linestyle='--', color='k', zorder=3, lw=0.75)
+    resq1.set_xlabel('Exoplanet')
+    resq1.set_ylabel(r'$q_1$ c - u')
+
+
+
