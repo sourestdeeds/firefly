@@ -816,8 +816,57 @@ def density_scatter(exoplanet, transits, P, cadence):
     return mad, madbin, obs_depth, cadences
 
 
+def plot_coupled_comparison():
+    here = os.path.dirname(os.path.abspath(__file__))
+    here = ''
+    coupled = pd.read_csv(f'{here}data/spear.csv')
+    uncoupled = pd.read_csv(f'{here}data/spear_uncoupled.csv').set_index('pl_name').drop('WD 1856+534 b', axis=0)
+    uncoupled = uncoupled.reset_index()
+    
+    pl_name_coupled = coupled['pl_name']
+    pl_name_uncoupled = uncoupled['pl_name']
+    
+    missing_uncoup = np.setdiff1d(pl_name_uncoupled, pl_name_coupled).tolist()
+    missing_coup = np.setdiff1d(pl_name_coupled, pl_name_uncoupled).tolist()
+    uncoupled = pd.read_csv(f'{here}data/spear_uncoupled.csv').set_index('pl_name').drop(missing_uncoup, axis=0).drop('WD 1856+534 b', axis=0)
+    uncoupled = uncoupled.reset_index()
+    coupled = pd.read_csv(f'{here}data/spear.csv').set_index('pl_name').drop(missing_coup, axis=0)
+    coupled = coupled.reset_index()
+    
+    
+    pl_rad_coupled = coupled['pl_orbsmax']
+    pl_rad_uncoupled = uncoupled['pl_orbsmax']
+    
+    resid = pl_rad_coupled - pl_rad_uncoupled
+    
+    fig = plt.subplots(figsize=(12,8))
+    gs = gridspec.GridSpec(2, 2, height_ratios=[2,2], width_ratios=[10,1])
+    ax = plt.subplot(gs[0])
+    ax2 = plt.subplot(gs[2], sharex=ax)
+    
+    
+    ax.plot(pl_rad_coupled, pl_rad_uncoupled, marker='.', lw=0)
+    ax.plot(pl_rad_uncoupled, color='r', marker='', lw=0.5)    
+    ax.set_xlabel('Exoplanet')
+    ax.set_ylabel(r'$r_p/r_*$')
+    ax.legend(['Coupled', 'Uncoupled'])
+    
+    ax2.plot(resid, marker='.', lw=0)
+    ax2.axhline(y=0, linestyle='--', color='k', zorder=3, lw=0.75)
+    ax2.set_xlabel('Exoplanet')
+    ax2.set_ylabel(r'$r_p/r_*$ coupled - uncoupled')
+    plt.subplots_adjust(hspace=.0)
+    plt.subplots_adjust(wspace=.0)
+    
+    
+    return
+
 def plot_ld_params():
     here = ''
+    
+    uncoupled_rank_sens = pd.read_csv(f'{here}data/spear_uncoupled.csv').sort_values(by='Sensitivity', ascending=False).set_index('pl_name').drop('WD 1856+534 b', axis=0)
+    top10 = uncoupled_rank_sens[0:40].reset_index()['pl_name']
+    
     coupled = pd.read_csv(f'{here}spear_coupled_ld_params.csv')
     uncoupled = pd.read_csv(f'{here}spear_uncoupled_ld_params.csv').set_index('pl_name').drop('WD 1856+534 b', axis=0)
     uncoupled = uncoupled.reset_index()
@@ -831,6 +880,10 @@ def plot_ld_params():
     uncoupled = uncoupled.reset_index()
     coupled = pd.read_csv(f'{here}spear_coupled_ld_params.csv').set_index('pl_name').drop(missing_coup, axis=0)
     coupled = coupled.reset_index()
+    coupled_filter = coupled['pl_name'].isin(top10)
+    
+    top10_coup = coupled[coupled_filter]
+    top10_uncoup = uncoupled[coupled_filter]
     
     # LD PARAMS
     q0_coupled = coupled['q0']
@@ -841,6 +894,15 @@ def plot_ld_params():
     q0err_uncoupled = uncoupled['q0err']
     q1_uncoupled = uncoupled['q1']
     q1err_uncoupled = uncoupled['q1err']
+    
+    q0_coupled_top10 = top10_coup['q0']
+    q0err_coupled_top10 = top10_coup['q0err']
+    q1_coupled_top10 = top10_coup['q1']
+    q1err_coupled_top10 = top10_coup['q1err']
+    q0_uncoupled_top10 = top10_uncoup['q0']
+    q0err_uncoupled_top10 = top10_uncoup['q0err']
+    q1_uncoupled_top10 = top10_uncoup['q1']
+    q1err_uncoupled_top10 = top10_uncoup['q1err']
     
     # PLOT
     fig = plt.subplots(figsize=(16,8))
@@ -880,6 +942,41 @@ def plot_ld_params():
     resq1.axhline(y=0, linestyle='--', color='k', zorder=3, lw=0.75)
     resq1.set_xlabel('Exoplanet')
     resq1.set_ylabel(r'$q_1$ c - u')
+    
+    # PLOT 2
+    fig = plt.subplots(figsize=(12,8))
+    gs = gridspec.GridSpec(4, 2, height_ratios=[2,2,1,1])
+    
+    # q0
+    q0 = plt.subplot(gs[0])
+    q0.scatter(q0_coupled, q0_uncoupled, marker='.', lw=0, alpha=0.5, edgecolor='none')
+    q0.scatter(q0_coupled_top10, q0_uncoupled_top10, marker='.', lw=0, color='k')
+    q0.set_xlabel(r'$q_0$ coupled')
+    q0.set_ylabel(r'$q_0$ uncoupled')
+    
+    r = np.corrcoef(q0_coupled_top10, q0_uncoupled_top10)[0,1]
+    from matplotlib.offsetbox import AnchoredText
+    txt = AnchoredText(f'$R=${r:.2f}',
+                       frameon=False,loc='lower right',
+                       prop=dict(fontweight="bold"))
+    q0.add_artist(txt)
+    m, b = np.polyfit(q0_coupled_top10, q0_uncoupled_top10, 1)
+    q0.plot(q0_coupled_top10, m*q0_coupled_top10+b, marker='', lw=0.5, color='k')
+    # q1
+    q1 = plt.subplot(gs[2])
+    q1.scatter(q1_coupled, q1_uncoupled, marker='.', lw=0, alpha=0.5, edgecolor='none')
+    q1.scatter(q1_coupled_top10, q1_uncoupled_top10, marker='.', lw=0, color='k')
+    q1.set_xlabel(r'$q_1$ coupled')
+    q1.set_ylabel(r'$q_1$ uncoupled')
+    
+    r = np.corrcoef(q1_coupled_top10, q1_uncoupled_top10)[0,1]
+    txt = AnchoredText(f'$R=${r:.2f}',
+                       frameon=False,loc='lower right',
+                       prop=dict(fontweight="bold"))
+    q1.add_artist(txt)
+    m, b = np.polyfit(q1_coupled_top10, q1_uncoupled_top10, 1)
+    q1.plot(q1_coupled_top10, m*q1_coupled_top10+b, marker='', lw=0.5, color='k')
+    
 
 
 
