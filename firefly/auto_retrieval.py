@@ -57,7 +57,7 @@ def firefly(
         dlogz=None,
         maxiter=None,
         maxcall=None,
-        dynesty_bounding='multi',
+        dynesty_bounding='none',
         normalise=True,
         detrend=True,
         detrending_limits=[[-1000,1000]],
