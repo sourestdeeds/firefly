@@ -426,7 +426,7 @@ def _retrieval(
             line_color=line_color,
             bin_data=bin_data,
             binned_color=binned_color,
-            nprocs=nprocs,
+            n_procs=nprocs,
         )
     os.makedirs('firefly/plots', exist_ok=True)
     os.makedirs('firefly/plots/folded', exist_ok=True)
