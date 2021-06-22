@@ -374,7 +374,7 @@ def priors(exoplanet, archive='eu', save=False, user=True, auto=True, fit_ttv=Fa
         choice = exo_archive.loc[[exoplanet]]
     except KeyError:
         sys.exit('The chosen target is either spelt incorrectly, or does not '
-                 'exist in the EU archive.')
+                 f'exist in the {archive.upper()} archive.')
     try:
         # tic = df['tic_id'] .drop_duplicates() .dropna()[0]
         tic = _tic(exoplanet)
