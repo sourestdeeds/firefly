@@ -24,7 +24,7 @@ def _auto_input_check(targets, curve_sample):
     targets = ''.join(targets)
     highest, ratios = _search(targets)
     exoplanet = highest[0]
-    print(f'Target search chose {exoplanet}.')
+    print(f'\nTarget search chose {exoplanet}.')
     return exoplanet
 
 
