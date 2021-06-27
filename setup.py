@@ -44,6 +44,7 @@ setuptools.setup( name='firefly',
                                     'pyastronomy',
                                     'astropy',
                                     'lightkurve',
-                                    'transitfit'],
+                                    'transitfit',
+                                    ],
                   python_requires='>=3.6',
                   include_package_data=True )
