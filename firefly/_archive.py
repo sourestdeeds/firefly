@@ -427,10 +427,10 @@ def priors(exoplanet, archive='eu', save=False, user=True, auto=True, fit_ttv=Fa
         t_mag = s.loc['sy_tmag']
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Assign Host data to Transitfit
-    host_T = (T, T * 2e-2)
+    host_T = (T, T * 5e-2)
     host_z = (z, zerr)
     host_r = (rs, rs * 5e-2)
-    host_logg = (logg, logg * 2e-2)
+    host_logg = (logg, logg * 5e-2)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Nan checks
     # G = 6.67408e-11

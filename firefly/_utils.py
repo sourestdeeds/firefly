@@ -634,48 +634,6 @@ def _retrieval(
     rmtree(f'{exo_folder}')
     return archive_name
 
-def spearnet_archive_ld_params(source='13_April_2021_folded_uncoupled'):
-    import zipfile
-    import pandas as pd
-    # Find Files
-    zip_in_dir = []
-    for r, d, f in os.walk(source):
-        for item in f:
-            if '.zip' in item:
-                zip_in_dir.append(os.path.join(r, item))
-    
-    # Open Files
-    for i, zf in enumerate(zip_in_dir):
-        with zipfile.ZipFile(zf) as zip:
-            exoplanet = zip.namelist()[0].replace('/', '')
-            with zip.open(f'{exoplanet}/output_parameters/Complete_results.csv') as myZip:
-                df = pd.read_csv(myZip, index_col='Parameter')
-                master = df[['Best', 'Error']]
-                q0 = master['Best']['q0']
-                q0err = master['Error']['q0']
-                q1 = master['Best']['q1']
-                q1err = master['Error']['q1']
-                u0 = master['Best']['u0']
-                u0err = master['Error']['u0']
-                u1 = master['Best']['u1']
-                u1err = master['Error']['u1']
-                
-                data = {'pl_name':exoplanet, 'q0':q0, 'q0err':q0err,
-                        'q1':q1, 'q1err':q1err, 'u0':u0, 'u0err':u0err,
-                        'u1':u1, 'u1err':u1err}
-                df = DataFrame(data, index=[0])
-                summary_master = 'spear.csv'
-                if not os.path.exists(summary_master):
-                    df.to_csv(summary_master, index=False)
-                else:
-                    add = read_csv(summary_master)
-                    add = add.append(df)
-                    add['pl_name'] = \
-                        Categorical(add['pl_name'],
-                        ordered=True,
-                        categories=natsorted(add['pl_name'].unique()))
-                    add = add.sort_values('pl_name')
-                    add .to_csv(summary_master, index=False)
 
 
 def spearnet_archive_ld_params(source='13_April_2021_folded_uncoupled'):
@@ -720,5 +678,3 @@ def spearnet_archive_ld_params(source='13_April_2021_folded_uncoupled'):
                         categories=natsorted(add['pl_name'].unique()))
                     add = add.sort_values('pl_name')
                     add .to_csv(summary_master, index=False)
-
-
