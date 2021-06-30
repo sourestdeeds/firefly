@@ -45,7 +45,8 @@ def _load_csv():
     org_csv = 'firefly/data/org.csv.gz'
     here = os.path.dirname(os.path.abspath(__file__))
     spearnet_csv = f'{here}/data/spear.csv'
-    global exo_nasa, exo_eu, exo_oec, exo_org, exo_spearnet
+    spearnet_csv_uncoup = f'{here}/data/spear_uncoupled.csv'
+    global exo_nasa, exo_eu, exo_oec, exo_org, exo_spearnet, exo_spearnet_uncoup
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # NASA
     exo_nasa = read_csv(nasa_csv)
@@ -56,6 +57,11 @@ def _load_csv():
     try:
         exo_spearnet = read_csv(spearnet_csv)
         exo_spearnet = exo_spearnet.append(blank)
+        exo_spearnet['archive'] = 'SPEARNET COUPLED'
+
+        exo_spearnet_uncoup = read_csv(spearnet_csv_uncoup)
+        exo_spearnet_uncoup = exo_spearnet_uncoup.append(blank)
+        exo_spearnet_uncoup['archive'] = 'SPEARNET UNCOUPLED'
     except:
         pass
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -71,6 +77,8 @@ def _load_csv():
                       'st_meterr1', 'st_mass','st_rad',
                       'st_raderr1', 'st_teff', 'st_tefferr1']
     exo_eu = exo_eu.append(blank)
+    exo_eu['archive'] = 'EU'
+    exo_nasa['archive'] = 'NASA'
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # OEC
     col_subset_oec = ['name', 'radius', 'period',
@@ -82,6 +90,7 @@ def _load_csv():
                       'pl_orbeccen', 'pl_orblper','pl_orbincl', 'st_mass',
                       'st_rad', 'st_met', 'st_teff']
     exo_oec = exo_oec.append(blank)
+    exo_oec['archive'] = 'OEC'
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # ORG
     col_subset_org = ['NAME', 'R', 'PER',
@@ -95,6 +104,7 @@ def _load_csv():
                       'pl_orbper', 'pl_radj', 'st_rad', 'st_raderr1', 'pl_orbsmax',
                       'st_teff', 'st_tefferr1', 'pl_tranmid']
     exo_org = exo_org.append(blank)
+    exo_org['archive'] = 'ORG'
     
 
 def _search(exoplanet):
@@ -233,7 +243,9 @@ def _download_archive():
         'pl_name,tic_id,pl_orbper,pl_orbsmax,pl_radj,pl_bmasse,pl_bmassj,pl_orbeccen,ttv_flag,' +\
         'st_teff,st_rad,st_mass,st_met,st_logg,pl_tranmid,pl_trandur,' +\
         'st_tefferr1,st_raderr1,st_meterr1,st_loggerr1,' +\
-        'pl_orbincl,pl_orblper,ra,dec,glat,glon,sy_dist,sy_plx,sy_tmag' +\
+        'pl_orbincl,pl_orblper,ra,dec,glat,glon,sy_dist,sy_plx,sy_tmag,' +\
+        'pl_orbpererr1,pl_tranmiderr1,pl_orbsmaxerr1,pl_radjerr1,pl_orbinclerr1,' +\
+        'pl_orblpererr1,pl_orbeccenerr1'
         '+from+pscomppars&format=csv',
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # NASA Kepler Names
@@ -347,7 +359,7 @@ def priors(exoplanet, archive='eu', save=False, user=True, auto=True, fit_ttv=Fa
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     if fit_ttv==True:
         archive = 'spearnet'
-    archive_list = [exo_nasa, exo_eu, exo_org, exo_oec, exo_spearnet]
+    archive_list = [exo_nasa, exo_eu, exo_org, exo_oec, exo_spearnet, exo_spearnet_uncoup]
     if archive=='nasa':
         exo_archive = archive_list[0].set_index('pl_name')
     elif archive=='eu':
@@ -358,16 +370,17 @@ def priors(exoplanet, archive='eu', save=False, user=True, auto=True, fit_ttv=Fa
         exo_archive = archive_list[4].set_index('pl_name')
     elif archive=='all':
         exo_archive = concat(archive_list).set_index('pl_name')
-    # if archive =='all':
-    #     exo_archive = concat(archive_list)
-    #     exo_archive = exo_archive[exo_archive['pl_name'].notna()]
-    #     exo_archive['pl_name'] = \
-    #         Categorical(exo_archive['pl_name'],
-    #         ordered=True,
-    #         categories=natsorted(exo_archive['pl_name'].unique()))
-    #     exo_archive = exo_archive.sort_values('pl_name').set_index('pl_name')
-    #     exo = exo_archive.mean(axis=0, level=0)
-    #     exo.to_csv('firefly/data/all.csv.gz')
+    if archive =='all':
+        exo_archive = concat(archive_list)
+        exo_archive = exo_archive[exo_archive['pl_name'].notna()]
+        exo_archive['pl_name'] = \
+            Categorical(exo_archive['pl_name'],
+            ordered=True,
+            categories=natsorted(exo_archive['pl_name'].unique()))
+        exo_archive = exo_archive.sort_values('pl_name').set_index('pl_name') \
+                      .drop(['Archive'], axis=1)
+        # exo = exo_archive.mean(axis=0, level=0)
+        exo_archive.to_csv('firefly/data/all.csv.gz')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Pick Out Chosen Exoplanet Priors
     try:
