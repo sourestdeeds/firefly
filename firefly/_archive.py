@@ -484,12 +484,12 @@ def priors(exoplanet, archive='eu', save=False, user=True, auto=True, fit_ttv=Fa
         host_z = (0, 0.05)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Assign Exoplanet Priors to TransitFit
-    RADIUS_CONST = 0.1027626851
+    radius_const = 0.1027626851
     cols = [['P', ['fixed' if archive=='spearnet' else 'gaussian'][0], P,
-                ['' if archive=='spearnet' else P * 1e-5][0], ''],
+                ['' if archive=='spearnet' else P * 1e-2][0], ''],
             ['t0', 'gaussian', t0, [7e-3 if archive=='spearnet' else 7e-3][0], ''],
-            ['a', 'gaussian', a, [aerr if archive=='spearnet' else a * 1e-1][0], ''],
-            ['inc', 'gaussian', i, [ierr if archive=='spearnet' else i * 1e-1][0], ''],
+            ['a', 'gaussian', a, [a * 2e-1 if archive=='spearnet' else a * 2e-1][0], ''],
+            ['inc', 'gaussian', i, [i * 2e-1 if archive=='spearnet' else i * 2e-1][0], ''],
             ['w', ['fixed' if (w==90 or ecc==0) else 'gaussian'][0],
              [90 if ecc==0 else w][0],
              ['' if (w==90 or ecc==0)
@@ -500,11 +500,11 @@ def priors(exoplanet, archive='eu', save=False, user=True, auto=True, fit_ttv=Fa
             ['ecc', ['fixed' if (ecc==0 or w==90)
                      else 'gaussian'][0], [0 if w==90 else ecc][0],
              ['' if (ecc==0 or w==90)
-              else eccerr if archive=='spearnet'
+              else ecc * 0.5 if archive=='spearnet'
               else ecc * 0.5][0], ''],
             ['rp', ['uniform' if archive=='spearnet' else 'uniform'][0],
-             [0.5*rp if archive=='spearnet' else (0.5 * RADIUS_CONST * rp / rs)][0],
-             [1.5*rp if archive=='spearnet' else (1.5 * RADIUS_CONST * rp / rs)][0], 0]]
+             [0.5*rp if archive=='spearnet' else (0.5 * radius_const * rp / rs)][0],
+             [1.5*rp if archive=='spearnet' else (1.5 * radius_const * rp / rs)][0], 0]]
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Save the priors
     priors_csv = DataFrame(cols, columns=['Parameter', 'Distribution',
@@ -518,10 +518,10 @@ def priors(exoplanet, archive='eu', save=False, user=True, auto=True, fit_ttv=Fa
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # For printing variables only
     cols = [['P', ['fixed' if archive=='spearnet' else 'gaussian'][0], P,
-                ['' if archive=='spearnet' else P * 1e-5][0], ''],
+                ['' if archive=='spearnet' else P * 1e-2][0], ''],
             ['t0', 'gaussian', t0, [7e-3 if archive=='spearnet' else 7e-3][0], ''],
-            ['a', 'gaussian', a, [aerr if archive=='spearnet' else a * 1e-1][0], ''],
-            ['inc', 'gaussian', i, [ierr if archive=='spearnet' else i * 1e-1][0], ''],
+            ['a', 'gaussian', a, [a * 2e-1 if archive=='spearnet' else a * 2e-1][0], ''],
+            ['inc', 'gaussian', i, [i * 2e-1 if archive=='spearnet' else i * 2e-1][0], ''],
             ['w', ['fixed' if (w==90 or ecc==0) else 'gaussian'][0],
              [90 if ecc==0 else w][0],
              ['' if (w==90 or ecc==0)
@@ -532,11 +532,11 @@ def priors(exoplanet, archive='eu', save=False, user=True, auto=True, fit_ttv=Fa
             ['ecc', ['fixed' if (ecc==0 or w==90)
                      else 'gaussian'][0], [0 if w==90 else ecc][0],
              ['' if (ecc==0 or w==90)
-              else eccerr if archive=='spearnet'
+              else ecc * 0.5 if archive=='spearnet'
               else ecc * 0.5][0], ''],
             ['rp', ['uniform' if archive=='spearnet' else 'uniform'][0],
-             [0.5*rp if archive=='spearnet' else (0.5 * RADIUS_CONST * rp / rs)][0],
-             [1.5*rp if archive=='spearnet' else (1.5 * RADIUS_CONST * rp / rs)][0], 0],
+             [0.5*rp if archive=='spearnet' else (0.5 * radius_const * rp / rs)][0],
+             [1.5*rp if archive=='spearnet' else (1.5 * radius_const * rp / rs)][0], 0],
             ['t14', '', t14, '', ''],
             ['host_T', '', host_T[0], host_T[1], ''],
             ['host_z', '', host_z[0], host_z[1], ''],
