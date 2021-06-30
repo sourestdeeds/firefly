@@ -550,6 +550,7 @@ def _retrieval(
                                                         exoplanet=exoplanet,
                                                         longterm=False)
             except:
+                chi2_red, nsig, loss, fap, period = float(), float(), float(), float()
                 pass
             copy(f'{exo_folder}/{exoplanet} o-c longterm.jpg',
                  f'firefly/plots/oc/{exoplanet} long.jpg')
