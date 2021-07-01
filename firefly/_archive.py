@@ -18,6 +18,7 @@ import numpy as np
 import random
 import sys
 import os
+import threading
 
 
 class NaNError(Exception):
@@ -38,7 +39,7 @@ def _load_csv():
     Coverts all 4 archives to have the same column structure.
 
     '''
-    _download_archive()
+    download_archive_threaded_execute()
     nasa_csv = 'firefly/data/nasa.csv.gz'
     eu_csv = 'firefly/data/eu.csv.gz'
     oec_csv = 'firefly/data/oec.csv.gz'
@@ -285,6 +286,81 @@ def _download_archive():
             pass
 
 
+def _download_archive_threaded(download_link, i):
+    os.makedirs('firefly/data', exist_ok=True)
+    try:
+        csv = f'firefly/data/{i}.csv.gz'
+        if not os.path.exists(csv):
+            print(f'Caching the {i.upper()} Exoplanet Archive.')
+            df = read_csv(download_link)
+            df.to_csv(csv, index=False)
+        seven_days_ago = datetime.now() - timedelta(days=7)
+        filetime = datetime.fromtimestamp(os.path.getctime(csv))
+        if filetime < seven_days_ago:
+            print(f'{i.upper()} Archive is 7 days old. Updating.')
+            df = read_csv(download_link)
+            df.to_csv(csv, index=False)
+        else:
+            pass
+    except Exception:
+        print(f'Could not contact the server for the {i.upper()} archive.')
+        pass
+
+def download_archive_threaded_execute():
+    download_links = [ \
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        # NASA
+        # 'https://exoplanetarchive.ipac.caltech.edu/' +\
+        # 'TAP/sync?query=select+' +\
+        # 'pl_name,tic_id,pl_orbper,pl_orbsmax,pl_radj,pl_orbeccen,ttv_flag,' +\
+        # 'st_teff,st_rad,st_mass,st_met,st_logg,pl_tranmid,pl_trandur,' +\
+        # 'st_tefferr1,st_raderr1,st_meterr1,st_loggerr1,' +\
+        # 'pl_orbincl,pl_orblper' +\
+        # '+from+ps&format=csv',
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        # NASA COMP
+        'https://exoplanetarchive.ipac.caltech.edu/' +\
+        'TAP/sync?query=select+' +\
+        'pl_name,tic_id,pl_orbper,pl_orbsmax,pl_radj,pl_bmasse,pl_bmassj,pl_orbeccen,ttv_flag,' +\
+        'st_teff,st_rad,st_mass,st_met,st_logg,pl_tranmid,pl_trandur,' +\
+        'st_tefferr1,st_raderr1,st_meterr1,st_loggerr1,' +\
+        'pl_orbincl,pl_orblper,ra,dec,glat,glon,sy_dist,sy_plx,sy_tmag,' +\
+        'pl_orbpererr1,pl_tranmiderr1,pl_orbsmaxerr1,pl_radjerr1,pl_orbinclerr1,' +\
+        'pl_orblpererr1,pl_orbeccenerr1'
+        '+from+pscomppars&format=csv',
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        # NASA Kepler Names
+        # 'https://exoplanetarchive.ipac.caltech.edu/cgi-bin/' +\
+        # 'nstedAPI/nph-nstedAPI?' +\
+        # 'table=keplernames',
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        # EU
+        'http://exoplanet.eu/catalog/csv',
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        # OEC
+        'https://raw.githubusercontent.com/OpenExoplanetCatalogue/' + \
+        'oec_tables/master/comma_separated/open_exoplanet_catalogue.txt',
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        # ORG
+        'http://exoplanets.org/csv-files/exoplanets.csv',
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        # TEP
+        'https://www.astro.keele.ac.uk/jkt/tepcat/allplanets-csv.csv'
+    ]
+    archive = ['nasa', 'eu', 'oec', 'org', 'tep']
+    threads = []
+    for i in range(5):
+        j = archive[i]
+        download_link = download_links[i]
+        t = threading.Thread(target=_download_archive_threaded, args=(download_link, j))
+        t.daemon = True
+        threads.append(t)
+    for i in range(5):
+        threads[i].start()
+    for i in range(5):    
+        threads[i].join()
+
+
 def _nasa_full():
     '''
     Downloads the entire NASA Exoplanet Archive
@@ -349,7 +425,7 @@ def priors(exoplanet, archive='eu', save=False, user=True, auto=True, fit_ttv=Fa
     # Download NASA archive
     #_download_archive()
     if user==True:
-        _download_archive()
+        download_archive_threaded_execute()
         _load_csv()
         highest, ratios = _search_all(exoplanet)
         exoplanet = highest[0]
@@ -427,10 +503,10 @@ def priors(exoplanet, archive='eu', save=False, user=True, auto=True, fit_ttv=Fa
         t_mag = s.loc['sy_tmag']
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Assign Host data to Transitfit
-    host_T = (T, T * 2e-2)
+    host_T = (T, T * 5e-2)
     host_z = (z, zerr)
-    host_r = (rs, rs * 2e-2)
-    host_logg = (logg, logg * 2e-2)
+    host_r = (rs, rs * 5e-2)
+    host_logg = (logg, logg * 5e-2)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Nan checks
     # G = 6.67408e-11
@@ -460,10 +536,10 @@ def priors(exoplanet, archive='eu', save=False, user=True, auto=True, fit_ttv=Fa
         ms = s_limb.loc['st_mass']
         T = s_limb.loc['st_teff']
         logg = s_limb.loc['st_logg']
-        host_T = (T, T * 2e-2)
+        host_T = (T, T * 5e-2)
         host_z = (z, zerr)
-        host_r = (rs, rs * 2e-2)
-        host_logg = (logg, logg * 2e-2)
+        host_r = (rs, rs * 5e-2)
+        host_logg = (logg, logg * 5e-2)
         t14 = estimate_t14(rp, rs, a, P)
     if (np.isnan(w) or w==0):
         w = 90
@@ -486,7 +562,7 @@ def priors(exoplanet, archive='eu', save=False, user=True, auto=True, fit_ttv=Fa
     # Assign Exoplanet Priors to TransitFit
     radius_const = 0.1027626851
     cols = [['P', ['fixed' if archive=='spearnet' else 'gaussian'][0], P,
-                ['' if archive=='spearnet' else P * 1e-2][0], ''],
+                ['' if archive=='spearnet' else P * 1e-3][0], ''],
             ['t0', 'gaussian', t0, [7e-3 if archive=='spearnet' else 7e-3][0], ''],
             ['a', 'gaussian', a, [a * 2e-1 if archive=='spearnet' else a * 2e-1][0], ''],
             ['inc', 'gaussian', i, [i * 2e-1 if archive=='spearnet' else i * 2e-1][0], ''],
@@ -518,7 +594,7 @@ def priors(exoplanet, archive='eu', save=False, user=True, auto=True, fit_ttv=Fa
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # For printing variables only
     cols = [['P', ['fixed' if archive=='spearnet' else 'gaussian'][0], P,
-                ['' if archive=='spearnet' else P * 1e-2][0], ''],
+                ['' if archive=='spearnet' else P * 1e-3][0], ''],
             ['t0', 'gaussian', t0, [7e-3 if archive=='spearnet' else 7e-3][0], ''],
             ['a', 'gaussian', a, [a * 2e-1 if archive=='spearnet' else a * 2e-1][0], ''],
             ['inc', 'gaussian', i, [i * 2e-1 if archive=='spearnet' else i * 2e-1][0], ''],

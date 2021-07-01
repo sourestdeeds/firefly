@@ -45,7 +45,7 @@ def firefly(
         slices=10,
         cutoff=0.25,
         window=12,
-        nlive=2500,
+        nlive=2000,
         fit_ttv=False,
         detrending_list=[['nth order', 2]],
         dynesty_sample='rslice',
