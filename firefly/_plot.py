@@ -553,6 +553,8 @@ def read_fitted_lc(exoplanet, transits):
         pass
     else:
         start, stop = transit_loc[0][0] - window, transit_loc[0][-1] + window
+        if start < 0:
+            start, stop = 0, len(fit_combined)
     transit_mask[start:stop] = False
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Apply Mask
