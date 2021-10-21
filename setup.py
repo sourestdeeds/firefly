@@ -24,7 +24,7 @@ with open("README.md", "r") as fh:
 setuptools.setup( name='firefly',
                   version=get_version('firefly/__init__.py'),
                   description='For use with TransitFit',
-                  author='Steven Charles-Mindoza',
+                  author='Stephen Charles',
                   license='MIT',
                   long_description=long_description,
                   long_description_content_type='text/markdown',
