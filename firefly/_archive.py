@@ -6,7 +6,7 @@ Exoplanet archive tools.
 @author: Steven Charles-Mindoza
 """
 
-
+from rich import print
 from transitfit import calculate_logg
 from datetime import datetime, timedelta
 from tabulate import tabulate

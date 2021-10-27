@@ -9,6 +9,7 @@ Automated version of retrieval.
 from ._utils import _retrieval
 from ._archive import _search, _load_csv
 
+from rich import print
 from datetime import datetime
 from shutil import rmtree, make_archive
 from traceback import format_exc

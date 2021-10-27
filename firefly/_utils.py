@@ -9,6 +9,7 @@ The backend for auto_retrieval.
 from ._archive import priors, _tic, _load_csv, _search
 from ._plot import oc_fold, density_scatter
 
+from rich import print
 from transitfit import split_lightcurve_file, run_retrieval
 from astroquery.mast import Observations as obs
 from datetime import datetime
