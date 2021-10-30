@@ -29,7 +29,7 @@ setuptools.setup( name='firefly',
                   long_description=long_description,
                   long_description_content_type='text/markdown',
                   packages=setuptools.find_packages(),
-                  download_ul = 'https://github.com/sourestdeeds/firefly/archive/refs/tags/v2.0.0.tar.gz',
+                  download_url = 'https://github.com/sourestdeeds/firefly/archive/refs/tags/v2.0.0.tar.gz',
                   classifiers=[
                     "Programming Language :: Python :: 3",
                     "License :: OSI Approved :: MIT License"
