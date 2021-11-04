@@ -17,72 +17,71 @@ import sys
 import os
 
 
-
 def _auto_input_check(targets, curve_sample):
     if not (0 < curve_sample <= 1):
-        sys.exit('The curve sample must be in the range 0 < curve_sample <= 1.')
+        sys.exit("The curve sample must be in the range 0 < curve_sample <= 1.")
     _load_csv()
-    targets = ''.join(targets)
+    targets = "".join(targets)
     highest, ratios = _search(targets)
     exoplanet = highest[0]
-    print(f'\nTarget search chose {exoplanet}.')
+    print(f"\nTarget search chose {exoplanet}.")
     return exoplanet
 
 
 def firefly(
-        # Firefly Interface
-        targets,
-        archive='nasa',
-        curve_sample=1,
-        clean=True,
-        cache=True,
-        auto=True,
-        # MAST Search
-        hlsp=['SPOC'],
-        cadence=120,
-        bitmask='default',
-        # TransitFit Variables
-        walks=100,
-        slices=10,
-        cutoff=0.25,
-        window=12,
-        nlive=2000,
-        fit_ttv=False,
-        detrending_list=[['nth order', 2]],
-        dynesty_sample='rslice',
-        fitting_mode='folded',
-        limb_darkening_model='quadratic',
-        ld_fit_method='coupled',
-        max_batch_parameters=25,
-        batch_overlap=2,
-        dlogz=None,
-        maxiter=None,
-        maxcall=None,
-        dynesty_bounding='multi',
-        normalise=True,
-        detrend=True,
-        detrending_limits=[[-1000,1000]],
-        # Plotting
-        plot=True,
-        marker_color='dimgray',
-        line_color='black',
-        bin_data=True,
-        binned_color='red',
-        nprocs=1,
+    # Firefly Interface
+    targets,
+    archive="nasa",
+    curve_sample=1,
+    clean=True,
+    cache=True,
+    auto=True,
+    # MAST Search
+    hlsp=["SPOC"],
+    cadence=120,
+    bitmask="default",
+    # TransitFit Variables
+    walks=100,
+    slices=10,
+    cutoff=0.25,
+    window=12,
+    nlive=2000,
+    fit_ttv=False,
+    detrending_list=[["nth order", 2]],
+    dynesty_sample="rslice",
+    fitting_mode="folded",
+    limb_darkening_model="quadratic",
+    ld_fit_method="coupled",
+    max_batch_parameters=25,
+    batch_overlap=2,
+    dlogz=None,
+    maxiter=None,
+    maxcall=None,
+    dynesty_bounding="multi",
+    normalise=True,
+    detrend=True,
+    detrending_limits=[[-1000, 1000]],
+    # Plotting
+    plot=True,
+    marker_color="dimgray",
+    line_color="black",
+    bin_data=True,
+    binned_color="red",
+    nprocs=1,
 ):
-    '''
+    """
     Automated version of retrieval. For a single target the procedure is:
-         
+
          >>> from firefly import firefly
              target = ('WASP-43 b',)
              firefly(target)
-         
+
     For a list of targets:
-         
+
          >>> from firefly import firefly
              targets = ('WASP-43 b', 'WASP-18 b')
              firefly(targets)
-     
+
     - Targets passed are corrected for basic user input; 'wasp43b' is
       interpreted as 'WASP-43 b'. List must be of the form given in the
       example below.
@@ -98,9 +97,9 @@ def firefly(
       error or full completion of a target.
     - Email is also disabled by default. If enabled, status updates on
       completion and exceptions with the full traceback are sent.
-      
+
     Background tasks for feeding data to TransitFit include:
-    
+
     - Set the filter path to the TESS Filter.
     - Download EU/NASA exoplanet archive data every 10 days
       (checks the file age).
@@ -110,36 +109,36 @@ def firefly(
     - Run TransitFit.
     - Delete all downloaded data and inputs.
     - Zip and timestamp the output.
-        
+
     Input is capable of handling :
-    
+
         >>> ('wasp43b', 'WASp18b', 'wasP91--b') etc
-        
+
     Forces corrections based on classifier:
-    
+
         >>> 'WASP', 'LTT', 'GJ' etc
-    
+
     Parameters
     ----------
     targets : str, list
         A list of exoplanet targets.
         Input is a list tuple of strings:
-            
+
         >>> ('WASP-43 b', 'WASP-18 b', 'WASP-91 b')
     curve_sample : int {0 < curve_sample <= 1}, optional
         The fraction of curves generated to fit against. For example, setting
-        
+
         >>> curve_sample = 0.5
-        
+
         will fit half the curves extracted. The formula for this works as:
-            
+
         >>> total_curves =
             curves_extracted * curve_sample
-        
+
         Always returns an int. For example:
-            
+
         >>> curve_sample = 0.001
-        
+
         will fit using only 1 lightcurve from each sector.
         The default is 1 to fit all lightcurves across all sectors.
     archive : str, {'eu', 'nasa', 'org', 'all'}
@@ -168,16 +167,16 @@ def firefly(
         None will override the bitmask and use all cadences.
     cutoff : float, optional
         If there are no data within
-        
+
         >>> t14 * cutoff of t0,
-        
+
         a period will be
         discarded. Default is 0.25
     window : float, optional
         Data outside of the range
-        
+
         >>> [t0 ± (0.5 * t14) * window]
-        
+
         will be discarded.
     nlive : int, optional
         The number of live points to use in the nested sampling retrieval.
@@ -186,7 +185,7 @@ def firefly(
         A list of different detrending models. Each entry should consist
         of a method and a second parameter dependent on the method.
         Accepted methods are:
-            
+
         - ['nth order', order]
         - ['custom', function, [global fit indices, filter fit indices, epoch fit indices]]
         - ['off', ]
@@ -202,18 +201,18 @@ def firefly(
         of the detrending function should be given as a list. If there are
         no indices to be given, then use an empty list: []
         e.g. if the detrending function is given by
-            
+
         >>> foo(times, a, b, c):
                 # do something
-           
+
         and a should be fitted globally, then the entry in the method_list
         would be
-        
+
         - ['custom', foo, [1], [], []].
     dynesty_sample : str, optional
         Method used to sample uniformly within the likelihood constraint,
         conditioned on the provided bounds. Unique methods available are:
-            
+
         - uniform sampling within the bounds('unif')
         - random walks with fixed proposals ('rwalk')
         - random walks with variable ("staggering") proposals ('rstagger')
@@ -233,7 +232,7 @@ def firefly(
     fitting_mode : {`'auto'`, `'all'`, `'folded'`, `'batched'`}, optional
         The approach TransitFit takes towards limiting the number of parameters
         being simultaneously fitted. The available modes are:
-            
+
         - `'auto'` : Will calculate the number of parameters required to fit
           all the data simulataneously. If this is less than max_parameters,
           will set to `'all'` mode, else will set to `'folded'` if at least one
@@ -258,7 +257,7 @@ def firefly(
         DESCRIPTION. The default is False.
     limb_darkening_model : str, optional
         The limb darkening model to use. Allowed models are
-            
+
         - 'linear'
         - 'quadratic'
         - 'squareroot'
@@ -272,7 +271,7 @@ def firefly(
     ld_fit_method : {`'coupled'`, `'single'`, `'independent'`, `'off'`}, optional
         Determines the mode of fitting of limb darkening parameters. The
         available modes are:
-            
+
         - `'coupled'` : all limb darkening parameters are fitted
           independently, but are coupled to a wavelength dependent
           model based on the host parameters through `ldkt`
@@ -296,13 +295,13 @@ def firefly(
         Retrieval iteration will stop when the estimated contribution of
         the remaining prior volume to the total evidence falls below this
         threshold. Explicitly, the stopping criterion is
-        
+
         >>> ln(z + z_est) - ln(z) < dlogz,
-        
+
         where z is the current evidence
         from all saved samples and z_est is the estimated contribution from
         the remaining volume. The default is
-        
+
         >>> 1e-3 * (nlive - 1) + 0.01.
     maxiter : int or `None`, optional
         The maximum number of iterations to run. If `None`, will
@@ -316,9 +315,9 @@ def firefly(
         If True, will assume that the light curves have not been normalised and
         will fit normalisation constants within the retrieval. The range to
         fit normalisation constants c_n are automatically detected using
-        
+
         >>> 1/f_min <= c_n <= 1/f_max
-        
+
         as the default range, where f_min and f_max are the minimum and maximum
         flux values for a given light curve. Default is True.
     detrend : bool, optional
@@ -328,14 +327,13 @@ def firefly(
     -------
     A whole lot of data to science!
     Zipped files are found in:
-    
+
     >>> firefly/WASP-43 b timestamp.gz.tar
 
-    '''
+    """
     exoplanet = _auto_input_check(targets, curve_sample)
     try:
-        archive_name = \
-        _retrieval(
+        archive_name = _retrieval(
             # Firefly Interface
             exoplanet,
             archive=archive,
@@ -376,61 +374,69 @@ def firefly(
             binned_color=binned_color,
             nprocs=nprocs,
         )
-        success = f'{os.getcwd()}/firefly/{archive_name}.zip'
-        print(f'\nData location: {success}\n'
-                'A new target has been fully retrieved across ' +
-                'all available TESS Sectors.')
+        success = f"{os.getcwd()}/firefly/{archive_name}.zip"
+        print(
+            f"\nData location: {success}\n"
+            "A new target has been fully retrieved across "
+            + "all available TESS Sectors."
+        )
     except KeyboardInterrupt:
-        exo_folder = f'firefly/{exoplanet}'
+        exo_folder = f"firefly/{exoplanet}"
         now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
-        keyboard = f'firefly/KeyboardInterrupt/{exoplanet} ' +\
-                   f'{now} KeyboardInterrupt'
-        make_archive(keyboard, format='zip',
-                 root_dir=f'{os.getcwd()}/firefly/',
-                 base_dir=f'{exoplanet}')
+        keyboard = (
+            f"firefly/KeyboardInterrupt/{exoplanet} " + f"{now} KeyboardInterrupt"
+        )
+        make_archive(
+            keyboard,
+            format="zip",
+            root_dir=f"{os.getcwd()}/firefly/",
+            base_dir=f"{exoplanet}",
+        )
         rmtree(exo_folder)
         raise
         sys.exit()
     except BaseException as e:
-        exo_folder = f'firefly/{exoplanet}'
+        exo_folder = f"firefly/{exoplanet}"
         now = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
-        exception = f'firefly/Exception/{exoplanet} ' +\
-                    f'{now} Exception'
+        exception = f"firefly/Exception/{exoplanet} " + f"{now} Exception"
         trace_back = format_exc()
-        print(trace_back, file=open(exo_folder+'/traceback.txt', 'w'))
+        print(trace_back, file=open(exo_folder + "/traceback.txt", "w"))
         print(
-            'Variables used:\n\n'
-            f'target={exoplanet}\n'
-            f'archive={str(archive)}\n'
-            f'curve_sample={str(curve_sample)}\n'
-            f'clean={clean}\n'
-            f'cache={cache}\n'
-            f'auto={auto}\n'
-            f'hlsp={str(hlsp)}\n'
-            f'cadence={str(cadence)}\n'
-            f'walks={str(walks)}\n'
-            f'slices={str(slices)}\n'
-            f'cutoff={str(cutoff)}\n'
-            f'window={str(window)}\n'
-            f'nlive={str(nlive)}\n'
-            f'fit_ttv={fit_ttv}\n'
-            f'detrending_list={str(detrending_list)}\n'
-            f'dynesty_sample={dynesty_sample}\n'
-            f'fitting_mode={fitting_mode}\n'
-            f'limb_darkening_model={limb_darkening_model}\n'
-            f'ld_fit_method={ld_fit_method}\n'
-            f'max_batch_parameters={str(max_batch_parameters)}\n'
-            f'batch_overlap={str(batch_overlap)}\n'
-            f'dlogz={str(dlogz)}\n'
-            f'maxiter={str(maxiter)}\n'
-            f'maxcall={str(maxcall)}\n'
-            f'dynesty_bounding={dynesty_bounding}\n'
-            f'normalise={normalise}\n'
-            f'detrend={detrend}',
-            file=open(exo_folder+'/variables.txt', 'w')
+            "Variables used:\n\n"
+            f"target={exoplanet}\n"
+            f"archive={str(archive)}\n"
+            f"curve_sample={str(curve_sample)}\n"
+            f"clean={clean}\n"
+            f"cache={cache}\n"
+            f"auto={auto}\n"
+            f"hlsp={str(hlsp)}\n"
+            f"cadence={str(cadence)}\n"
+            f"walks={str(walks)}\n"
+            f"slices={str(slices)}\n"
+            f"cutoff={str(cutoff)}\n"
+            f"window={str(window)}\n"
+            f"nlive={str(nlive)}\n"
+            f"fit_ttv={fit_ttv}\n"
+            f"detrending_list={str(detrending_list)}\n"
+            f"dynesty_sample={dynesty_sample}\n"
+            f"fitting_mode={fitting_mode}\n"
+            f"limb_darkening_model={limb_darkening_model}\n"
+            f"ld_fit_method={ld_fit_method}\n"
+            f"max_batch_parameters={str(max_batch_parameters)}\n"
+            f"batch_overlap={str(batch_overlap)}\n"
+            f"dlogz={str(dlogz)}\n"
+            f"maxiter={str(maxiter)}\n"
+            f"maxcall={str(maxcall)}\n"
+            f"dynesty_bounding={dynesty_bounding}\n"
+            f"normalise={normalise}\n"
+            f"detrend={detrend}",
+            file=open(exo_folder + "/variables.txt", "w"),
         )
-        make_archive(exception, format='zip',
-                 root_dir=f'{os.getcwd()}/firefly/',
-                 base_dir=f'{exoplanet}')
+        make_archive(
+            exception,
+            format="zip",
+            root_dir=f"{os.getcwd()}/firefly/",
+            base_dir=f"{exoplanet}",
+        )
         rmtree(exo_folder)
         print(trace_back)
