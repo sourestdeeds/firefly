@@ -384,8 +384,12 @@ def _retrieval(
         df = df.append([{'Path': split_curve}], ignore_index=True)
         df['Telescope'], df['Filter'], df['Detrending'] = 0, 0, 0
         df['Epochs'] = range(0, len(df))
-    print(f'\nA random sample of {len(df)} lightcurves will be fitted'
+    if curve_sample==1:
+        print(f'\nA total of {len(df)} lightcurves will be fitted'
           ' across all TESS Sectors.\n')
+    else:
+        print(f'\nA random sample of {len(df)} lightcurves will be fitted'
+            ' across all TESS Sectors.\n')
     df.to_csv(data_path, index=False, header=True)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Paths to data, priors, and filter info:
