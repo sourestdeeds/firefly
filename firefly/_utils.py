@@ -365,6 +365,17 @@ def _retrieval(
     split_curve_in_dir = random.sample(split_curve_in_dir, k=int(curves))
     split_curve_in_dir = natsorted(split_curve_in_dir)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Enforce batches be the same size
+    equal_batches = [6+4*n for n in range(0,500)]
+    if int(curves) not in equal_batches:
+        import bisect
+        index = bisect.bisect(equal_batches, int(curves))
+        new_curves = equal_batches[index-1]
+        print(f'\nEnforcing lightcurves to be in equal batch sizes. Discarded {curves-new_curves}.')
+    curves = new_curves
+    split_curve_in_dir = random.sample(split_curve_in_dir, k=int(curves))
+    split_curve_in_dir = natsorted(split_curve_in_dir)
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Set the Data Paths
     data_path = f'{exo_folder}/data_paths.csv'
     cols = ['Path', 'Telescope', 'Filter', 'Epochs', 'Detrending']
