@@ -362,8 +362,8 @@ def _retrieval(
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Sort the files into ascending order and take random sample
     curves = ceil(curve_sample * len(split_curve_in_dir))
-    split_curve_in_dir = random.sample(split_curve_in_dir, k=int(curves))
-    split_curve_in_dir = natsorted(split_curve_in_dir)
+    #split_curve_in_dir = random.sample(split_curve_in_dir, k=int(curves))
+    #split_curve_in_dir = natsorted(split_curve_in_dir)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Enforce batches be the same size
     equal_batches = [6+4*n for n in range(0,500)]
