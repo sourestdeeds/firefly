@@ -366,7 +366,10 @@ def _retrieval(
     #split_curve_in_dir = natsorted(split_curve_in_dir)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Enforce batches be the same size
-    equal_batches = [6+4*n for n in range(0,500)]
+    if fit_ttv==True:
+        equal_batches = [5+3*n for n in range(0,500)]
+    else:
+        equal_batches = [6+4*n for n in range(0,500)]
     if int(curves) > 5:
         if int(curves) not in equal_batches:
             import bisect
