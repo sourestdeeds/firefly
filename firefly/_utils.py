@@ -207,13 +207,13 @@ def _fits(exoplanet,
     os.makedirs('firefly/data/cache', exist_ok=True)
     for j, fitsfile in enumerate(lc_links):
         TESS_fits = None
-        while TESS_fits == None:
+        while TESS_fits is None:
             try:
                 with set_temp_cache('firefly/data/cache'):
                     TESS_fits = Table.read(fitsfile, cache=cache)
             except:
                 pass
-            if TESS_fits != None:
+            if TESS_fits is not None:
                 pass
         source = f'{exo_folder}/mastDownload'
         mast_name = data['obs_id'][j]
