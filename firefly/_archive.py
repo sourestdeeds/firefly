@@ -694,7 +694,7 @@ def gen_tess(archive='nasa', cadence=120):
         df = exo_eu
     df['tic_id'] = df['tic_id'].str.replace('TIC ', '')
     df[f'Products ({cadence} Cadence)'] = df['tic_id'].apply(count_products)
-    df['Transits'] = np.ceil((0.8 * 27.4 / df['pl_orbper']) * df['Products'])
+    df['Transits'] = np.ceil((0.8 * 27.4 / df['pl_orbper']) * df[f'Products ({cadence} Cadence)'])
     df['Transits'] = df['Transits'].fillna(-1).astype(int)
     df['pl_name'] = \
             Categorical(df['pl_name'],
