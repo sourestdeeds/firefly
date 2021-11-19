@@ -70,9 +70,9 @@
 """
 
 name = 'firefly'
-__version__ = '0.8.0'
+__version__ = '0.8.1'
 
 from .auto_retrieval import firefly
-from ._archive import priors, tess, tess_candidate, gen_tess, gen_tess_fast
+from ._archive import priors, tess, tess_candidate, gen_tess
 from ._plot import plot_epoch, oc, oc_fold
 from ._utils import mast, discover

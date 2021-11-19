@@ -11,11 +11,11 @@ from transitfit import calculate_logg
 from datetime import datetime, timedelta
 from tabulate import tabulate
 from pandas import DataFrame, read_csv, Categorical, concat
+from astroquery.mast import Observations as obs
 from fuzzywuzzy import process
 from natsort import natsorted
-from math import ceil
 import numpy as np
-import random
+import time
 import sys
 import os
 import threading
@@ -668,166 +668,39 @@ def tess(archive='eu', survey=None):
     return targets, all_targets, ttv_targets
 
 
-def gen_tess(archive='nasa'):
-    #_download_archive()
+def gen_tess(archive='nasa', cadence=120):
+    '''Generates all TESS targets which have a fitsfile.'''
+
+    def count_products(tic_id):
+        '''Counts the amount of TESS fitsfiles on MAST.'''
+        time.sleep(0.01)
+        search = obs.query_criteria(dataproduct_type=['timeseries'],
+                                    project='TESS',
+                                    provenance_name=['SPOC'],
+                                    t_exptime=cadence,
+                                    target_name=tic_id).to_pandas()
+        search = search[search['t_exptime']==cadence]
+        search = search[~search.dataURL.str.endswith('_dvt.fits')]
+        if len(search) is None:
+            return 0
+        return len(search)
+
+    print('Generating product list and transit counts.')
+    print('The process should take no longer than 15 minutes.')
     _load_csv()
-    here = os.path.dirname(os.path.abspath(__file__))
-    mast_csv = f'{here}/data/Search/TESS_lc.csv.xz'
-    mast = read_csv(mast_csv)
-    exo_list = exo_nasa[['pl_name', 'tic_id']] \
-              .dropna() .drop_duplicates('pl_name') \
-              .drop(['tic_id'], axis=1) .values .tolist()
-    exo_list = [j for i in exo_list for j in i]
-    exo_list = natsorted(exo_list)
-    viable = []
-    products = []
-    period = []
-    epochs = []
-    tic = []
-    tess_mag = []
-    ra_list, dec_list, dist_list = [], [], []
-    for i, exoplanet in enumerate(exo_list):
-        try:
-            if archive=='nasa':
-                host_T, host_z, host_r, host_logg, t0, P, t14, repack, ra, dec, dist, t_mag = \
-                            priors(exoplanet, archive, user=False)
-            else:
-                host_T, host_z, host_r, host_logg, t0, P, t14, repack = \
-                            priors(exoplanet, archive, user=False)
-            lc_links, tic_id = _lc(exoplanet, mast)
-            if not len(lc_links)==0:
-                epoch = ceil((0.8 * 27.4 / P) * len(lc_links))
-                viable.append(exoplanet)
-                tic.append(tic_id)
-                products.append(len(lc_links))
-                period.append(P)
-                epochs.append(epoch)
-                if archive=='nasa':
-                    ra_list.append(ra)
-                    dec_list.append(dec)
-                    dist_list.append(dist)
-                    tess_mag.append(t_mag)
-            else:
-                pass
-        except Exception:
-            pass
     if archive=='nasa':
-        data = {'Exoplanet':viable, 'TIC ID':tic, 'Products':products, 'Period':period,
-                'Epochs':epochs, 'RA':ra_list, 'DEC':dec_list, 'Distance':dist_list,
-                'TESS Magnitude':tess_mag}
-    else:
-        data = {'Exoplanet':viable, 'TIC ID':tic, 'Products':products, 'Period':period,
-                'Epochs':epochs}
-    df = DataFrame(data)
-    df['Exoplanet'] = \
-            Categorical(df['Exoplanet'],
+        df = exo_nasa
+    elif archive=='eu':
+        df = exo_eu
+    df['tic_id'] = df['tic_id'].str.replace('TIC ', '')
+    df[f'Products ({cadence} Cadence)'] = df['tic_id'].apply(count_products)
+    df['Transits'] = np.ceil((0.8 * 27.4 / df['pl_orbper']) * df['Products'])
+    df['Transits'] = df['Transits'].fillna(-1).astype(int)
+    df['pl_name'] = \
+            Categorical(df['pl_name'],
             ordered=True,
-            categories=natsorted(df['Exoplanet'].unique()))
-    df = df.sort_values('Exoplanet')
+            categories=natsorted(df['pl_name'].unique()))
+    df = df.sort_values('pl_name')
     here = os.path.dirname(os.path.abspath(__file__))
-    df.to_csv(f'{here}/data/Targets/{archive}_tess_viable.csv', index=False)
+    df.to_csv(f'{here}/data/Targets/ML_nasa_tess_viable.csv.xz', index=False)
 
-def gen_tess_fast(archive='nasa'):
-    #_download_archive()
-    _load_csv()
-    here = os.path.dirname(os.path.abspath(__file__))
-    mast_csv = f'{here}/data/Search/TESS_lc_fast.csv.xz'
-    mast = read_csv(mast_csv)
-    exo_list = exo_nasa[['pl_name', 'tic_id']] \
-              .dropna() .drop_duplicates('pl_name') \
-              .drop(['tic_id'], axis=1) .values .tolist()
-    exo_list = [j for i in exo_list for j in i]
-    exo_list = natsorted(exo_list)
-    viable = []
-    products = []
-    period = []
-    epochs = []
-    tic = []
-    tess_mag = []
-    ra_list, dec_list, dist_list = [], [], []
-    for i, exoplanet in enumerate(exo_list):
-        try:
-            if archive=='nasa':
-                host_T, host_z, host_r, host_logg, t0, P, t14, repack, ra, dec, dist, t_mag = \
-                            priors(exoplanet, archive, user=False)
-            else:
-                host_T, host_z, host_r, host_logg, t0, P, t14, repack = \
-                            priors(exoplanet, archive, user=False)
-            lc_links, tic_id = _lc(exoplanet, mast, fast=True)
-            if not len(lc_links)==0:
-                epoch = ceil((0.8 * 27.4 / P) * len(lc_links))
-                viable.append(exoplanet)
-                tic.append(tic_id)
-                products.append(len(lc_links))
-                period.append(P)
-                epochs.append(epoch)
-                if archive=='nasa':
-                    ra_list.append(ra)
-                    dec_list.append(dec)
-                    dist_list.append(dist)
-                    tess_mag.append(t_mag)
-            else:
-                pass
-        except Exception:
-            pass
-    if archive=='nasa':
-        data = {'Exoplanet':viable, 'TIC ID':tic, 'Products':products, 'Period':period,
-                'Epochs':epochs, 'RA':ra_list, 'DEC':dec_list, 'Distance':dist_list,
-                'TESS Magnitude':tess_mag}
-    else:
-        data = {'Exoplanet':viable, 'TIC ID':tic, 'Products':products, 'Period':period,
-                'Epochs':epochs}
-    df = DataFrame(data)
-    df['Exoplanet'] = \
-            Categorical(df['Exoplanet'],
-            ordered=True,
-            categories=natsorted(df['Exoplanet'].unique()))
-    df = df.sort_values('Exoplanet')
-    here = os.path.dirname(os.path.abspath(__file__))
-    df.to_csv(f'{here}/data/Targets/{archive}_tess_viable_fast.csv', index=False)
-
-
-def gen_tess_ttv():
-    _download_archive()
-    _load_csv()
-    here = os.path.dirname(os.path.abspath(__file__))
-    mast_csv = f'{here}/data/Search/TESS_lc.csv.xz'
-    mast = read_csv(mast_csv)
-    ttv_list = exo_nasa[['pl_name', 'tic_id', 'ttv_flag']]
-    ttv_list = ttv_list[ttv_list!=0] . dropna() \
-              .drop_duplicates('pl_name') \
-              .drop(['tic_id', 'ttv_flag'], axis=1) .values .tolist()
-    ttv_list = [j for i in ttv_list for j in i]
-    ttv_list = natsorted(ttv_list)
-    viable_ttv = []
-    products_ttv = []
-    period_ttv = []
-    epochs_ttv = []
-    tic = []
-    for i, exoplanet in enumerate(ttv_list):
-        try:
-            host_T, host_z, host_r, host_logg, t0, P, t14, repack = \
-                            priors(exoplanet, archive, user=False)
-            lc_links, tic_id = _lc(exoplanet, mast)
-            if not len(lc_links)==0:
-                epoch = ceil((0.8 * 27.4 / P) * len(lc_links))
-                viable_ttv.append(exoplanet)
-                tic.append(tic_id)
-                products_ttv.append(len(lc_links))
-                period_ttv.append(P)
-                epochs_ttv.append(epoch)
-            else:
-                pass
-        except Exception:
-            pass
-    data = {'Exoplanet':viable_ttv, 'Products':products_ttv,
-            'Period':period_ttv, 'Epochs':epochs_ttv}
-    df = DataFrame(data)
-    df['Exoplanet'] = \
-            Categorical(df['Exoplanet'],
-            ordered=True,
-            categories=natsorted(df['Exoplanet'].unique()))
-    df = df.sort_values('Exoplanet')
-    here = os.path.dirname(os.path.abspath(__file__))
-    df.to_csv(f'{here}/data/Filters/tess_ttv_viable.csv', index=False)
-    
