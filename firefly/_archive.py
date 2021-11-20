@@ -21,7 +21,7 @@ import sys
 import os
 import threading
 
-tqdm.pandas(desc="Progress:")
+tqdm.pandas(desc="Progress")
 
 
 class NaNError(Exception):
