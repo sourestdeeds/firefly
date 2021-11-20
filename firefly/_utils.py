@@ -14,6 +14,7 @@ from transitfit import split_lightcurve_file, run_retrieval
 from transitfit.plotting import quick_plot
 from transitfit.lightcurve import LightCurve
 from astroquery.mast import Observations as obs
+from tqdm import tqdm
 from datetime import datetime
 from tabulate import tabulate
 from astropy.config import set_temp_cache
@@ -387,7 +388,7 @@ def _retrieval(
     # Quick plot
     print(f'\nGenerating quick plots for {len(split_curve_in_dir)} lightcurves.')
     os.makedirs(f'{exo_folder}/quick_plots', exist_ok=True)
-    for i, lc in enumerate(split_curve_in_dir):
+    for i, lc in enumerate(tqdm(split_curve_in_dir)):
         split = read_csv(lc)
         light_curve = LightCurve(split.Time, split.Flux, split.Flux_err)
         plot = quick_plot(light_curve, fname=f'split_curve_{i}', folder_path=f'{exo_folder}/quick_plots')

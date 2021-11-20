@@ -47,6 +47,7 @@ setuptools.setup( name='firefly',
                                     'lightkurve',
                                     'transitfit',
                                     'rich',
+                                    'tqdm',
                                     ],
                   python_requires='>=3.6',
                   include_package_data=True )
