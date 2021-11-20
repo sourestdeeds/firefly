@@ -14,11 +14,14 @@ from pandas import DataFrame, read_csv, Categorical, concat
 from astroquery.mast import Observations as obs
 from fuzzywuzzy import process
 from natsort import natsorted
+from tqdm import tqdm
 import numpy as np
 import time
 import sys
 import os
 import threading
+
+tqdm.pandas(desc="Progress:")
 
 
 class NaNError(Exception):
@@ -700,7 +703,7 @@ def gen_tess(archive='nasa', cadence=120):
     print('Generating product list and transit counts.')
     print('The process should take no longer than 15 minutes.')
     df['tic_id'] = df['tic_id'].str.replace('TIC ', '')
-    df[f'Products ({cadence} Cadence)'] = df['tic_id'].apply(count_products)
+    df[f'Products ({cadence} Cadence)'] = df['tic_id'].progress_apply(count_products)
     df['Transits'] = np.ceil((0.8 * 27.4 / df['pl_orbper']) * df[f'Products ({cadence} Cadence)'])
     df['Transits'] = df['Transits'].fillna(-1).astype(int)
     df['pl_name'] = \
