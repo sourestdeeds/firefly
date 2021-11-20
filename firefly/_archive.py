@@ -621,8 +621,8 @@ def priors(exoplanet, archive='eu', save=False, user=True, auto=True, fit_ttv=Fa
     repack = DataFrame(cols, columns=['Parameter', 'Distribution',
                                       'Input A', 'Input B', 'Filter'])
     is_nan = repack.isnull().values.any()
-    if (is_nan and user==False and auto==True):
-        raise NaNError(f'Skipping {exoplanet} due to missing prior data.')
+    #if (is_nan and user==False and auto==True):
+     #   raise NaNError(f'Skipping {exoplanet} due to missing prior data.')
     if archive=='all':
         print(f'\nPriors generated from the NASA, EU, OEC and ORG Archives for'
               f' {exoplanet} ({tic}).\n')
@@ -685,13 +685,20 @@ def gen_tess(archive='nasa', cadence=120):
             return 0
         return len(search)
 
-    print('Generating product list and transit counts.')
-    print('The process should take no longer than 15 minutes.')
     _load_csv()
     if archive=='nasa':
         df = exo_nasa
     elif archive=='eu':
         df = exo_eu
+    elif archive=='nasa_full':
+        download_link =  \
+        'https://exoplanetarchive.ipac.caltech.edu/' +\
+        'TAP/sync?query=select+*+from+ps&format=csv'
+        print('Downloading the full NASA archive.')
+        df = read_csv(download_link)
+        print('Download complete.')
+    print('Generating product list and transit counts.')
+    print('The process should take no longer than 15 minutes.')
     df['tic_id'] = df['tic_id'].str.replace('TIC ', '')
     df[f'Products ({cadence} Cadence)'] = df['tic_id'].apply(count_products)
     df['Transits'] = np.ceil((0.8 * 27.4 / df['pl_orbper']) * df[f'Products ({cadence} Cadence)'])
@@ -703,4 +710,5 @@ def gen_tess(archive='nasa', cadence=120):
     df = df.sort_values('pl_name')
     here = os.path.dirname(os.path.abspath(__file__))
     df.to_csv(f'{here}/data/Targets/ML_nasa_tess_viable.csv.xz', index=False)
+    print('Operation completed.')
 

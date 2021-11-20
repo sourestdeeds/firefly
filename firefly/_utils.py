@@ -11,6 +11,8 @@ from ._plot import oc_fold, density_scatter
 
 from rich import print
 from transitfit import split_lightcurve_file, run_retrieval
+from transitfit.plotting import quick_plot
+from transitfit.lightcurve import LightCurve
 from astroquery.mast import Observations as obs
 from datetime import datetime
 from tabulate import tabulate
@@ -338,10 +340,13 @@ def _retrieval(
         host_T, host_z, host_r, host_logg, t0, P, t14, repack = \
             priors(exoplanet, archive=archive, save=True, user=False, auto=auto,
                     fit_ttv=fit_ttv)
-    if auto==False:
+    is_nan = repack.isnull().values.any()
+    if auto==False or is_nan==True:
         answer = ''
         while answer!='y':
-            answer = input('Modify your priors file, type y to proceed. ')
+            print('\nMissing values detected in priors located at:')
+            print(f'{os.getcwd()}/{exo_folder}')
+            answer = input('\nModify your priors file, then enter y to proceed. ')
             if answer=='q':
                 sys.exit('Exiting..')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -354,18 +359,15 @@ def _retrieval(
         split_curves = split_lightcurve_file(csvfile, t0=t0, P=P, t14=t14,
                                              cutoff=cutoff, window=window)
         split_curves = [s + '.csv' for s in split_curves]
+        
         split_curve_in_dir.append(split_curves)
         transits_per_sector.append(len(split_curves))
     split_curve_in_dir = [i for sub in split_curve_in_dir for i in sub]
     print(f'\nA total of {len(split_curve_in_dir)} lightcurves '
-          'were generated.')
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-    # Sort the files into ascending order and take random sample
-    curves = ceil(curve_sample * len(split_curve_in_dir))
-    #split_curve_in_dir = random.sample(split_curve_in_dir, k=int(curves))
-    #split_curve_in_dir = natsorted(split_curve_in_dir)
+          'were created.')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Enforce batches be the same size
+    curves = ceil(curve_sample * len(split_curve_in_dir))
     if fit_ttv==True:
         equal_batches = [5+3*n for n in range(0,500)]
     else:
@@ -377,8 +379,20 @@ def _retrieval(
             new_curves = equal_batches[index-1]
             print(f'\nEnforcing lightcurves to be in equal batch sizes. Discarded {curves-new_curves}.')
             curves = new_curves
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Sort the files into ascending order and take random sample
     split_curve_in_dir = random.sample(split_curve_in_dir, k=int(curves))
     split_curve_in_dir = natsorted(split_curve_in_dir)
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    # Quick plot
+    print(f'\nGenerating quick plots for {len(split_curve_in_dir)} lightcurves.')
+    os.makedirs(f'{exo_folder}/quick_plots', exist_ok=True)
+    for i, lc in enumerate(split_curve_in_dir):
+        split = read_csv(lc)
+        light_curve = LightCurve(split.Time, split.Flux, split.Flux_err)
+        plot = quick_plot(light_curve, fname=f'split_curve_{i}', folder_path=f'{exo_folder}/quick_plots')
+    print('\nSplit curve quick plots to check the transit window are located at:')
+    print(f'{os.getcwd()}/{exo_folder}/quick_plots')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Set the Data Paths
     data_path = f'{exo_folder}/data_paths.csv'
