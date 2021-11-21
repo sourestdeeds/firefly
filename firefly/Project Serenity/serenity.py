@@ -6,7 +6,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error
 from xgboost.sklearn import XGBRegressor
 from xgboost import plot_tree, plot_importance, to_graphviz
-from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import GridSearchCV, KFold
 from sklearn import preprocessing
 from sklearn.metrics import accuracy_score
 import matplotlib.pyplot as plt
@@ -22,12 +22,13 @@ def read_data(filename: str, objective: str, features: List[str], seed=10, overr
     # Read the data
     global X_train, X_test, y_train, y_test, X, y
     # Add the objective to cols
-    features += [objective]
+    featuresAndobjective = features.copy()
+    featuresAndobjective += [objective]
     filename = Path(filename)
     if override_features:
         X = pd.read_csv(filename)
     else:
-        X = pd.read_csv(filename, usecols=features)
+        X = pd.read_csv(filename, usecols=featuresAndobjective)
 
     # Remove rows with missing target, separate target from predictors
     X.dropna(axis=0, subset=[objective, 'pl_radj'], inplace=True)
@@ -79,13 +80,14 @@ def pipelines(hyper_parameters, seed=0):
             ('cat', categorical_transformer, categorical_cols)
         ])
 
+    cv = KFold(n_splits=5) 
     # Tune Params and cross validate
     xgbRegressor_gridSearch = Pipeline(
         steps=[
             ('crossValidation', GridSearchCV(
                 XGBRegressor(random_state=seed),
                 hyper_parameters,
-                cv = 4,
+                cv = cv,
                 n_jobs = 10,
                 verbose=True,
                 refit=True
@@ -166,7 +168,7 @@ def permutations():
     return perm
 
 
-def compare_predict_vs_test(X, X_test, y_test, y_pred, mass=True, sample_size=15):
+def compare_predict_vs_test(raw_data, X_test, y_test, y_pred, mass=True, sample_size=15):
     '''Prints a table to compare the test versus the prediction.'''
     from tabulate import tabulate
     import mr_forecast as mr
@@ -183,7 +185,7 @@ def compare_predict_vs_test(X, X_test, y_test, y_pred, mass=True, sample_size=15
     y_test_p = y_test.sample(sample_size)
     X_test_p = X_test['pl_radj'][y_test_p.index]
     y_pred_p = y_pred[y_test_p.index]
-    pl_name = X.pl_name[y_test_p.index]
+    pl_name = raw_data.pl_name[y_test_p.index]
 
     df = pd.DataFrame()
     df['Planet'] = pl_name
