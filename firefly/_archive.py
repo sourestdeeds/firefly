@@ -250,9 +250,9 @@ def _download_archive():
         '+from+pscomppars&format=csv',
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # NASA Kepler Names
-        # 'https://exoplanetarchive.ipac.caltech.edu/cgi-bin/' +\
-        # 'nstedAPI/nph-nstedAPI?' +\
-        # 'table=keplernames',
+        'https://exoplanetarchive.ipac.caltech.edu/cgi-bin/' +\
+        'nstedAPI/nph-nstedAPI?' +\
+        'table=k2pandc',
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # EU
         'http://exoplanet.eu/catalog/csv',
@@ -267,7 +267,7 @@ def _download_archive():
         # TEP
         'https://www.astro.keele.ac.uk/jkt/tepcat/allplanets-csv.csv'
     ]
-    archive = ['nasa', 'eu', 'oec', 'org', 'tep']
+    archive = ['nasa', 'eu', 'kep', 'oec', 'org', 'tep']
     for i, download_link in enumerate(download_links):
         try:
             i = archive[i]
@@ -333,9 +333,8 @@ def download_archive_threaded_execute():
         '+from+pscomppars&format=csv',
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # NASA Kepler Names
-        # 'https://exoplanetarchive.ipac.caltech.edu/cgi-bin/' +\
-        # 'nstedAPI/nph-nstedAPI?' +\
-        # 'table=keplernames',
+        'https://exoplanetarchive.ipac.caltech.edu/' +\
+        'TAP/sync?query=select+*+from+k2pandc&format=csv',
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         # EU
         'http://exoplanet.eu/catalog/csv',
@@ -350,7 +349,7 @@ def download_archive_threaded_execute():
         # TEP
         'https://www.astro.keele.ac.uk/jkt/tepcat/allplanets-csv.csv'
     ]
-    archive = ['nasa', 'eu', 'oec', 'org', 'tep']
+    archive = ['nasa', 'kep', 'eu', 'oec', 'org', 'tep']
     threads = []
     for i in range(5):
         j = archive[i]
@@ -713,5 +712,6 @@ def gen_tess(archive='nasa', cadence=120):
     df = df.sort_values('pl_name')
     here = os.path.dirname(os.path.abspath(__file__))
     df.to_csv(f'{here}/data/Targets/ML_nasa_tess_viable.csv.xz', index=False)
+    df.to_csv('firefly/data/ML_nasa_tess_viable.csv.xz', index=False)
     print('Operation completed.')
 
