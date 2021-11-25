@@ -5,7 +5,7 @@ from sklearn.preprocessing import OneHotEncoder, MinMaxScaler, StandardScaler, R
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error
 from xgboost.sklearn import XGBRegressor
-from xgboost import plot_tree, plot_importance, to_graphviz
+from xgboost import plot_tree, plot_importance, to_graphviz, DMatrix
 from sklearn.model_selection import GridSearchCV, KFold
 from sklearn import preprocessing
 from sklearn.metrics import accuracy_score
@@ -32,7 +32,7 @@ def read_data(filename: str, objective: str, features: List[str], seed=10, overr
 
     # Remove rows with missing target, separate target from predictors
     X.dropna(axis=0, subset=[objective, 'pl_radj'], inplace=True)
-    # X.dropna(axis=0, subset=[objective], inplace=True)
+    #X.dropna(axis=0, subset=[objective], inplace=True)
     y = X[objective]
     # print(f'Target has {y.isnull().sum()} missing values.')
     X.drop([objective], axis=1, inplace=True)
@@ -42,7 +42,10 @@ def read_data(filename: str, objective: str, features: List[str], seed=10, overr
                                             train_size=0.8, test_size=0.2,
                                             random_state=seed)
     #print(X_train.columns)
-    return X_train, X_test, y_train, y_test, X, y
+    #xg_train = DMatrix(X_train, label=y_train)
+    #xg_test = DMatrix(X_test, label=y_test)
+    return X_train, X_test, y_train, y_test, X, y # , xg_train, xg_test
+
 
 
 def pipelines(hyper_parameters, seed=0):
