@@ -364,8 +364,9 @@ def _retrieval(
         split_curve_in_dir.append(split_curves)
         transits_per_sector.append(len(split_curves))
     split_curve_in_dir = [i for sub in split_curve_in_dir for i in sub]
-    print(f'\nA total of {len(split_curve_in_dir)} lightcurves '
-          'were created.')
+    print(f'\nA total of {len(split_curve_in_dir)}', 
+        'lightcurves' if len(split_curve_in_dir) > 1 else 'lightcurve',
+        'were' if len(split_curve_in_dir) > 1 else 'was', 'generated.')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Enforce batches be the same size
     curves = ceil(curve_sample * len(split_curve_in_dir))
@@ -384,9 +385,13 @@ def _retrieval(
     # Sort the files into ascending order and take random sample
     split_curve_in_dir = random.sample(split_curve_in_dir, k=int(curves))
     split_curve_in_dir = natsorted(split_curve_in_dir)
+    print(f'\nA total of {len(split_curve_in_dir)}', 
+        'lightcurves' if len(split_curve_in_dir) > 1 else 'lightcurve',
+        'will be used.')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Quick plot
-    print(f'\nGenerating quick plots for {len(split_curve_in_dir)} lightcurves.')
+    print(f'\nGenerating quick plots for {len(split_curve_in_dir)}',
+        'lightcurves.' if len(split_curve_in_dir) > 1 else 'lightcurve.') 
     os.makedirs(f'{exo_folder}/quick_plots', exist_ok=True)
     for i, lc in enumerate(tqdm(split_curve_in_dir)):
         split = read_csv(lc)
@@ -403,12 +408,7 @@ def _retrieval(
         df = df.append([{'Path': split_curve}], ignore_index=True)
         df['Telescope'], df['Filter'], df['Detrending'] = 0, 0, 0
         df['Epochs'] = range(0, len(df))
-    if curve_sample==1:
-        print(f'\nA total of {len(df)} lightcurves will be fitted'
-          ' across all TESS Sectors.\n')
-    else:
-        print(f'\nA random sample of {len(df)} lightcurves will be fitted'
-            ' across all TESS Sectors.\n')
+    print('\nPassing all the data to TransitFit.\n')
     df.to_csv(data_path, index=False, header=True)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Paths to data, priors, and filter info:
