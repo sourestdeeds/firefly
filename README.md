@@ -6,6 +6,10 @@
 
 #### Installation
 ```bash
+pip install firefly-tess
+```
+or
+```bash
 python setup.py install
 ```
 

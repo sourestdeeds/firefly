@@ -21,7 +21,7 @@ def get_version(rel_path):
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-setuptools.setup( name='firefly',
+setuptools.setup( name='firefly-tess',
                   version=get_version('firefly/__init__.py'),
                   description='For use with TransitFit',
                   author='Stephen Charles',
