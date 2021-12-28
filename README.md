@@ -1,8 +1,7 @@
 # **firefly**
 ### A target selector for use with TransitFit to fit TESS lightcurves.
 
-![console](https://user-images.githubusercontent.com/10788239/147519274-6aa9e928-5db8-42ee-9b47-431b9aa39649.gif)
-
+![console](https://user-images.githubusercontent.com/10788239/147519786-e4e1e856-9dca-4350-947b-fc5c16b43763.gif)
 
 <p align="center">
   <img src="https://github.com/sourestdeeds/firefly/blob/main/firefly/data/WASP-100%20b%20density.png">
