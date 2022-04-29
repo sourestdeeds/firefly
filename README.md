@@ -140,3 +140,16 @@ Priors generated from the SPEARNET Archive for WASP-190 b (TIC 116156517).
 | host_logg   |                |    4.17       | 0.0834              |          |
 +-------------+----------------+---------------+---------------------+----------+
 ```
+
+# Citing Firefly
+
+```
+@misc{firefly,
+  author = {Stephen Charles},
+  title = {Firefly},
+  year = {2020},
+  publisher = {GitHub},
+  journal = {GitHub repository},
+  howpublished = {\url{https://github.com/sourestdeeds/firefly}},
+}
+```
