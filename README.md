@@ -145,7 +145,7 @@ Priors generated from the SPEARNET Archive for WASP-190 b (TIC 116156517).
 
 ```
 @misc{firefly,
-  author = {Stephen Charles and Josh Hayes},
+  author = {Stephen Charles and Joshua Hayes},
   title = {Firefly},
   year = {2020},
   publisher = {GitHub},
