@@ -1,4 +1,4 @@
-# 🛰 **firefly**
+# 🛰 **Firefly**
 ### A target selector for use with TransitFit to fit TESS lightcurves.
 
 ![console](https://user-images.githubusercontent.com/10788239/147519786-e4e1e856-9dca-4350-947b-fc5c16b43763.gif)
@@ -47,7 +47,7 @@ Background tasks for feeding data to TransitFit include:
 - Delete all downloaded data and inputs.
 - Zip up and timestamp the output.
 
-# firefly
+
 ```python
 from firefly import firefly
 
@@ -95,7 +95,7 @@ Query from MAST returned 1 data products for WASP-43 b (TIC 36734222).
 +-------------------------------------------------+----------+-----------+--------+-----------+
 
 ```
-# mast
+# Mast
 ```python
 from firefly import mast
 
@@ -114,7 +114,7 @@ Query from MAST returned 3 data products for WASP-43 b (TIC 36734222).
 | tess2019058134432-s0009-0000000036734222-0139-s                | 36734222 |       120 | SPOC     | TESS      |
 +----------------------------------------------------------------+----------+-----------+----------+-----------+
 ```
-# priors
+# Priors
 ```python
 from firefly import priors
 
