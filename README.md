@@ -26,7 +26,7 @@ consistent single source of observations, as the systematic variance between sec
 minimal. TESS aims for 50 ppm photometric precision on stars with a TESS magnitude
 of 9-15.
 
-In this work, we make use of a novel transit fitting program, TransitFit (Hayes et al.,
+In this work, I make use of a novel transit fitting program, TransitFit (Hayes et al.,
 2021a), which is capable of using information about the host and planet parameters,
 alongside the observation filters to couple stellar limb-darkening coefficients across
 wavelengths. It was primarily designed for use with transmission spectroscopy studies,
