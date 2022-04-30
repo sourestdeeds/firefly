@@ -168,6 +168,18 @@ Query from MAST returned 3 data products for WASP-43 b (TIC 36734222).
 +----------------------------------------------------------------+----------+-----------+----------+-----------+
 ```
 # Priors
+
+To establish a priority list two conditions must be considered. The minimum
+ephemera required for retrieval consist of the period P, transit mid-point t0,
+semi-major axis a, inclination i and the ratio of the planet to its host star rp. The
+additional values of eccentricity ecc and periastron w are optional, and taken into
+account if they exist. Otherwise default values of ecc 0 and w 90 are used.
+A viable candidate should satisfy both the existence of a full set of ephemera and a light
+curve data product. In lieu of this, each archive was tested to ascertain which provided
+the most candidates with full prior information, comprising of the Extrasolar Planets
+Encyclopedia (Schneider et al., 2011), the NASA Exoplanet Archive (Akeson et al.,
+2013), and the Exoplanet Orbit Database (Wright et al., 2011).
+
 ```python
 from firefly import priors
 
