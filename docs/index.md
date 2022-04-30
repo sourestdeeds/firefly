@@ -11,7 +11,7 @@ predictions (Guillot, 2005; Baraffe et al., 2008) to infer the majority of plane
 ephemera. For this reason, confirmed exoplanets detected via multiple detection
 methods, provide a more complete and accurate constraints on the parameters.
 
-The Transiting Exoplanet Survey Satellite (Ricker et al., 2014) (TESS ) is an all-sky
+The Transiting Exoplanet Survey Satellite (Ricker et al., 2014) (TESS) is an all-sky
 transit survey, whose primary goal is to detect Earth-sized planets orbiting bright stars,
 allowing follow-up observations to determine planet masses and atmospheric
 compositions. TESS has an 85% sky coverage, of which each sector is continuously
