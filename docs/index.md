@@ -17,7 +17,7 @@ allowing follow-up observations to determine planet masses and atmospheric
 compositions. TESS has an 85% sky coverage, of which each sector is continuously
 observed for 4 weeks. For higher ecliptic lattitudes, the sectors overlap creating
 photometric time series for durations up to a year. The upper and lower ecliptic poles
-are called the continuous viewing zones shown in Figure ?? (CVZ), and are constantly
+are called the continuous viewing zones (CVZ), and are constantly
 observed in a yearly rotation between the two poles regardless of sector. Such
 multi-sector photometry allows for a steady stream of transits to be observed, which
 lends itself well to probe for transit timing variations (TTV’s). Increasing the accuracy
