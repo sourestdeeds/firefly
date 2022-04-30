@@ -1,10 +1,42 @@
 # 🛰 **Firefly**
 ### A target selector for use with TransitFit to fit TESS lightcurves.
 
+The focus of this investigation is Transit Photometry, which was first suggested as a
+method of exoplanet discovery by Struve (1952), and expanded upon by Rosenblatt
+(1971). HD 209458 b was the first to be found via the transit method (Charbonneau
+et al., 2000), which was previously confirmed via Radial Velocity measurements (Mazeh
+et al., 2000). Combined detections such as these allow both the minimum planet mass
+and radius to be measured, which can then be compared with planetary evolution
+predictions (Guillot, 2005; Baraffe et al., 2008) to infer the majority of planetary
+ephemera. For this reason, confirmed exoplanets detected via multiple detection
+methods, provide a more complete and accurate constraints on the parameters.
+
+The Transiting Exoplanet Survey Satellite (Ricker et al., 2014) (TESS ) is an all-sky
+transit survey, whose primary goal is to detect Earth-sized planets orbiting bright stars,
+allowing follow-up observations to determine planet masses and atmospheric
+compositions. TESS has an 85% sky coverage, of which each sector is continuously
+observed for 4 weeks. For higher ecliptic lattitudes, the sectors overlap creating
+photometric time series for durations up to a year. The upper and lower ecliptic poles
+are called the continuous viewing zones (CVZ), and are constantly
+observed in a yearly rotation between the two poles regardless of sector. Such
+multi-sector photometry allows for a steady stream of transits to be observed, which
+lends itself well to probe for transit timing variations (TTV’s). Increasing the accuracy
+of known parameters through the use of lightcurve fitting programs also benefits from a
+consistent single source of observations, as the systematic variance between sectors is
+minimal. TESS aims for 50 ppm photometric precision on stars with a TESS magnitude
+of 9-15.
+
+In this work, we make use of a novel transit fitting program, TransitFit (Hayes et al.,
+2021a), which is capable of using information about the host and planet parameters,
+alongside the observation filters to couple stellar limb-darkening coefficients across
+wavelengths. It was primarily designed for use with transmission spectroscopy studies,
+and employs transit observations at various wavelengths from different telescopes to
+simultaneously fit transit parameters using nested sampling retrieval.
+
 ![console](https://user-images.githubusercontent.com/10788239/147519786-e4e1e856-9dca-4350-947b-fc5c16b43763.gif)
 
 <p align="center">
-  <img src="https://github.com/sourestdeeds/firefly/blob/main/firefly/data/WASP-100%20b%20density.png">
+  <img src="https://raw.githubusercontent.com/sourestdeeds/firefly/main/firefly/data/WASP-100%20b%20density.webp#center">
 </p>
 
 #### Installation
@@ -96,6 +128,27 @@ Query from MAST returned 1 data products for WASP-43 b (TIC 36734222).
 
 ```
 # Mast
+
+The Mikulski Archive for Space Telescopes (MAST) is a NASA-funded project to
+support, and provide to the public, a variety of astronomical archives, with a primary
+focus on space-based telescopes operating in the optical, ultraviolet, and near-infrared
+parts of the spectrum.
+
+The time series photometry (Tenenbaum and Jenkins, 2018) captured by TESS was
+mainly at 120 second cadence for its primary mission, with baselines ranging from
+approximately 27 days to a year depending on sector overlapping. The entirety of CCD’s
+are known as Full-Frame Images (FFI). Groups of pixels are downloaded at shorter cadence
+to obtain a faster cadence for a subset of targets, known as Target Pixel (TP) files. Pixels
+around the star are stored as arrays in the TP, one image per stamp. Aperture photometry
+is then performed on each image which creates an array of fluxes known as Light Curve
+(LC) files.
+
+Lightcurves contain flux time series derived from calibrated two minute and twenty
+second target pixels. Two photometry types are available, Simple Aperture Photometry
+(SAP) and Pre-Search Data Conditioning SAP (PDCSAP). PDCSAP is a flux time
+series which has common instrumental systematics removed using the Cotrending Basis
+Vectors (CBV). The CBV’s represent a set of systematic trends present in the lightcurve
+data for each CCD.
 ```python
 from firefly import mast
 
