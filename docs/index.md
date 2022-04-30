@@ -4,7 +4,7 @@
 ![console](https://user-images.githubusercontent.com/10788239/147519786-e4e1e856-9dca-4350-947b-fc5c16b43763.gif)
 
 <p align="center">
-  <img src="https://github.com/sourestdeeds/firefly/blob/main/firefly/data/WASP-100%20b%20density.png">
+  <img src="https://raw.githubusercontent.com/sourestdeeds/firefly/main/firefly/data/WASP-100%20b%20density.webp#center">
 </p>
 
 #### Installation
