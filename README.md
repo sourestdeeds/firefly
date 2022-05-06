@@ -210,7 +210,7 @@ Priors generated from the SPEARNET Archive for WASP-190 b (TIC 116156517).
 
 ```
 @misc{firefly,
-  author = {Stephen Charles and Joshua Hayes},
+  author = {Stephen Charles and Joshua Hayes and Eamonn Kerins},
   title = {Firefly - A target selector for use with TransitFit to fit TESS lightcurves.},
   year = {2020},
   publisher = {GitHub},
