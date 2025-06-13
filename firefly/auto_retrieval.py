@@ -3,7 +3,7 @@
 """
 Automated version of retrieval.
 
-@author: Steven Charles-Mindoza
+@author: Stephen Charles
 """
 
 from ._utils import _retrieval
