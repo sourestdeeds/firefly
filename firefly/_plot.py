@@ -646,12 +646,12 @@ def density_scatter(exoplanet, transits, P, cadence):
                        f'\sigma_{{binned}}={madbin:.6f}$',
                        frameon=False,loc='lower right',
                        prop=dict(fontweight="bold"))
-    fig = plt.subplots(figsize=(12,8))
+    fig = plt.figure(figsize=(12,8))
     gs = gridspec.GridSpec(2, 2, height_ratios=[3,1], width_ratios=[10,1])
-    ax = plt.subplot(gs[0])
-    cb_ax = plt.subplot(gs[1])
-    res_ax = plt.subplot(gs[2])
-    hist_ax = plt.subplot(gs[3], sharey=res_ax)
+    ax = fig.add_subplot(gs[0])
+    cb_ax = fig.add_subplot(gs[1])
+    res_ax = fig.add_subplot(gs[2])
+    hist_ax = fig.add_subplot(gs[3], sharey=res_ax)
     
     plt.set_cmap('hot')
     # Residuals
@@ -715,12 +715,12 @@ def density_scatter(exoplanet, transits, P, cadence):
                        f'\sigma_{{binned}}={madbin:.6f}$',
                        frameon=False,loc='lower right',
                        prop=dict(fontweight="bold"))
-    fig = plt.subplots(figsize=(12,8))
+    fig = plt.figure(figsize=(12,8))
     gs = gridspec.GridSpec(2, 2, height_ratios=[3,1], width_ratios=[10,1])
-    ax = plt.subplot(gs[0])
-    cb_ax = plt.subplot(gs[1])
-    res_ax = plt.subplot(gs[2])
-    hist_ax = plt.subplot(gs[3], sharey=res_ax)
+    ax = fig.add_subplot(gs[0])
+    cb_ax = fig.add_subplot(gs[1])
+    res_ax = fig.add_subplot(gs[2])
+    hist_ax = fig.add_subplot(gs[3], sharey=res_ax)
     
     plt.set_cmap('hot')
     res_ax.scatter(x, diff, s=5, alpha=0.8, c=z, edgecolor='none', zorder=1)
@@ -777,9 +777,9 @@ def density_scatter(exoplanet, transits, P, cadence):
                        f'\sigma_{{binned}}={madbin:.6f}$',
                        frameon=False,loc='lower right',
                        prop=dict(fontweight="bold"))
-    fig = plt.subplots(figsize=(12,6))
+    fig = plt.figure(figsize=(12,6))
     gs = gridspec.GridSpec(1, 1)
-    ax = plt.subplot(gs[0])
+    ax = fig.add_subplot(gs[0])
     
     plt.set_cmap('hot')
     ax.scatter(x, y, c=z, zorder=2, s=5, edgecolor='none')
@@ -800,9 +800,9 @@ def density_scatter(exoplanet, transits, P, cadence):
                        f'\sigma_{{binned}}={madbin:.6f}$',
                        frameon=False,loc='lower right',
                        prop=dict(fontweight="bold"))
-    fig = plt.subplots(figsize=(12,6))
+    fig = plt.figure(figsize=(12,6))
     gs = gridspec.GridSpec(1, 1)
-    ax = plt.subplot(gs[0])
+    ax = fig.add_subplot(gs[0])
     
     plt.set_cmap('hot')
     ax.errorbar(x, y, yerr, color='dimgrey',
@@ -845,10 +845,10 @@ def plot_coupled_comparison():
     
     resid = pl_rad_coupled - pl_rad_uncoupled
     
-    fig = plt.subplots(figsize=(12,8))
+    fig = plt.figure(figsize=(12,8))
     gs = gridspec.GridSpec(2, 2, height_ratios=[2,2], width_ratios=[10,1])
-    ax = plt.subplot(gs[0])
-    ax2 = plt.subplot(gs[2], sharex=ax)
+    ax = fig.add_subplot(gs[0])
+    ax2 = fig.add_subplot(gs[2], sharex=ax)
     
     
     ax.plot(pl_rad_coupled, pl_rad_uncoupled, marker='.', lw=0)
@@ -911,11 +911,11 @@ def plot_ld_params():
     q1err_uncoupled_top10 = top10_uncoup['q1err']
     
     # PLOT
-    fig = plt.subplots(figsize=(16,8))
+    fig = plt.figure(figsize=(16,8))
     gs = gridspec.GridSpec(4, 2, height_ratios=[2,2,1,1])
     
     # q0
-    q0 = plt.subplot(gs[0])
+    q0 = fig.add_subplot(gs[0])
     q0.plot(q0_coupled, marker='.', lw=0)
     q0.plot(q0_uncoupled, color='r', marker='.', lw=0)  
     
@@ -924,7 +924,7 @@ def plot_ld_params():
     q0.legend(['Coupled', 'Uncoupled'])
     
     # q1
-    q1 = plt.subplot(gs[2], sharex=q0)
+    q1 = fig.add_subplot(gs[2], sharex=q0)
     q1.plot(q1_coupled, marker='.', lw=0)
     q1.plot(q1_uncoupled, color='r', marker='.', lw=0) 
     
@@ -938,23 +938,23 @@ def plot_ld_params():
     # resid
     residq0 = q0_coupled - q0_uncoupled
     residq1 = q1_coupled - q1_uncoupled
-    resq0 = plt.subplot(gs[4], sharex=q0)
+    resq0 = fig.add_subplot(gs[4], sharex=q0)
     resq0.plot(residq0, marker='.', lw=0, color='k')
     resq0.axhline(y=0, linestyle='--', color='k', zorder=3, lw=0.75)
     resq0.set_ylabel(r'$q_0$ c - u')
     
-    resq1 = plt.subplot(gs[6], sharex=q0)
+    resq1 = fig.add_subplot(gs[6], sharex=q0)
     resq1.plot(residq1, marker='.', lw=0, color='k')
     resq1.axhline(y=0, linestyle='--', color='k', zorder=3, lw=0.75)
     resq1.set_xlabel('Exoplanet')
     resq1.set_ylabel(r'$q_1$ c - u')
     
     # PLOT 2
-    fig = plt.subplots(figsize=(12,8))
+    fig = plt.figure(figsize=(12,8))
     gs = gridspec.GridSpec(4, 2, height_ratios=[2,2,1,1])
     
     # q0
-    q0 = plt.subplot(gs[0])
+    q0 = fig.add_subplot(gs[0])
     q0.scatter(q0_coupled, q0_uncoupled, marker='.', lw=0, alpha=0.5, edgecolor='none')
     q0.scatter(q0_coupled_top10, q0_uncoupled_top10, marker='.', lw=0, color='k')
     q0.set_xlabel(r'$q_0$ coupled')
@@ -969,7 +969,7 @@ def plot_ld_params():
     m, b = np.polyfit(q0_coupled_top10, q0_uncoupled_top10, 1)
     q0.plot(q0_coupled_top10, m*q0_coupled_top10+b, marker='', lw=0.5, color='k')
     # q1
-    q1 = plt.subplot(gs[2])
+    q1 = fig.add_subplot(gs[2])
     q1.scatter(q1_coupled, q1_uncoupled, marker='.', lw=0, alpha=0.5, edgecolor='none')
     q1.scatter(q1_coupled_top10, q1_uncoupled_top10, marker='.', lw=0, color='k')
     q1.set_xlabel(r'$q_1$ coupled')
