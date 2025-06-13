@@ -15,6 +15,7 @@ from shutil import rmtree, make_archive
 from traceback import format_exc
 import sys
 import os
+import warnings
 
 
 
@@ -24,6 +25,10 @@ def _auto_input_check(targets, curve_sample):
     _load_csv()
     targets = ''.join(targets)
     highest, ratios = _search(targets)
+    if ratios[0]!=100:
+        warnings.warn(f"Exact match not found. Using closest match: '{highest[0]}' (similarity: {highest[1]}%)")
+        print(f"WARNING! Exact match not found. Using closest match: '{highest[0]}' (similarity: {highest[1]}%)")
+        print(f"Other alternatives: {', '.join([f'{name} ({score}%)' for name, score in ratios[1:min(4, len(ratios))]])}")
     exoplanet = highest[0]
     print(f'\nTarget search chose {exoplanet}.')
     return exoplanet
