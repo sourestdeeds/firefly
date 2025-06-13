@@ -704,8 +704,8 @@ def density_scatter(exoplanet, transits, P, cadence):
     cbar.set_label('Normalised Flux Density')
     plt.subplots_adjust(hspace=.0)
     plt.subplots_adjust(wspace=.0)
-    fig[0].savefig(f'firefly/{exoplanet}/{exoplanet} density.png',
-                   bbox_inches='tight')
+    fig.savefig(f'firefly/{exoplanet}/{exoplanet} density.png',
+                bbox_inches='tight')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # No errorbar
     sns.set_theme(style="darkgrid")
@@ -766,8 +766,8 @@ def density_scatter(exoplanet, transits, P, cadence):
     cbar.set_label('Normalised Flux Density')
     plt.subplots_adjust(hspace=.0)
     plt.subplots_adjust(wspace=.0)
-    fig[0].savefig(f'firefly/{exoplanet}/{exoplanet} density noerr.png',
-                   bbox_inches='tight')
+    fig.savefig(f'firefly/{exoplanet}/{exoplanet} density noerr.png',
+                bbox_inches='tight')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # No resid or err
     sns.set_theme(style="darkgrid")
@@ -789,8 +789,8 @@ def density_scatter(exoplanet, transits, P, cadence):
     ax.add_artist(txt)
     plt.xlabel('Phase')
     ax.set_ylabel('Normalised Flux')
-    fig[0].savefig(f'firefly/{exoplanet}/{exoplanet} density noresiderr.png',
-                   bbox_inches='tight')
+    fig.savefig(f'firefly/{exoplanet}/{exoplanet} density noresiderr.png',
+                bbox_inches='tight')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # No resid
     sns.set_theme(style="whitegrid")
@@ -816,8 +816,8 @@ def density_scatter(exoplanet, transits, P, cadence):
     ax.add_artist(txt)
     plt.xlabel('Phase')
     ax.set_ylabel('Normalised Flux')
-    fig[0].savefig(f'firefly/{exoplanet}/{exoplanet} density noresid.png',
-                   bbox_inches='tight')
+    fig.savefig(f'firefly/{exoplanet}/{exoplanet} density noresid.png',
+                bbox_inches='tight')
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     return mad, madbin, obs_depth, cadences
 
