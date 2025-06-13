@@ -218,7 +218,7 @@ Priors generated from the SPEARNET Archive for WASP-190 b (TIC 116156517).
   howpublished = {\url{https://github.com/sourestdeeds/firefly}},
 }
 ```
-In instances, when the correct target is not found by Firefly, you can run
+In instances, when the correct target is not found by Firefly, you can download and extract lightcurves from ExoMast by using the following code snippet:
 
 ```python
 from firefly._utils import _fits
