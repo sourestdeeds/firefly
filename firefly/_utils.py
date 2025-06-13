@@ -19,7 +19,7 @@ from datetime import datetime
 from tabulate import tabulate
 from astropy.config import set_temp_cache
 from astropy.table import Table
-from pandas import DataFrame, read_csv, Categorical
+from pandas import DataFrame, read_csv, Categorical, concat
 from shutil import rmtree, make_archive, copy
 from natsort import natsorted
 from math import ceil
@@ -27,6 +27,7 @@ import numpy as np
 import sys
 import os
 import random
+import warnings
 
 
 
@@ -41,8 +42,8 @@ def _TESS_filter():
     tess_filter = f'{here}/data/Filters/TESS_filter.csv'
     cols = ['filter_idx', 'low_wl', 'high_wl']
     df = DataFrame(columns=cols)
-    df = df.append([{'filter_idx': 0,
-                     'low_wl': tess_filter}], ignore_index=True)
+    new_row = DataFrame([{'filter_idx': 0, 'low_wl': tess_filter}])
+    df = concat([df, new_row], ignore_index=True)
     df.to_csv(tess_filter_path, index=False, header=True)
 
 
@@ -58,6 +59,10 @@ def _alias(exoplanet):
 def mast(exoplanet):
     _load_csv()
     highest, ratios = _search(exoplanet)
+    if highest[1]!=100:
+        warnings.warn(f"Exoplanet '{exoplanet}' not found. Using closest match: '{highest[0]}' (similarity: {highest[1]}%)")
+        print(f"WARNING! Exoplanet '{exoplanet}' not found. Using closest match: '{highest[0]}' (similarity: {highest[1]}%)")
+        print(f"Other alternatives: {', '.join([f'{name} ({score}%)' for name, score in ratios[1:min(4, len(ratios))]])}")
     exoplanet = highest[0]
     tic_id = _tic(exoplanet).replace('TIC ', '')
     print(f'\nSearching MAST for {exoplanet} (TIC {tic_id}).')
@@ -159,11 +164,14 @@ def _fits(exoplanet,
           cache,
           hlsp,
           cadence,
-          bitmask
-):
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+          bitmask,
+          tic_id=None):
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # MAST Search
-    tic_id = _tic(exoplanet).replace('TIC ', '')
+    if tic_id is None:
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        # MAST Search
+        tic_id = _tic(exoplanet).replace('TIC ', '')
     print(f'\nSearching MAST for {exoplanet} (TIC {tic_id}).')
     search = obs.query_criteria(dataproduct_type=['timeseries'],
                                 project='TESS',
@@ -374,13 +382,13 @@ def _retrieval(
         equal_batches = [5+3*n for n in range(0,500)]
     else:
         equal_batches = [6+4*n for n in range(0,500)]
-    if int(curves) > 5:
+    """if int(curves) > 5:
         if int(curves) not in equal_batches:
             import bisect
             index = bisect.bisect(equal_batches, int(curves))
             new_curves = equal_batches[index-1]
             print(f'\nEnforcing lightcurves to be in equal batch sizes. Discarded {curves-new_curves}.')
-            curves = new_curves
+            curves = new_curves"""
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Sort the files into ascending order and take random sample
     split_curve_in_dir = random.sample(split_curve_in_dir, k=int(curves))
@@ -405,7 +413,8 @@ def _retrieval(
     cols = ['Path', 'Telescope', 'Filter', 'Epochs', 'Detrending']
     df = DataFrame(columns=cols)
     for i, split_curve in enumerate(split_curve_in_dir):
-        df = df.append([{'Path': split_curve}], ignore_index=True)
+        new_row = DataFrame([{'Path': split_curve}])
+        df = concat([df, new_row], ignore_index=True)
         df['Telescope'], df['Filter'], df['Detrending'] = 0, 0, 0
         df['Epochs'] = range(0, len(df))
     print('\nPassing all the data to TransitFit.\n')
@@ -617,7 +626,7 @@ def _retrieval(
                 df.to_csv(summary_master, index=False)
             else:
                 add = read_csv(summary_master)
-                add = add.append(df)
+                add = concat([add, df], ignore_index=True)
                 add['pl_name'] = \
                     Categorical(add['pl_name'],
                     ordered=True,
@@ -655,7 +664,7 @@ def _retrieval(
             df.to_csv(summary_master, index=False)
         else:
             add = read_csv(summary_master)
-            add = add.append(df)
+            add = concat([add, df], ignore_index=True)
             add['pl_name'] = \
                 Categorical(add['pl_name'],
                 ordered=True,
@@ -707,7 +716,7 @@ def spearnet_archive_ld_params(source='13_April_2021_folded_uncoupled'):
                     df.to_csv(summary_master, index=False)
                 else:
                     add = read_csv(summary_master)
-                    add = add.append(df)
+                    add = concat([add, df], ignore_index=True)
                     add['pl_name'] = \
                         Categorical(add['pl_name'],
                         ordered=True,

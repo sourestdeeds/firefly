@@ -1,0 +1,21 @@
+[project]
+name = "firefly"
+version = "0.9.3"
+description = "A pipeline to use with TransitFit to fit TESS lightcurves."
+readme = "README.md"
+requires-python = ">=3.6"
+dependencies = ['numpy',
+                'pandas', 
+                'tabulate',
+                'thefuzz',
+                'python-Levenshtein',
+                'natsort',
+                'seaborn',
+                'astroquery',
+                'pyastronomy',
+                'astropy',
+                'lightkurve',
+                'transitfit',
+                'rich',
+                'tqdm',
+                ]

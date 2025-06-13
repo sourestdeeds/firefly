@@ -218,3 +218,28 @@ Priors generated from the SPEARNET Archive for WASP-190 b (TIC 116156517).
   howpublished = {\url{https://github.com/sourestdeeds/firefly}},
 }
 ```
+In instances, when the correct target is not found by Firefly, you can download and extract lightcurves from ExoMast by using the following code snippet:
+
+```python
+from firefly._utils import _fits
+import os
+
+exoplanet_name = "WASP-91 b"
+tic_id="238176110"
+
+exo_folder = f"{exoplanet_name}"
+os.makedirs(exo_folder, exist_ok=True)
+
+csv_in_dir, sector_list = _fits(
+            exoplanet_name,
+            exo_folder=exo_folder,
+            cache=False,
+            hlsp=["SPOC"],
+            cadence=120,
+            bitmask="default",
+            tic_id=tic_id,
+)
+
+print(f"CSV files saved in {csv_in_dir}")
+```
+These lightcurves can be split into epochs using transitfit.split_lightcurve_file.

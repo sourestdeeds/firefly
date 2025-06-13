@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 from tabulate import tabulate
 from pandas import DataFrame, read_csv, Categorical, concat
 from astroquery.mast import Observations as obs
-from fuzzywuzzy import process
+from thefuzz import process
 from natsort import natsorted
 from tqdm import tqdm
 import numpy as np
@@ -58,53 +58,105 @@ def _load_csv():
     blank = DataFrame(columns=cols)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # SPEARNET
-    exo_spearnet = read_csv(spearnet_csv)
-    exo_spearnet = exo_spearnet.append(blank)
-    exo_spearnet['archive'] = 'SPEARNET COUPLED'
+    try:
+        exo_spearnet = read_csv(spearnet_csv)
+        exo_spearnet = concat([exo_spearnet, blank], ignore_index=True)
+        exo_spearnet['archive'] = 'SPEARNET COUPLED'
+    except FileNotFoundError:
+        print(f"SPEARNET coupled file not found: {spearnet_csv}")
+        exo_spearnet = DataFrame(columns=cols + ['archive'])
+        exo_spearnet['archive'] = 'SPEARNET COUPLED'
 
-    exo_spearnet_uncoup = read_csv(spearnet_csv_uncoup)
-    exo_spearnet_uncoup = exo_spearnet_uncoup.append(blank)
-    exo_spearnet_uncoup['archive'] = 'SPEARNET UNCOUPLED'
+    try:
+        exo_spearnet_uncoup = read_csv(spearnet_csv_uncoup)
+        exo_spearnet_uncoup = concat([exo_spearnet_uncoup, blank], ignore_index=True)
+        exo_spearnet_uncoup['archive'] = 'SPEARNET UNCOUPLED'
+    except FileNotFoundError:
+        print(f"SPEARNET uncoupled file not found: {spearnet_csv_uncoup}")
+        exo_spearnet_uncoup = DataFrame(columns=cols + ['archive'])
+        exo_spearnet_uncoup['archive'] = 'SPEARNET UNCOUPLED'
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # EU
-    col_subset_eu = ['# name', 'orbital_period', 'semi_major_axis', 'radius',
-                     'eccentricity', 'inclination', 'tzero_tr', 'star_teff',
-                     'star_teff_error_max', 'star_radius',
-                     'star_radius_error_max', 'star_mass',
-                     'star_metallicity', 'star_metallicity_error_max', 'omega']
-    exo_eu = read_csv(eu_csv, usecols=col_subset_eu)
-    exo_eu.columns = ['pl_name', 'pl_radj', 'pl_orbper', 'pl_orbsmax',
-                      'pl_orbeccen', 'pl_orbincl', 'pl_orblper', 'pl_tranmid', 'st_met',
-                      'st_meterr1', 'st_mass','st_rad',
-                      'st_raderr1', 'st_teff', 'st_tefferr1']
-    exo_eu = exo_eu.append(blank)
+    try:
+        col_subset_eu = ['# name', 'orbital_period', 'semi_major_axis', 'radius',
+                         'eccentricity', 'inclination', 'tzero_tr', 'star_teff',
+                         'star_teff_error_max', 'star_radius',
+                         'star_radius_error_max', 'star_mass',
+                         'star_metallicity', 'star_metallicity_error_max', 'omega']
+        exo_eu = read_csv(eu_csv, usecols=col_subset_eu)
+        exo_eu.columns = ['pl_name', 'pl_radj', 'pl_orbper', 'pl_orbsmax',
+                          'pl_orbeccen', 'pl_orbincl', 'pl_orblper', 'pl_tranmid', 'st_met',
+                          'st_meterr1', 'st_mass','st_rad',
+                          'st_raderr1', 'st_teff', 'st_tefferr1']
+    except ValueError:
+        # Handle case where column names have changed
+        try:
+            col_subset_eu = ['name', 'orbital_period', 'semi_major_axis', 'radius',
+                             'eccentricity', 'inclination', 'tzero_tr', 'star_teff',
+                             'star_teff_error_max', 'star_radius',
+                             'star_radius_error_max', 'star_mass',
+                             'star_metallicity', 'star_metallicity_error_max', 'omega']
+            exo_eu = read_csv(eu_csv, usecols=col_subset_eu)
+            exo_eu.columns = ['pl_name', 'pl_radj', 'pl_orbper', 'pl_orbsmax',
+                              'pl_orbeccen', 'pl_orbincl', 'pl_orblper', 'pl_tranmid', 'st_met',
+                              'st_meterr1', 'st_mass','st_rad',
+                              'st_raderr1', 'st_teff', 'st_tefferr1']
+        except ValueError:
+            # If specific columns still don't work, read all columns and try to map them
+            exo_eu_full = read_csv(eu_csv)
+            print(f"EU CSV columns: {list(exo_eu_full.columns)}")
+            # Create a minimal dataframe with the required structure
+            exo_eu = DataFrame(columns=['pl_name', 'pl_radj', 'pl_orbper', 'pl_orbsmax',
+                                        'pl_orbeccen', 'pl_orbincl', 'pl_orblper', 'pl_tranmid', 'st_met',
+                                        'st_meterr1', 'st_mass','st_rad',
+                                        'st_raderr1', 'st_teff', 'st_tefferr1'])
+    exo_eu = concat([exo_eu, blank], ignore_index=True)
     exo_eu['archive'] = 'EU'
     exo_nasa['archive'] = 'NASA'
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # OEC
-    col_subset_oec = ['name', 'radius', 'period',
-                     'semimajoraxis', 'eccentricity', 'periastron', 'inclination',
-                     'hoststar_mass', 'hoststar_radius',
-                     'hoststar_metallicity', 'hoststar_temperature']
-    exo_oec = read_csv(oec_csv, usecols=col_subset_oec)
-    exo_oec.columns = ['pl_name', 'pl_radj', 'pl_orbper', 'pl_orbsmax',
-                      'pl_orbeccen', 'pl_orblper','pl_orbincl', 'st_mass',
-                      'st_rad', 'st_met', 'st_teff']
-    exo_oec = exo_oec.append(blank)
+    try:
+        col_subset_oec = ['name', 'radius', 'period',
+                         'semimajoraxis', 'eccentricity', 'periastron', 'inclination',
+                         'hoststar_mass', 'hoststar_radius',
+                         'hoststar_metallicity', 'hoststar_temperature']
+        exo_oec = read_csv(oec_csv, usecols=col_subset_oec)
+        exo_oec.columns = ['pl_name', 'pl_radj', 'pl_orbper', 'pl_orbsmax',
+                          'pl_orbeccen', 'pl_orblper','pl_orbincl', 'st_mass',
+                          'st_rad', 'st_met', 'st_teff']
+    except ValueError:
+        # Handle case where column names have changed or don't exist
+        exo_oec_full = read_csv(oec_csv)
+        print(f"OEC CSV columns: {list(exo_oec_full.columns)}")
+        # Create a minimal dataframe with the required structure
+        exo_oec = DataFrame(columns=['pl_name', 'pl_radj', 'pl_orbper', 'pl_orbsmax',
+                                     'pl_orbeccen', 'pl_orblper','pl_orbincl', 'st_mass',
+                                     'st_rad', 'st_met', 'st_teff'])
+    exo_oec = concat([exo_oec, blank], ignore_index=True)
     exo_oec['archive'] = 'OEC'
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # ORG
-    col_subset_org = ['NAME', 'R', 'PER',
-                     'SEP', 'ECC', 'I', 'TT',
-                     'MSTAR', 'RSTAR', 'RSTARUPPER',
-                     'FE', 'FEUPPER', 'LOGG', 'LOGGUPPER',
-                     'TEFF', 'TEFFUPPER']
-    exo_org = read_csv(org_csv, usecols=col_subset_org)
-    exo_org.columns = ['pl_orbeccen', 'st_met', 'st_meterr1', 'pl_orbincl',
-                      'st_logg', 'st_loggerr1','st_mass', 'pl_name',
-                      'pl_orbper', 'pl_radj', 'st_rad', 'st_raderr1', 'pl_orbsmax',
-                      'st_teff', 'st_tefferr1', 'pl_tranmid']
-    exo_org = exo_org.append(blank)
+    try:
+        col_subset_org = ['NAME', 'R', 'PER',
+                         'SEP', 'ECC', 'I', 'TT',
+                         'MSTAR', 'RSTAR', 'RSTARUPPER',
+                         'FE', 'FEUPPER', 'LOGG', 'LOGGUPPER',
+                         'TEFF', 'TEFFUPPER']
+        exo_org = read_csv(org_csv, usecols=col_subset_org)
+        exo_org.columns = ['pl_orbeccen', 'st_met', 'st_meterr1', 'pl_orbincl',
+                          'st_logg', 'st_loggerr1','st_mass', 'pl_name',
+                          'pl_orbper', 'pl_radj', 'st_rad', 'st_raderr1', 'pl_orbsmax',
+                          'st_teff', 'st_tefferr1', 'pl_tranmid']
+    except ValueError:
+        # Handle case where column names have changed or don't exist
+        exo_org_full = read_csv(org_csv)
+        print(f"ORG CSV columns: {list(exo_org_full.columns)}")
+        # Create a minimal dataframe with the required structure
+        exo_org = DataFrame(columns=['pl_orbeccen', 'st_met', 'st_meterr1', 'pl_orbincl',
+                                     'st_logg', 'st_loggerr1','st_mass', 'pl_name',
+                                     'pl_orbper', 'pl_radj', 'st_rad', 'st_raderr1', 'pl_orbsmax',
+                                     'st_teff', 'st_tefferr1', 'pl_tranmid'])
+    exo_org = concat([exo_org, blank], ignore_index=True)
     exo_org['archive'] = 'ORG'
     
 
@@ -187,7 +239,7 @@ def _lc(exoplanet, mast, fast=False):
         a = read_csv(f'TESS_curl/tesscurl_sector_{str(i)}_lc.sh')
         a['links'] = a['#!/bin/sh'].str.split().str[-1]
         a = a.drop(['#!/bin/sh'], axis=1)
-        out = out.append(a)
+        out = concat([out, a], ignore_index=True)
     out.to_csv('MAST_lc.csv.gz', index=False)
     '''
     tic_id = _tic(exoplanet).replace('TIC ', '')
