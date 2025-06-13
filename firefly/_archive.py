@@ -59,11 +59,11 @@ def _load_csv():
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # SPEARNET
     exo_spearnet = read_csv(spearnet_csv)
-    exo_spearnet = exo_spearnet.append(blank)
+    exo_spearnet = concat([exo_spearnet, blank], ignore_index=True)
     exo_spearnet['archive'] = 'SPEARNET COUPLED'
 
     exo_spearnet_uncoup = read_csv(spearnet_csv_uncoup)
-    exo_spearnet_uncoup = exo_spearnet_uncoup.append(blank)
+    exo_spearnet_uncoup = concat([exo_spearnet_uncoup, blank], ignore_index=True)
     exo_spearnet_uncoup['archive'] = 'SPEARNET UNCOUPLED'
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # EU
@@ -77,7 +77,7 @@ def _load_csv():
                       'pl_orbeccen', 'pl_orbincl', 'pl_orblper', 'pl_tranmid', 'st_met',
                       'st_meterr1', 'st_mass','st_rad',
                       'st_raderr1', 'st_teff', 'st_tefferr1']
-    exo_eu = exo_eu.append(blank)
+    exo_eu = concat([exo_eu, blank], ignore_index=True)
     exo_eu['archive'] = 'EU'
     exo_nasa['archive'] = 'NASA'
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -90,7 +90,7 @@ def _load_csv():
     exo_oec.columns = ['pl_name', 'pl_radj', 'pl_orbper', 'pl_orbsmax',
                       'pl_orbeccen', 'pl_orblper','pl_orbincl', 'st_mass',
                       'st_rad', 'st_met', 'st_teff']
-    exo_oec = exo_oec.append(blank)
+    exo_oec = concat([exo_oec, blank], ignore_index=True)
     exo_oec['archive'] = 'OEC'
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # ORG
@@ -104,7 +104,7 @@ def _load_csv():
                       'st_logg', 'st_loggerr1','st_mass', 'pl_name',
                       'pl_orbper', 'pl_radj', 'st_rad', 'st_raderr1', 'pl_orbsmax',
                       'st_teff', 'st_tefferr1', 'pl_tranmid']
-    exo_org = exo_org.append(blank)
+    exo_org = concat([exo_org, blank], ignore_index=True)
     exo_org['archive'] = 'ORG'
     
 
@@ -187,7 +187,7 @@ def _lc(exoplanet, mast, fast=False):
         a = read_csv(f'TESS_curl/tesscurl_sector_{str(i)}_lc.sh')
         a['links'] = a['#!/bin/sh'].str.split().str[-1]
         a = a.drop(['#!/bin/sh'], axis=1)
-        out = out.append(a)
+        out = concat([out, a], ignore_index=True)
     out.to_csv('MAST_lc.csv.gz', index=False)
     '''
     tic_id = _tic(exoplanet).replace('TIC ', '')
