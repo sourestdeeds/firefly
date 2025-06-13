@@ -159,11 +159,14 @@ def _fits(exoplanet,
           cache,
           hlsp,
           cadence,
-          bitmask
-):
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+          bitmask,
+          tic_id=None):
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # MAST Search
-    tic_id = _tic(exoplanet).replace('TIC ', '')
+    if tic_id is None:
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        # MAST Search
+        tic_id = _tic(exoplanet).replace('TIC ', '')
     print(f'\nSearching MAST for {exoplanet} (TIC {tic_id}).')
     search = obs.query_criteria(dataproduct_type=['timeseries'],
                                 project='TESS',
