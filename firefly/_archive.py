@@ -3,7 +3,7 @@
 """
 Exoplanet archive tools.
 
-@author: Steven Charles-Mindoza
+@author: Stephen Charles
 """
 
 from rich import print
