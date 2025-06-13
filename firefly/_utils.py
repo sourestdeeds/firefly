@@ -382,13 +382,13 @@ def _retrieval(
         equal_batches = [5+3*n for n in range(0,500)]
     else:
         equal_batches = [6+4*n for n in range(0,500)]
-    if int(curves) > 5:
+    """if int(curves) > 5:
         if int(curves) not in equal_batches:
             import bisect
             index = bisect.bisect(equal_batches, int(curves))
             new_curves = equal_batches[index-1]
             print(f'\nEnforcing lightcurves to be in equal batch sizes. Discarded {curves-new_curves}.')
-            curves = new_curves
+            curves = new_curves"""
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     # Sort the files into ascending order and take random sample
     split_curve_in_dir = random.sample(split_curve_in_dir, k=int(curves))
