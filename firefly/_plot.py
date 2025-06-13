@@ -532,7 +532,7 @@ def read_fitted_lc(exoplanet, transits):
         file = f'firefly/{exoplanet}/fitted_lightcurves/t0_f0_e{i}_detrended.csv'
         lc = pd.read_csv(file)[['Phase', 'Normalised flux',
                                 'Flux uncertainty','Best fit curve']]
-        df = df.append(lc, ignore_index=True)
+        df = pd.concat([df, lc], ignore_index=True)
     
     df = df.sort_values('Phase').reset_index(drop=True)
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#

@@ -19,7 +19,7 @@ from datetime import datetime
 from tabulate import tabulate
 from astropy.config import set_temp_cache
 from astropy.table import Table
-from pandas import DataFrame, read_csv, Categorical
+from pandas import DataFrame, read_csv, Categorical, concat
 from shutil import rmtree, make_archive, copy
 from natsort import natsorted
 from math import ceil
@@ -42,8 +42,8 @@ def _TESS_filter():
     tess_filter = f'{here}/data/Filters/TESS_filter.csv'
     cols = ['filter_idx', 'low_wl', 'high_wl']
     df = DataFrame(columns=cols)
-    df = df.append([{'filter_idx': 0,
-                     'low_wl': tess_filter}], ignore_index=True)
+    new_row = DataFrame([{'filter_idx': 0, 'low_wl': tess_filter}])
+    df = concat([df, new_row], ignore_index=True)
     df.to_csv(tess_filter_path, index=False, header=True)
 
 
@@ -412,7 +412,8 @@ def _retrieval(
     cols = ['Path', 'Telescope', 'Filter', 'Epochs', 'Detrending']
     df = DataFrame(columns=cols)
     for i, split_curve in enumerate(split_curve_in_dir):
-        df = df.append([{'Path': split_curve}], ignore_index=True)
+        new_row = DataFrame([{'Path': split_curve}])
+        df = concat([df, new_row], ignore_index=True)
         df['Telescope'], df['Filter'], df['Detrending'] = 0, 0, 0
         df['Epochs'] = range(0, len(df))
     print('\nPassing all the data to TransitFit.\n')
@@ -624,7 +625,7 @@ def _retrieval(
                 df.to_csv(summary_master, index=False)
             else:
                 add = read_csv(summary_master)
-                add = add.append(df)
+                add = concat([add, df], ignore_index=True)
                 add['pl_name'] = \
                     Categorical(add['pl_name'],
                     ordered=True,
@@ -662,7 +663,7 @@ def _retrieval(
             df.to_csv(summary_master, index=False)
         else:
             add = read_csv(summary_master)
-            add = add.append(df)
+            add = concat([add, df], ignore_index=True)
             add['pl_name'] = \
                 Categorical(add['pl_name'],
                 ordered=True,
@@ -714,7 +715,7 @@ def spearnet_archive_ld_params(source='13_April_2021_folded_uncoupled'):
                     df.to_csv(summary_master, index=False)
                 else:
                     add = read_csv(summary_master)
-                    add = add.append(df)
+                    add = concat([add, df], ignore_index=True)
                     add['pl_name'] = \
                         Categorical(add['pl_name'],
                         ordered=True,
