@@ -3,7 +3,7 @@
 """
 The backend for auto_retrieval.
 
-@author: Steven Charles-Mindoza
+@author: Stephen Charles
 """
 
 from ._archive import priors, _tic, _load_csv, _search
