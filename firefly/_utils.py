@@ -27,6 +27,7 @@ import numpy as np
 import sys
 import os
 import random
+import warnings
 
 
 
@@ -58,6 +59,9 @@ def _alias(exoplanet):
 def mast(exoplanet):
     _load_csv()
     highest, ratios = _search(exoplanet)
+    if ratios[0]!=100:
+        warnings.warn(f"Exoplanet '{exoplanet}' not found. Using closest match: '{highest[0]}' (similarity: {highest[1]}%)")
+        print(f"Other alternatives: {', '.join([f'{name} ({score}%)' for name, score in ratios[1:min(4, len(ratios))]])}")
     exoplanet = highest[0]
     tic_id = _tic(exoplanet).replace('TIC ', '')
     print(f'\nSearching MAST for {exoplanet} (TIC {tic_id}).')
