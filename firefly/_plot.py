@@ -676,6 +676,7 @@ def density_scatter(exoplanet, transits, P, cadence):
     # Histogram
     rgba_color = colors.to_rgba('dimgrey')
     facecolor = (rgba_color[0], rgba_color[1], rgba_color[2], 0.6)
+    rgba_color = colors.to_hex(rgba_color, keep_alpha=True)
     hist_ax.hist(bins[:-1], bins, weights=unbinned_counts,
                  orientation='horizontal', color=facecolor,
                  edgecolor=rgba_color, histtype='stepfilled')
@@ -683,6 +684,7 @@ def density_scatter(exoplanet, transits, P, cadence):
     
     rgba_color = colors.to_rgba('red')
     facecolor = (rgba_color[0], rgba_color[1], rgba_color[2], 0.6)
+    rgba_color = colors.to_hex(rgba_color, keep_alpha=True)
     hist_ax.hist(bins[:-1], bins, weights=weighted_binned_counts,
                  orientation='horizontal', color=facecolor,
                  edgecolor=rgba_color, histtype='stepfilled',alpha=0.5)
@@ -736,6 +738,7 @@ def density_scatter(exoplanet, transits, P, cadence):
     # Histogram
     rgba_color = colors.to_rgba('dimgrey')
     facecolor = (rgba_color[0], rgba_color[1], rgba_color[2], 0.6)
+    rgba_color = colors.to_hex(rgba_color, keep_alpha=True)
     hist_ax.hist(bins[:-1], bins, weights=unbinned_counts,
                  orientation='horizontal', color=facecolor,
                  edgecolor=rgba_color, histtype='stepfilled')
@@ -743,6 +746,7 @@ def density_scatter(exoplanet, transits, P, cadence):
     
     rgba_color = colors.to_rgba('red')
     facecolor = (rgba_color[0], rgba_color[1], rgba_color[2], 0.6)
+    rgba_color = colors.to_hex(rgba_color, keep_alpha=True)
     hist_ax.hist(bins[:-1], bins, weights=weighted_binned_counts,
                  orientation='horizontal', color=facecolor,
                  edgecolor=rgba_color, histtype='stepfilled',alpha=0.5)
