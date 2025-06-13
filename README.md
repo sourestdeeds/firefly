@@ -242,3 +242,4 @@ csv_in_dir, sector_list = _fits(
 
 print(f"CSV files saved in {csv_in_dir}")
 ```
+These lightcurves can be split into epochs using transitfit.split_lightcurve_file.
