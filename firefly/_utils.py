@@ -59,7 +59,7 @@ def _alias(exoplanet):
 def mast(exoplanet):
     _load_csv()
     highest, ratios = _search(exoplanet)
-    if ratios[0]!=100:
+    if highest[1]!=100:
         warnings.warn(f"Exoplanet '{exoplanet}' not found. Using closest match: '{highest[0]}' (similarity: {highest[1]}%)")
         print(f"WARNING! Exoplanet '{exoplanet}' not found. Using closest match: '{highest[0]}' (similarity: {highest[1]}%)")
         print(f"Other alternatives: {', '.join([f'{name} ({score}%)' for name, score in ratios[1:min(4, len(ratios))]])}")
