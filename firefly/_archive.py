@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 from tabulate import tabulate
 from pandas import DataFrame, read_csv, Categorical, concat
 from astroquery.mast import Observations as obs
-from fuzzywuzzy import process
+from thefuzz import process
 from natsort import natsorted
 from tqdm import tqdm
 import numpy as np
