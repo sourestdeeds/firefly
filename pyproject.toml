@@ -1,5 +1,5 @@
 [project]
-name = "firefly"
+name = "firefly-tess"
 version = "0.9.3"
 description = "A pipeline to use with TransitFit to fit TESS lightcurves."
 readme = "README.md"
